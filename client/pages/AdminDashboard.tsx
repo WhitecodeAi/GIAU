@@ -92,6 +92,7 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [isExportingByProducts, setIsExportingByProducts] = useState(false);
+  const [isExportingGI3A, setIsExportingGI3A] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
