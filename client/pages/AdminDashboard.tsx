@@ -121,7 +121,7 @@ export default function AdminDashboard() {
     }
   }, [navigate, currentPage]);
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = async (retryCount = 0) => {
     try {
       setLoading(true);
       console.log("Fetching registrations...");
@@ -140,14 +140,22 @@ export default function AdminDashboard() {
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch registrations:", error);
+      // Retry once after 1 second delay
+      if (retryCount < 1) {
+        console.log("Retrying registrations fetch...");
+        setTimeout(() => fetchRegistrations(retryCount + 1), 1000);
+        return;
+      }
       // Show user-friendly error
       setRegistrations([]);
     } finally {
-      setLoading(false);
+      if (retryCount === 0) {
+        setLoading(false);
+      }
     }
   };
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = async (retryCount = 0) => {
     try {
       console.log("Fetching statistics...");
       const response = await fetch("/api/dashboard/statistics");
@@ -161,6 +169,12 @@ export default function AdminDashboard() {
       setStatistics(data);
     } catch (error) {
       console.error("Failed to fetch statistics:", error);
+      // Retry once after 1 second delay
+      if (retryCount < 1) {
+        console.log("Retrying statistics fetch...");
+        setTimeout(() => fetchStatistics(retryCount + 1), 1000);
+        return;
+      }
       // Set default statistics to prevent UI issues
       setStatistics({
         totalRegistrations: 0,
