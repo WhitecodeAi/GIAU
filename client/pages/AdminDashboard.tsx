@@ -94,6 +94,7 @@ export default function AdminDashboard() {
   const [isExportingByProducts, setIsExportingByProducts] = useState(false);
   const [isExportingGI3A, setIsExportingGI3A] = useState(false);
   const [isExportingNOC, setIsExportingNOC] = useState(false);
+  const [isExportingStatement, setIsExportingStatement] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
