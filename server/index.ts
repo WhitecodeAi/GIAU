@@ -70,6 +70,7 @@ import { setupAdmin } from "./routes/setup";
 import {
   exportProducerCards,
   exportFormGI3A,
+  exportNOC,
   exportUsersWithDateRange,
   exportRegistrationsByUser,
   exportUsersByProducts,
