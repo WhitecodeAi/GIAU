@@ -313,6 +313,49 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExportFormGI3A = async () => {
+    if (selectedRegistrations.size === 0) {
+      alert("Please select registrations to export as Form GI 3A");
+      return;
+    }
+
+    try {
+      setIsExportingGI3A(true);
+      const selectedIds = Array.from(selectedRegistrations);
+      const response = await fetch("/api/registrations/export-gi3a", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationIds: selectedIds }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        throw new Error("Form GI 3A export failed");
+      }
+    } catch (error) {
+      console.error("Form GI 3A export error:", error);
+      alert("Failed to export Form GI 3A");
+    } finally {
+      setIsExportingGI3A(false);
+    }
+  };
+
   const handleDateRangeChange = (
     startDate: string | null,
     endDate: string | null,
