@@ -357,6 +357,49 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExportNOC = async () => {
+    if (selectedRegistrations.size === 0) {
+      alert("Please select registrations to export as NOC");
+      return;
+    }
+
+    try {
+      setIsExportingNOC(true);
+      const selectedIds = Array.from(selectedRegistrations);
+      const response = await fetch("/api/registrations/export-noc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationIds: selectedIds }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        throw new Error("NOC export failed");
+      }
+    } catch (error) {
+      console.error("NOC export error:", error);
+      alert("Failed to export No Objection Certificates");
+    } finally {
+      setIsExportingNOC(false);
+    }
+  };
+
   const handleDateRangeChange = (
     startDate: string | null,
     endDate: string | null,
