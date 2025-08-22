@@ -100,8 +100,31 @@ export default function AdminDashboard() {
       }
       setUser(parsedUser);
 
+      // Test basic connectivity first
+      const testConnectivity = async () => {
+        try {
+          console.log("Testing basic API connectivity...");
+          const response = await fetch("/api/ping");
+          if (!response.ok) {
+            throw new Error(`Ping failed: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Ping successful:", data);
+          return true;
+        } catch (error) {
+          console.error("Basic connectivity test failed:", error);
+          return false;
+        }
+      };
+
       // Add a small delay to ensure server is ready
       const initializeData = async () => {
+        const isConnected = await testConnectivity();
+        if (!isConnected) {
+          console.warn("Skipping data fetch due to connectivity issues");
+          return;
+        }
+
         await Promise.all([
           fetchRegistrations(),
           fetchStatistics(),
