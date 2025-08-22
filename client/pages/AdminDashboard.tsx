@@ -401,6 +401,49 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExportStatement = async () => {
+    if (selectedRegistrations.size === 0) {
+      alert("Please select registrations to export as Statement of Case");
+      return;
+    }
+
+    try {
+      setIsExportingStatement(true);
+      const selectedIds = Array.from(selectedRegistrations);
+      const response = await fetch("/api/registrations/export-statement", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationIds: selectedIds }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        throw new Error("Statement of Case export failed");
+      }
+    } catch (error) {
+      console.error("Statement of Case export error:", error);
+      alert("Failed to export Statement of Case documents");
+    } finally {
+      setIsExportingStatement(false);
+    }
+  };
+
   const handleDateRangeChange = (
     startDate: string | null,
     endDate: string | null,
