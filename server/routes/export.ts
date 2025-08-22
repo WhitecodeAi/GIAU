@@ -913,6 +913,274 @@ async function generateNOCHtml(
   `;
 }
 
+export async function exportStatementOfCase(req: Request, res: Response) {
+  try {
+    const { registrationIds }: ExportRequest = req.body;
+
+    if (!registrationIds || registrationIds.length === 0) {
+      return res.status(400).json({ error: "No registration IDs provided" });
+    }
+
+    // Fetch registration data
+    const placeholders = registrationIds.map(() => "?").join(",");
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path,
+        ur.production_summary,
+        GROUP_CONCAT(DISTINCT pc.name) as category_names,
+        GROUP_CONCAT(DISTINCT p.name) as product_names
+      FROM user_registrations ur
+      LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
+      LEFT JOIN product_categories pc ON urc.category_id = pc.id
+      LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
+      LEFT JOIN products p ON usp.product_id = p.id
+      WHERE ur.id IN (${placeholders})
+      GROUP BY ur.id
+      ORDER BY ur.name
+    `,
+      registrationIds,
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "No registrations found" });
+    }
+
+    // Generate HTML for all statements
+    let statementsHtml = "";
+
+    for (const registration of registrations) {
+      const statementHtml = await generateStatementOfCaseHtml(registration);
+      statementsHtml += statementHtml;
+    }
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Statement of Case Documents</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 25mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.8;
+          font-size: 14pt;
+          color: #000;
+        }
+
+        .statement-page {
+          width: 100%;
+          margin: 0 auto 30px auto;
+          page-break-after: always;
+          background: #fff;
+          min-height: 100vh;
+          position: relative;
+        }
+
+        .statement-page:last-child {
+          page-break-after: avoid;
+        }
+
+        .statement-header {
+          text-align: center;
+          margin-bottom: 40px;
+          border-bottom: 3px solid #000;
+          padding-bottom: 20px;
+        }
+
+        .statement-title {
+          font-size: 18pt;
+          font-weight: bold;
+          margin: 0;
+          text-decoration: underline;
+          letter-spacing: 2px;
+        }
+
+        .statement-content {
+          text-align: justify;
+          line-height: 2.0;
+          margin-bottom: 40px;
+        }
+
+        .statement-paragraph {
+          margin-bottom: 20px;
+          text-indent: 30px;
+        }
+
+        .highlight {
+          font-weight: bold;
+          border-bottom: 1px solid #000;
+          padding: 2px 4px;
+        }
+
+        .signature-section {
+          margin-top: 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+          line-height: 2.5;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          margin-left: 50px;
+        }
+
+        .signature-line {
+          border-bottom: 2px solid #000;
+          width: 250px;
+          height: 80px;
+          margin: 30px auto;
+          display: block;
+        }
+
+        .signature-label {
+          font-weight: bold;
+          margin-top: 15px;
+          line-height: 1.5;
+        }
+
+        .underline-field {
+          border-bottom: 1px solid #000;
+          padding: 2px 8px;
+          font-weight: bold;
+          display: inline-block;
+          min-width: 150px;
+        }
+
+        .organization-name {
+          font-weight: bold;
+          color: #2c3e50;
+        }
+
+        .currency {
+          font-family: 'Times New Roman', serif;
+        }
+      </style>
+    </head>
+    <body>
+      ${statementsHtml}
+    </body>
+    </html>
+    `;
+
+    // Return HTML for browser-based printing
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="statement-of-case.html"',
+    );
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Statement of Case error:", error);
+    res.status(500).json({ error: "Failed to export Statement of Case documents" });
+  }
+}
+
+async function generateStatementOfCaseHtml(
+  registration: RegistrationData,
+): Promise<string> {
+  // Format registration date
+  const statementDate = new Date().toLocaleDateString("en-GB");
+
+  // Get primary product name for GI
+  const primaryProduct =
+    registration.product_names?.split(",")[0] ||
+    registration.category_names?.split(",")[0] ||
+    "Bodo Traditional Food Product";
+
+  // Organization details
+  const organizationName = "Bodo Traditional Food Producers Association";
+  const giArea = "Bodoland Territorial Area Districts (BTAD)";
+
+  // Calculate years of experience based on registration date (minimum 2 years)
+  const registrationYear = new Date(registration.created_at).getFullYear();
+  const currentYear = new Date().getFullYear();
+  const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
+
+  // Estimate production capacity based on age and experience
+  const estimatedProduction = registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+
+  // Estimate annual turnover (reasonable amount for traditional producers)
+  const turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
+  const turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
+
+  return `
+    <div class="statement-page">
+      <div class="statement-header">
+        <div class="statement-title">STATEMENT OF CASE</div>
+      </div>
+
+      <div class="statement-content">
+        <div class="statement-paragraph">
+          I, <span class="highlight">${registration.name}</span>, aged about <span class="highlight">${registration.age}</span> years, having address at <span class="highlight">${registration.address}</span>, I am the producer of <span class="highlight">${primaryProduct}</span>.
+        </div>
+
+        <div class="statement-paragraph">
+          I have applied for registration as an "Authorized User" for Registered Geographical Indication, <span class="highlight">${primaryProduct}</span>, and the No Objection Certificate received from the registered proprietor of <span class="organization-name">${organizationName}</span> is attached for your reference.
+        </div>
+
+        <div class="statement-paragraph">
+          I am involved in the process production of <span class="highlight">${primaryProduct}</span> since <span class="highlight">${yearsOfExperience}</span> years within the designated <span class="highlight">${giArea}</span> GI Area.
+        </div>
+
+        <div class="statement-paragraph">
+          That my estimated production trading relating <span class="highlight">${primaryProduct}</span> is about <span class="highlight">${estimatedProduction}</span> per year and as on date the annual turnover is approximately <span class="currency highlight">${turnoverAmount}</span>/- (<span class="highlight">${turnoverWords}</span>).
+        </div>
+
+        <div class="statement-paragraph">
+          I herein undertake, I am aware and shall adhere and confirm to all the regulating criteria (present and future) relating to specification/description and quality as set forth by the Inspection Body setup by the Registered Proprietor of <span class="highlight">${primaryProduct}</span>.
+        </div>
+
+        <div class="statement-paragraph">
+          I reiterate that the particulars set out herein are true to the best of my knowledge, information and belief.
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="date-place">
+          <div><strong>Dated:</strong> <span class="underline-field">${statementDate}</span></div>
+          <br>
+          <div><strong>Place:</strong> <span class="underline-field">Bodoland</span></div>
+        </div>
+
+        <div class="signature-area">
+          <div class="signature-line"></div>
+
+          <div class="signature-label">
+            (Signature and Name of the Authorised User)<br>
+            <strong>${registration.name}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export async function exportProducerCards(req: Request, res: Response) {
   try {
     const { registrationIds }: ExportRequest = req.body;
