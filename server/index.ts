@@ -71,6 +71,7 @@ import {
   exportProducerCards,
   exportUsersWithDateRange,
   exportRegistrationsByUser,
+  exportUsersByProducts,
 } from "./routes/export";
 
 export function createServer() {
@@ -141,6 +142,7 @@ export function createServer() {
   app.post("/api/registrations/export", exportProducerCards); // Admin route
   app.post("/api/users/export", exportUsersWithDateRange); // Admin route for user export
   app.post("/api/registrations/export-by-user", exportRegistrationsByUser); // Admin route for user-specific export
+  app.post("/api/users/export-by-products", exportUsersByProducts); // Admin route for product-wise export
   app.get("/api/registrations/:id", getRegistrationById);
 
   // User routes (admin)
