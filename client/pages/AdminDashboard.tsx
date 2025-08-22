@@ -379,6 +379,8 @@ export default function AdminDashboard() {
 
     try {
       setIsExportingByUser(true);
+      console.log("Exporting user:", selectedUserId);
+
       const response = await fetch("/api/registrations/export-by-user", {
         method: "POST",
         headers: {
@@ -388,6 +390,8 @@ export default function AdminDashboard() {
           userId: parseInt(selectedUserId),
         }),
       });
+
+      console.log("Export response status:", response.status);
 
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
@@ -442,6 +446,8 @@ export default function AdminDashboard() {
 
     try {
       setIsExportingByProducts(true);
+      console.log("Exporting products:", selectedProductIds);
+
       const response = await fetch("/api/users/export-by-products", {
         method: "POST",
         headers: {
@@ -451,6 +457,8 @@ export default function AdminDashboard() {
           productIds: selectedProductIds.map(id => parseInt(id)),
         }),
       });
+
+      console.log("Export response status:", response.status);
 
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
