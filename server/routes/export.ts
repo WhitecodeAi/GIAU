@@ -233,6 +233,123 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
   }
 }
 
+export async function exportUsersByProducts(req: Request, res: Response) {
+  try {
+    const { productIds } = req.body;
+
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ error: "Product IDs are required" });
+    }
+
+    // Get product names for filename
+    const placeholders = productIds.map(() => "?").join(",");
+    const products = await dbQuery(
+      `SELECT id, name FROM products WHERE id IN (${placeholders})`,
+      productIds,
+    );
+
+    if (products.length === 0) {
+      return res.status(404).json({ error: "No products found" });
+    }
+
+    // Fetch users who are producing these products
+    const registrations = await dbQuery(
+      `
+      SELECT DISTINCT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.gender,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.pan_number,
+        ur.created_at,
+        u.username,
+        u.email as user_email,
+        GROUP_CONCAT(DISTINCT pc.name) as category_names,
+        GROUP_CONCAT(DISTINCT p.name) as selected_products,
+        GROUP_CONCAT(DISTINCT ep.name) as existing_products
+      FROM user_registrations ur
+      LEFT JOIN users u ON ur.user_id = u.id
+      LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
+      LEFT JOIN product_categories pc ON urc.category_id = pc.id
+      LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
+      LEFT JOIN products p ON usp.product_id = p.id
+      LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
+      LEFT JOIN products ep ON uep.product_id = ep.id
+      WHERE (usp.product_id IN (${placeholders}) OR uep.product_id IN (${placeholders}))
+      GROUP BY ur.id
+      ORDER BY ur.name, ur.created_at DESC
+    `,
+      [...productIds, ...productIds],
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({
+        error: "No users found producing the selected products"
+      });
+    }
+
+    // Create CSV content
+    const csvHeaders = [
+      "ID",
+      "Name",
+      "Address",
+      "Age",
+      "Gender",
+      "Phone",
+      "Email",
+      "Aadhar Number",
+      "Voter ID",
+      "PAN Number",
+      "Categories",
+      "Selected Products",
+      "Existing Products",
+      "Username",
+      "User Email",
+      "Registration Date",
+    ];
+
+    const csvRows = registrations.map((reg) => [
+      reg.id,
+      `"${reg.name}"`,
+      `"${reg.address}"`,
+      reg.age,
+      reg.gender,
+      reg.phone,
+      reg.email || "",
+      reg.aadhar_number || "",
+      reg.voter_id || "",
+      reg.pan_number || "",
+      `"${reg.category_names || ""}"`,
+      `"${reg.selected_products || ""}"`,
+      `"${reg.existing_products || ""}"`,
+      reg.username || "",
+      reg.user_email || "",
+      new Date(reg.created_at).toLocaleDateString("en-GB"),
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(","),
+      ...csvRows.map((row) => row.join(",")),
+    ].join("\n");
+
+    // Create filename with product names
+    const productNames = products.map(p => p.name).join("_").replace(/[^a-zA-Z0-9]/g, "_");
+    const filename = `users_producing_${productNames}_${new Date().toISOString().split("T")[0]}.csv`;
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(csvContent);
+  } catch (error) {
+    console.error("Export users by products error:", error);
+    res.status(500).json({ error: "Failed to export users by products" });
+  }
+}
+
 export async function exportProducerCards(req: Request, res: Response) {
   try {
     const { registrationIds }: ExportRequest = req.body;
