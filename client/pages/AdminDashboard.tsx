@@ -159,11 +159,20 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
+      console.log("Fetching users...");
       const response = await fetch("/api/users/dropdown");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Users data:", data);
       setUsers(data.users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      // Set empty users array to prevent UI issues
+      setUsers([]);
     }
   };
 
