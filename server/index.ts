@@ -71,6 +71,7 @@ import {
   exportProducerCards,
   exportFormGI3A,
   exportNOC,
+  exportStatementOfCase,
   exportUsersWithDateRange,
   exportRegistrationsByUser,
   exportUsersByProducts,
