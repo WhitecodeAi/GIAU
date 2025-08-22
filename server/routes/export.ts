@@ -353,6 +353,322 @@ export async function exportUsersByProducts(req: Request, res: Response) {
   }
 }
 
+export async function exportFormGI3A(req: Request, res: Response) {
+  try {
+    const { registrationIds }: ExportRequest = req.body;
+
+    if (!registrationIds || registrationIds.length === 0) {
+      return res.status(400).json({ error: "No registration IDs provided" });
+    }
+
+    // Fetch registration data
+    const placeholders = registrationIds.map(() => "?").join(",");
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path,
+        GROUP_CONCAT(DISTINCT pc.name) as category_names,
+        GROUP_CONCAT(DISTINCT p.name) as product_names
+      FROM user_registrations ur
+      LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
+      LEFT JOIN product_categories pc ON urc.category_id = pc.id
+      LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
+      LEFT JOIN products p ON usp.product_id = p.id
+      WHERE ur.id IN (${placeholders})
+      GROUP BY ur.id
+      ORDER BY ur.name
+    `,
+      registrationIds,
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "No registrations found" });
+    }
+
+    // Generate HTML for all forms
+    let formsHtml = "";
+
+    for (const registration of registrations) {
+      const formHtml = await generateFormGI3AHtml(registration);
+      formsHtml += formHtml;
+    }
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Form GI 3A - Authorized User Applications</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.6;
+          font-size: 12pt;
+          color: #000;
+        }
+
+        .form-page {
+          width: 100%;
+          margin: 0 auto 30px auto;
+          page-break-after: always;
+          background: #fff;
+          min-height: 100vh;
+        }
+
+        .form-page:last-child {
+          page-break-after: avoid;
+        }
+
+        .form-header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #000;
+          padding-bottom: 15px;
+        }
+
+        .form-title {
+          font-size: 14pt;
+          font-weight: bold;
+          margin: 5px 0;
+          line-height: 1.4;
+        }
+
+        .form-subtitle {
+          font-size: 12pt;
+          margin: 3px 0;
+          font-style: italic;
+        }
+
+        .form-number {
+          font-size: 16pt;
+          font-weight: bold;
+          margin: 10px 0;
+          text-decoration: underline;
+        }
+
+        .application-title {
+          font-size: 13pt;
+          font-weight: bold;
+          margin: 10px 0;
+        }
+
+        .rule-reference {
+          font-size: 11pt;
+          margin: 5px 0;
+          font-style: italic;
+        }
+
+        .form-field {
+          margin: 15px 0;
+          line-height: 1.8;
+        }
+
+        .field-number {
+          font-weight: bold;
+          margin-right: 10px;
+        }
+
+        .field-label {
+          font-weight: normal;
+        }
+
+        .field-value {
+          font-weight: bold;
+          border-bottom: 1px solid #000;
+          padding: 2px 5px;
+          min-width: 200px;
+          display: inline-block;
+        }
+
+        .declaration-section {
+          margin-top: 30px;
+          page-break-inside: avoid;
+        }
+
+        .declaration-title {
+          font-weight: bold;
+          margin-bottom: 15px;
+          text-decoration: underline;
+        }
+
+        .declaration-item {
+          margin: 10px 0;
+          padding-left: 20px;
+          text-indent: -20px;
+        }
+
+        .signature-section {
+          margin-top: 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          border-top: 1px solid #000;
+          padding-top: 5px;
+          margin-left: 50px;
+        }
+
+        .signature-label {
+          margin-top: 10px;
+          font-size: 11pt;
+        }
+
+        .underline {
+          border-bottom: 1px solid #000;
+          padding: 2px 5px;
+          min-width: 150px;
+          display: inline-block;
+        }
+      </style>
+    </head>
+    <body>
+      ${formsHtml}
+    </body>
+    </html>
+    `;
+
+    // Return HTML for browser-based printing
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="form-gi-3a.html"',
+    );
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Form GI 3A error:", error);
+    res.status(500).json({ error: "Failed to export Form GI 3A" });
+  }
+}
+
+async function generateFormGI3AHtml(
+  registration: RegistrationData,
+): Promise<string> {
+  // Format registration date
+  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+    "en-GB",
+  );
+
+  // Get primary product name for GI
+  const primaryProduct =
+    registration.product_names?.split(",")[0] ||
+    registration.category_names?.split(",")[0] ||
+    "Bodo Traditional Food Product";
+
+  return `
+    <div class="form-page">
+      <div class="form-header">
+        <div class="form-title">Geographical Indications of Goods (Registration & Protection) Act, 1999</div>
+        <div class="form-subtitle">Geographical Indications of Goods (Registration & Protection) Rules, 2002</div>
+
+        <div class="form-number">Form GI 3A</div>
+
+        <div class="application-title">Application for the Registration of an Authorized User</div>
+        <div class="rule-reference">Section 17 (1), Rule 56 (1)</div>
+      </div>
+
+      <div class="form-content">
+        <div class="form-field">
+          <span class="field-number">1.</span>
+          <span class="field-label">Name of the Applicant (proposed Authorized user):</span>
+          <span class="field-value">${registration.name}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">2.</span>
+          <span class="field-label">Address of the applicant:</span>
+          <span class="field-value">${registration.address}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">3.</span>
+          <span class="field-label">Address of service (if different from Above):</span>
+          <span class="field-value">Same as above</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">4.</span>
+          <span class="field-label">Registered Geographical Indication for which application is made:</span>
+          <span class="field-value">${primaryProduct}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">5.</span>
+          <span class="field-label">Email id:</span>
+          <span class="field-value">${registration.email || 'Not provided'}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">6.</span>
+          <span class="field-label">Phone/mobile number:</span>
+          <span class="field-value">${registration.phone}</span>
+        </div>
+
+        <div class="declaration-section">
+          <div class="declaration-title">Declaration:</div>
+
+          <div class="declaration-item">
+            <strong>1.</strong> I hereby declare that I have enclosed the statement of case and evidence of due service of copy of my application to the registered proprietor (Name of GI Applicant Organization) for (${primaryProduct}), registered as a Geographical Indication.
+          </div>
+
+          <div class="declaration-item">
+            <strong>2.</strong> I also declare that all the above information is true and correct to the best of my knowledge and belief.
+          </div>
+
+          <div class="declaration-item">
+            <strong>3.</strong> I undertake that if any of the information is found incorrect or false, my application may be rejected and if already accepted, my registration may be revoked and my name removed from Part B of the register.
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div class="date-place">
+            <div style="margin-bottom: 20px;">
+              <strong>Date:</strong> <span class="underline">${registrationDate}</span>
+            </div>
+            <div>
+              <strong>Place:</strong> <span class="underline">Bodoland</span>
+            </div>
+          </div>
+
+          <div class="signature-area">
+            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            <div class="signature-label">
+              <strong>SIGNATURE</strong><br>
+              (${registration.name})
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export async function exportProducerCards(req: Request, res: Response) {
   try {
     const { registrationIds }: ExportRequest = req.body;
