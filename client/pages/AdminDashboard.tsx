@@ -842,6 +842,16 @@ export default function AdminDashboard() {
                   <FileText size={16} className="mr-2" />
                   {isExportingNOC ? "Exporting..." : `NOC (${selectedRegistrations.size})`}
                 </Button>
+
+                <Button
+                  onClick={handleExportStatement}
+                  disabled={selectedRegistrations.size === 0 || isExportingStatement}
+                  className="bg-teal-600 hover:bg-teal-700"
+                  size="sm"
+                >
+                  <FileText size={16} className="mr-2" />
+                  {isExportingStatement ? "Exporting..." : `Statement (${selectedRegistrations.size})`}
+                </Button>
               </div>
             </div>
 
