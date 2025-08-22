@@ -67,6 +67,10 @@ interface Product {
 }
 
 export default function AdminDashboard() {
+  // Debug environment
+  console.log("AdminDashboard component mounted");
+  console.log("Location:", window.location.href);
+  console.log("Fetch available:", typeof fetch !== 'undefined');
   const [user, setUser] = useState<any>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -482,7 +486,12 @@ export default function AdminDashboard() {
       reg.voter_id?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  if (!user) return null;
+  if (!user) {
+    console.log("No user found, should redirect");
+    return null;
+  }
+
+  console.log("Rendering AdminDashboard for user:", user);
 
   return (
     <div className="min-h-screen bg-gray-50">
