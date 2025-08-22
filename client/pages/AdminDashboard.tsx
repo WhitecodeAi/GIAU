@@ -734,6 +734,16 @@ export default function AdminDashboard() {
                   <Download size={16} className="mr-2" />
                   Export Cards ({selectedRegistrations.size})
                 </Button>
+
+                <Button
+                  onClick={handleExportFormGI3A}
+                  disabled={selectedRegistrations.size === 0 || isExportingGI3A}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                  size="sm"
+                >
+                  <FileText size={16} className="mr-2" />
+                  {isExportingGI3A ? "Exporting..." : `Form GI 3A (${selectedRegistrations.size})`}
+                </Button>
               </div>
             </div>
 
