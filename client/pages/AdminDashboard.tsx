@@ -57,6 +57,13 @@ interface UserForDropdown {
   registration_count: number;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  category_id: number;
+  category_name: string;
+}
+
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -76,6 +83,9 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserForDropdown[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isExportingByUser, setIsExportingByUser] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [isExportingByProducts, setIsExportingByProducts] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -90,6 +100,7 @@ export default function AdminDashboard() {
       fetchRegistrations();
       fetchStatistics();
       fetchUsers();
+      fetchProducts();
     } else {
       navigate("/");
     }
@@ -129,6 +140,16 @@ export default function AdminDashboard() {
       setUsers(data.users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      const data = await response.json();
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
     }
   };
 
@@ -301,6 +322,63 @@ export default function AdminDashboard() {
       );
     } finally {
       setIsExportingByUser(false);
+    }
+  };
+
+  const handleExportByProducts = async () => {
+    if (selectedProductIds.length === 0) {
+      alert("Please select at least one product");
+      return;
+    }
+
+    try {
+      setIsExportingByProducts(true);
+      const response = await fetch("/api/users/export-by-products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productIds: selectedProductIds.map(id => parseInt(id)),
+        }),
+      });
+
+      if (response.ok) {
+        // Get the CSV content and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+
+        // Get the filename from the Content-Disposition header if available
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = `users_by_products_${new Date().toISOString().split("T")[0]}.csv`;
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Export failed");
+      }
+    } catch (error) {
+      console.error("Export by products error:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to export users by products",
+      );
+    } finally {
+      setIsExportingByProducts(false);
     }
   };
 
