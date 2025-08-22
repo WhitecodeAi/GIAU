@@ -111,15 +111,24 @@ export default function AdminDashboard() {
   const fetchRegistrations = async () => {
     try {
       setLoading(true);
+      console.log("Fetching registrations...");
       const response = await fetch(
         `/api/registrations/all?page=${currentPage}&limit=10`,
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Registrations data:", data);
 
       setRegistrations(data.registrations || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch registrations:", error);
+      // Show user-friendly error
+      setRegistrations([]);
     } finally {
       setLoading(false);
     }
@@ -127,11 +136,24 @@ export default function AdminDashboard() {
 
   const fetchStatistics = async () => {
     try {
+      console.log("Fetching statistics...");
       const response = await fetch("/api/dashboard/statistics");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Statistics data:", data);
       setStatistics(data);
     } catch (error) {
       console.error("Failed to fetch statistics:", error);
+      // Set default statistics to prevent UI issues
+      setStatistics({
+        totalRegistrations: 0,
+        activeProducts: 0,
+        thisMonth: 0
+      });
     }
   };
 
@@ -147,11 +169,20 @@ export default function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
+      console.log("Fetching products...");
       const response = await fetch("/api/products");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Products data:", data);
       setProducts(data.products || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
+      // Set empty products array to prevent UI issues
+      setProducts([]);
     }
   };
 
