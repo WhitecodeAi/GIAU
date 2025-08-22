@@ -396,7 +396,9 @@ export default function AdminDashboard() {
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
-        let filename = `user_registrations_${selectedUserId}.csv`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        let filename = `user_registrations_${selectedUserId}_${timestamp}.csv`;
+
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);
           if (filenameMatch) {
@@ -463,7 +465,9 @@ export default function AdminDashboard() {
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
-        let filename = `users_by_products_${new Date().toISOString().split("T")[0]}.csv`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        let filename = `users_by_products_${timestamp}.csv`;
+
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);
           if (filenameMatch) {
