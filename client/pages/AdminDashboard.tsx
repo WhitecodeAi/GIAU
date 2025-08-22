@@ -70,7 +70,7 @@ export default function AdminDashboard() {
   // Debug environment
   console.log("AdminDashboard component mounted");
   console.log("Location:", window.location.href);
-  console.log("Fetch available:", typeof fetch !== 'undefined');
+  console.log("Fetch available:", typeof fetch !== "undefined");
   const [user, setUser] = useState<any>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,13 +133,13 @@ export default function AdminDashboard() {
           fetchRegistrations(),
           fetchStatistics(),
           fetchUsers(),
-          fetchProducts()
+          fetchProducts(),
         ]);
       };
 
       // Add retry logic with delay
       setTimeout(() => {
-        initializeData().catch(error => {
+        initializeData().catch((error) => {
           console.error("Failed to initialize dashboard data:", error);
         });
       }, 100);
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
       setStatistics({
         totalRegistrations: 0,
         activeProducts: 0,
-        thisMonth: 0
+        thisMonth: 0,
       });
     }
   };
@@ -354,7 +354,9 @@ export default function AdminDashboard() {
         let errorMessage = "Export failed";
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
         } catch (parseError) {
           console.error("Failed to parse error response:", parseError);
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -396,7 +398,10 @@ export default function AdminDashboard() {
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .split("T")[0];
         let filename = `user_registrations_${selectedUserId}_${timestamp}.csv`;
 
         if (contentDisposition) {
@@ -421,7 +426,9 @@ export default function AdminDashboard() {
         let errorMessage = "Export failed";
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
         } catch (parseError) {
           console.error("Failed to parse error response:", parseError);
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -456,7 +463,7 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          productIds: selectedProductIds.map(id => parseInt(id)),
+          productIds: selectedProductIds.map((id) => parseInt(id)),
         }),
       });
 
@@ -465,7 +472,10 @@ export default function AdminDashboard() {
       if (response.ok) {
         // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .split("T")[0];
         let filename = `users_by_products_${timestamp}.csv`;
 
         if (contentDisposition) {
@@ -490,7 +500,9 @@ export default function AdminDashboard() {
         let errorMessage = "Export failed";
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
         } catch (parseError) {
           console.error("Failed to parse error response:", parseError);
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -764,18 +776,32 @@ export default function AdminDashboard() {
                   <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
                     <div className="space-y-2">
                       {products.length === 0 ? (
-                        <p className="text-sm text-gray-500">Loading products...</p>
+                        <p className="text-sm text-gray-500">
+                          Loading products...
+                        </p>
                       ) : (
                         products.map((product) => (
-                          <div key={product.id} className="flex items-center space-x-2">
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-2"
+                          >
                             <Checkbox
                               id={`product-${product.id}`}
-                              checked={selectedProductIds.includes(product.id.toString())}
+                              checked={selectedProductIds.includes(
+                                product.id.toString(),
+                              )}
                               onCheckedChange={(checked) => {
                                 if (checked) {
-                                  setSelectedProductIds([...selectedProductIds, product.id.toString()]);
+                                  setSelectedProductIds([
+                                    ...selectedProductIds,
+                                    product.id.toString(),
+                                  ]);
                                 } else {
-                                  setSelectedProductIds(selectedProductIds.filter(id => id !== product.id.toString()));
+                                  setSelectedProductIds(
+                                    selectedProductIds.filter(
+                                      (id) => id !== product.id.toString(),
+                                    ),
+                                  );
                                 }
                               }}
                             />
@@ -802,7 +828,9 @@ export default function AdminDashboard() {
 
                 <Button
                   onClick={handleExportByProducts}
-                  disabled={selectedProductIds.length === 0 || isExportingByProducts}
+                  disabled={
+                    selectedProductIds.length === 0 || isExportingByProducts
+                  }
                   className="bg-orange-600 hover:bg-orange-700"
                   size="sm"
                 >

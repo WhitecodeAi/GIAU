@@ -148,7 +148,7 @@ export function createServer() {
   // User routes (admin)
   app.get("/api/users/count", getUserCount);
   app.get("/api/users", authenticateToken, getAllUsers);
-  app.get("/api/users/dropdown",  getUsersForDropdown);
+  app.get("/api/users/dropdown", getUsersForDropdown);
   app.get("/api/users/:userId", authenticateToken, getUserById);
   app.get(
     "/api/users/:userId/registrations",

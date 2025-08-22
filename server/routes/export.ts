@@ -289,7 +289,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
 
     if (registrations.length === 0) {
       return res.status(404).json({
-        error: "No users found producing the selected products"
+        error: "No users found producing the selected products",
       });
     }
 
@@ -338,7 +338,10 @@ export async function exportUsersByProducts(req: Request, res: Response) {
     ].join("\n");
 
     // Create filename with product names
-    const productNames = products.map(p => p.name).join("_").replace(/[^a-zA-Z0-9]/g, "_");
+    const productNames = products
+      .map((p) => p.name)
+      .join("_")
+      .replace(/[^a-zA-Z0-9]/g, "_");
     const filename = `users_producing_${productNames}_${new Date().toISOString().split("T")[0]}.csv`;
 
     res.setHeader("Content-Type", "text/csv");

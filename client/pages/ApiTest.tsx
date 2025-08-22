@@ -9,53 +9,59 @@ export default function ApiTest() {
   const testEndpoint = async (url: string, name: string) => {
     console.log(`Testing ${name} endpoint: ${url}`);
     const startTime = Date.now();
-    
+
     try {
       const response = await fetch(url);
       const endTime = Date.now();
       const data = await response.json();
-      
-      setResults(prev => [...prev, {
-        name,
-        url,
-        status: response.status,
-        success: true,
-        data: JSON.stringify(data).substring(0, 100) + "...",
-        time: endTime - startTime
-      }]);
+
+      setResults((prev) => [
+        ...prev,
+        {
+          name,
+          url,
+          status: response.status,
+          success: true,
+          data: JSON.stringify(data).substring(0, 100) + "...",
+          time: endTime - startTime,
+        },
+      ]);
     } catch (error) {
       const endTime = Date.now();
       console.error(`${name} failed:`, error);
-      
-      setResults(prev => [...prev, {
-        name,
-        url,
-        status: 'ERROR',
-        success: false,
-        data: error instanceof Error ? error.message : String(error),
-        time: endTime - startTime
-      }]);
+
+      setResults((prev) => [
+        ...prev,
+        {
+          name,
+          url,
+          status: "ERROR",
+          success: false,
+          data: error instanceof Error ? error.message : String(error),
+          time: endTime - startTime,
+        },
+      ]);
     }
   };
 
   const runTests = async () => {
     setLoading(true);
     setResults([]);
-    
+
     const endpoints = [
       { url: "/api/ping", name: "Ping" },
       { url: "/api/dashboard/statistics", name: "Statistics" },
       { url: "/api/registrations/all?page=1&limit=1", name: "Registrations" },
       { url: "/api/products", name: "Products" },
-      { url: "/api/users/dropdown", name: "Users" }
+      { url: "/api/users/dropdown", name: "Users" },
     ];
 
     for (const endpoint of endpoints) {
       await testEndpoint(endpoint.url, endpoint.name);
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
+
     setLoading(false);
   };
 
@@ -85,7 +91,9 @@ export default function ApiTest() {
               <div
                 key={index}
                 className={`p-4 rounded border ${
-                  result.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                  result.success
+                    ? "border-green-200 bg-green-50"
+                    : "border-red-200 bg-red-50"
                 }`}
               >
                 <div className="flex justify-between items-start">
@@ -94,7 +102,9 @@ export default function ApiTest() {
                     <p className="text-sm text-gray-600">{result.url}</p>
                   </div>
                   <div className="text-right">
-                    <div className={`font-semibold ${result.success ? "text-green-600" : "text-red-600"}`}>
+                    <div
+                      className={`font-semibold ${result.success ? "text-green-600" : "text-red-600"}`}
+                    >
                       {result.status}
                     </div>
                     <div className="text-sm text-gray-500">{result.time}ms</div>
@@ -108,7 +118,9 @@ export default function ApiTest() {
           </div>
 
           {results.length === 0 && !loading && (
-            <p className="text-gray-500">No test results yet. Click "Run Tests" to start.</p>
+            <p className="text-gray-500">
+              No test results yet. Click "Run Tests" to start.
+            </p>
           )}
         </CardContent>
       </Card>
