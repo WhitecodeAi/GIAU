@@ -788,6 +788,16 @@ export default function AdminDashboard() {
                   <FileText size={16} className="mr-2" />
                   {isExportingGI3A ? "Exporting..." : `Form GI 3A (${selectedRegistrations.size})`}
                 </Button>
+
+                <Button
+                  onClick={handleExportNOC}
+                  disabled={selectedRegistrations.size === 0 || isExportingNOC}
+                  className="bg-amber-600 hover:bg-amber-700"
+                  size="sm"
+                >
+                  <FileText size={16} className="mr-2" />
+                  {isExportingNOC ? "Exporting..." : `NOC (${selectedRegistrations.size})`}
+                </Button>
               </div>
             </div>
 
