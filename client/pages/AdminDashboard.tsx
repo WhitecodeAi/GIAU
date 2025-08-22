@@ -383,14 +383,7 @@ export default function AdminDashboard() {
       });
 
       if (response.ok) {
-        // Get the CSV content and trigger download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-
-        // Get the filename from the Content-Disposition header if available
+        // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
         let filename = `user_registrations_${selectedUserId}.csv`;
         if (contentDisposition) {
@@ -400,6 +393,12 @@ export default function AdminDashboard() {
           }
         }
 
+        // Get the CSV content and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
@@ -440,14 +439,7 @@ export default function AdminDashboard() {
       });
 
       if (response.ok) {
-        // Get the CSV content and trigger download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-
-        // Get the filename from the Content-Disposition header if available
+        // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
         let filename = `users_by_products_${new Date().toISOString().split("T")[0]}.csv`;
         if (contentDisposition) {
@@ -457,6 +449,12 @@ export default function AdminDashboard() {
           }
         }
 
+        // Get the CSV content and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
