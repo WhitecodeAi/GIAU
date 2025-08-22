@@ -15,6 +15,7 @@ import {
   Eye,
   FileSpreadsheet,
   UserPlus,
+  Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -26,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Registration {
   id: number;
@@ -606,6 +608,69 @@ export default function AdminDashboard() {
                   {isExportingByUser
                     ? "Exporting..."
                     : "Export User Registrations"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Export by Products Section */}
+            <div className="border-t pt-4">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Export Users by Products
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Select products to export all users who produce them
+                  </p>
+                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+                    <div className="space-y-2">
+                      {products.length === 0 ? (
+                        <p className="text-sm text-gray-500">Loading products...</p>
+                      ) : (
+                        products.map((product) => (
+                          <div key={product.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`product-${product.id}`}
+                              checked={selectedProductIds.includes(product.id.toString())}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedProductIds([...selectedProductIds, product.id.toString()]);
+                                } else {
+                                  setSelectedProductIds(selectedProductIds.filter(id => id !== product.id.toString()));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`product-${product.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {product.name}
+                              <span className="text-xs text-gray-500 ml-1">
+                                ({product.category_name})
+                              </span>
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  {selectedProductIds.length > 0 && (
+                    <p className="text-xs text-green-600 mt-2">
+                      {selectedProductIds.length} product(s) selected
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleExportByProducts}
+                  disabled={selectedProductIds.length === 0 || isExportingByProducts}
+                  className="bg-orange-600 hover:bg-orange-700"
+                  size="sm"
+                >
+                  <Package size={16} className="mr-2" />
+                  {isExportingByProducts
+                    ? "Exporting..."
+                    : "Export Users by Products"}
                 </Button>
               </div>
             </div>
