@@ -555,10 +555,7 @@ export async function exportFormGI3A(req: Request, res: Response) {
 
     // Return HTML for browser-based printing
     res.setHeader("Content-Type", "text/html");
-    res.setHeader(
-      "Content-Disposition",
-      'inline; filename="form-gi-3a.html"',
-    );
+    res.setHeader("Content-Disposition", 'inline; filename="form-gi-3a.html"');
     res.send(fullHtml);
   } catch (error) {
     console.error("Export Form GI 3A error:", error);
@@ -620,7 +617,7 @@ async function generateFormGI3AHtml(
         <div class="form-field">
           <span class="field-number">5.</span>
           <span class="field-label">Email id:</span>
-          <span class="field-value">${registration.email || 'Not provided'}</span>
+          <span class="field-value">${registration.email || "Not provided"}</span>
         </div>
 
         <div class="form-field">
@@ -847,7 +844,9 @@ export async function exportNOC(req: Request, res: Response) {
     res.send(fullHtml);
   } catch (error) {
     console.error("Export NOC error:", error);
-    res.status(500).json({ error: "Failed to export No Objection Certificates" });
+    res
+      .status(500)
+      .json({ error: "Failed to export No Objection Certificates" });
   }
 }
 
@@ -1095,7 +1094,9 @@ export async function exportStatementOfCase(req: Request, res: Response) {
     res.send(fullHtml);
   } catch (error) {
     console.error("Export Statement of Case error:", error);
-    res.status(500).json({ error: "Failed to export Statement of Case documents" });
+    res
+      .status(500)
+      .json({ error: "Failed to export Statement of Case documents" });
   }
 }
 
@@ -1121,11 +1122,15 @@ async function generateStatementOfCaseHtml(
   const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
 
   // Estimate production capacity based on age and experience
-  const estimatedProduction = registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+  const estimatedProduction =
+    registration.age > 40 ? "500-1000 kg" : "250-500 kg";
 
   // Estimate annual turnover (reasonable amount for traditional producers)
   const turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
-  const turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
+  const turnoverWords =
+    registration.age > 40
+      ? "Two Lakh Fifty Thousand Only"
+      : "One Lakh Fifty Thousand Only";
 
   return `
     <div class="statement-page">

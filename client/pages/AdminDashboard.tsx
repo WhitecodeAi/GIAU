@@ -830,7 +830,9 @@ export default function AdminDashboard() {
                   size="sm"
                 >
                   <FileText size={16} className="mr-2" />
-                  {isExportingGI3A ? "Exporting..." : `Form GI 3A (${selectedRegistrations.size})`}
+                  {isExportingGI3A
+                    ? "Exporting..."
+                    : `Form GI 3A (${selectedRegistrations.size})`}
                 </Button>
 
                 <Button
@@ -840,17 +842,23 @@ export default function AdminDashboard() {
                   size="sm"
                 >
                   <FileText size={16} className="mr-2" />
-                  {isExportingNOC ? "Exporting..." : `NOC (${selectedRegistrations.size})`}
+                  {isExportingNOC
+                    ? "Exporting..."
+                    : `NOC (${selectedRegistrations.size})`}
                 </Button>
 
                 <Button
                   onClick={handleExportStatement}
-                  disabled={selectedRegistrations.size === 0 || isExportingStatement}
+                  disabled={
+                    selectedRegistrations.size === 0 || isExportingStatement
+                  }
                   className="bg-teal-600 hover:bg-teal-700"
                   size="sm"
                 >
                   <FileText size={16} className="mr-2" />
-                  {isExportingStatement ? "Exporting..." : `Statement (${selectedRegistrations.size})`}
+                  {isExportingStatement
+                    ? "Exporting..."
+                    : `Statement (${selectedRegistrations.size})`}
                 </Button>
               </div>
             </div>
