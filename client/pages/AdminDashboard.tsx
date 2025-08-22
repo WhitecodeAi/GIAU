@@ -99,10 +99,23 @@ export default function AdminDashboard() {
         return;
       }
       setUser(parsedUser);
-      fetchRegistrations();
-      fetchStatistics();
-      fetchUsers();
-      fetchProducts();
+
+      // Add a small delay to ensure server is ready
+      const initializeData = async () => {
+        await Promise.all([
+          fetchRegistrations(),
+          fetchStatistics(),
+          fetchUsers(),
+          fetchProducts()
+        ]);
+      };
+
+      // Add retry logic with delay
+      setTimeout(() => {
+        initializeData().catch(error => {
+          console.error("Failed to initialize dashboard data:", error);
+        });
+      }, 100);
     } else {
       navigate("/");
     }
