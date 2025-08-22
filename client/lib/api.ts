@@ -1,0 +1,475 @@
+// API configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+
+// Get auth token from localStorage
+function getAuthToken(): string | null {
+  const user = localStorage.getItem("user");
+  if (user) {
+    const userData = JSON.parse(user);
+    return userData.token;
+  }
+  return null;
+}
+
+// Create headers with auth token
+function getAuthHeaders(includeContentType = true): HeadersInit {
+  const token = getAuthToken();
+  const headers: HeadersInit = {};
+
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+// Generic API request function
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  includeContentType = true,
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  const config: RequestInit = {
+    ...options,
+    headers: {
+      ...getAuthHeaders(includeContentType),
+      ...options.headers,
+    },
+  };
+
+  const response = await fetch(url, config);
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: "Network error" }));
+    throw new Error(
+      errorData.error || `HTTP error! status: ${response.status}`,
+    );
+  }
+
+  return response.json();
+}
+
+// Auth API
+export const authAPI = {
+  login: async (username: string, password: string) => {
+    return apiRequest<{
+      message: string;
+      token: string;
+      user: { id: number; username: string };
+    }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  register: async (username: string, password: string, email?: string) => {
+    return apiRequest<{
+      message: string;
+      token: string;
+      user: { id: number; username: string };
+    }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ username, password, email }),
+    });
+  },
+
+  verifyToken: async () => {
+    return apiRequest<{
+      message: string;
+      user: { id: number; username: string };
+    }>("/auth/verify");
+  },
+};
+
+// Products API
+export const productsAPI = {
+  getCategories: async () => {
+    return apiRequest<{
+      categories: Array<{
+        id: number;
+        name: string;
+        description?: string;
+      }>;
+    }>("/products/categories");
+  },
+
+  getProducts: async (categoryId?: number) => {
+    const endpoint = categoryId
+      ? `/products?categoryId=${categoryId}`
+      : "/products";
+    return apiRequest<{
+      products: Array<{
+        id: number;
+        name: string;
+        category_id: number;
+        description?: string;
+      }>;
+    }>(endpoint);
+  },
+
+  getProductsByCategories: async (categoryIds: number[]) => {
+    if (categoryIds.length === 0) {
+      return { products: [] };
+    }
+
+    const params = categoryIds.map((id) => `categoryIds=${id}`).join("&");
+    return apiRequest<{
+      products: Array<{
+        id: number;
+        name: string;
+        category_id: number;
+        description?: string;
+        category_name?: string;
+      }>;
+    }>(`/products/by-categories?${params}`);
+  },
+
+  getExistingProducts: async () => {
+    return apiRequest<{
+      existingProducts: Array<{
+        id: number;
+        name: string;
+        category_id: number;
+        category_name?: string;
+        registration_count?: number;
+      }>;
+    }>("/products/existing");
+  },
+
+  getStatistics: async () => {
+    return apiRequest<{
+      totalCategories: number;
+      totalProducts: number;
+      productsByCategory: Array<{
+        category_name: string;
+        product_count: number;
+      }>;
+    }>("/products/statistics");
+  },
+};
+
+// Production detail interface
+interface ProductionDetail {
+  productId: number;
+  productName: string;
+  annualProduction: string;
+  unit: string;
+  areaOfProduction: string;
+  yearsOfProduction: string;
+  additionalNotes?: string;
+}
+
+// Registrations API
+export const registrationsAPI = {
+  create: async (
+    registrationData: {
+      name: string;
+      address: string;
+      age: number;
+      gender: "male" | "female";
+      phone: string;
+      email?: string;
+      aadharNumber: string;
+      panNumber?: string;
+      productCategoryIds: number[];
+      existingProducts?: number[];
+      selectedProducts?: number[];
+      areaOfProduction?: string;
+      annualProduction?: string;
+      annualTurnover?: number;
+      yearsOfProduction?: string;
+      productionDetails?: ProductionDetail[];
+    },
+    documents?: {
+      aadharCard?: File;
+      panCard?: File;
+      proofOfProduction?: File;
+      signature?: File;
+      photo?: File;
+    },
+  ) => {
+    const formData = new FormData();
+
+    // Add form fields
+    Object.entries(registrationData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          // Send arrays as JSON strings (e.g., "[8,7]")
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value.toString());
+        }
+      }
+    });
+
+    // Add file fields under documents key
+    if (documents) {
+      Object.entries(documents).forEach(([key, file]) => {
+        if (file) {
+          // Send files directly with their original names
+          formData.append(key, file, file.name);
+        }
+      });
+    }
+
+    // Make request with proper auth headers for FormData
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/registrations`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // Don't set Content-Type - browser will set it for FormData with boundary
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Network error" }));
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`,
+      );
+    }
+
+    return response.json() as Promise<{
+      message: string;
+      registrationId: number;
+      documentPaths?: { [key: string]: string };
+    }>;
+  },
+
+  getUserRegistrations: async () => {
+    return apiRequest<
+      | {
+          registrations?: Array<{
+            id: number;
+            name: string;
+            created_at: string;
+            category_name: string;
+            existing_products?: string;
+            selected_products?: string;
+            aadhar_card_path?: string;
+            pan_card_path?: string;
+            proof_of_production_path?: string;
+            signature_path?: string;
+            photo_path?: string;
+          }>;
+        }
+      | Array<{
+          id: number;
+          name: string;
+          created_at: string;
+          category_name: string;
+          existing_products?: string;
+          selected_products?: string;
+          aadhar_card_path?: string;
+          pan_card_path?: string;
+          proof_of_production_path?: string;
+          signature_path?: string;
+          photo_path?: string;
+        }>
+    >("/registrations/user");
+  },
+
+  getAllRegistrations: async (page = 1, limit = 10) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    return apiRequest<{
+      registrations: Array<any>;
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    }>(`/registrations/all?${params.toString()}`);
+  },
+
+  getById: async (id: number) => {
+    return apiRequest<any>(`/registrations/${id}`);
+  },
+
+  generateReport: async (filters: {
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+
+    return apiRequest<{
+      summary: {
+        total_registrations: number;
+      };
+      data: Array<any>;
+      generatedAt: string;
+      filters: any;
+    }>(`/registrations/report?${params.toString()}`);
+  },
+
+  verify: async (data: { aadharNumber?: string; voterId?: string }) => {
+    return apiRequest<{
+      isRegistered: boolean;
+      registrationId?: number;
+      name?: string;
+      registrationDate?: string;
+      userData?: {
+        name: string;
+        address: string;
+        age: number;
+        gender: "male" | "female";
+        phone: string;
+        email?: string;
+        aadharNumber?: string;
+        voterId?: string;
+        panNumber?: string;
+        documentPaths?: {
+          aadharCard?: string;
+          panCard?: string;
+          proofOfProduction?: string;
+          signature?: string;
+          photo?: string;
+        };
+      };
+      existingRegistrations?: Array<{
+        id: number;
+        categoryIds: number[];
+        categoryNames: string[];
+        selectedProductIds: number[];
+        existingProductIds: number[];
+        registrationDate: string;
+      }>;
+      availableCategories?: Array<{
+        id: number;
+        name: string;
+        description?: string;
+        created_at: string;
+      }>;
+      availableProducts?: Array<{
+        id: number;
+        name: string;
+        category_id: number;
+        description?: string;
+        created_at: string;
+      }>;
+    }>("/registrations/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  createAdditional: async (data: {
+    baseRegistrationId: number;
+    productCategoryIds: number[];
+    existingProducts: number[];
+    selectedProducts: number[];
+    areaOfProduction?: string;
+    annualProduction?: string;
+    annualTurnover?: string;
+    turnoverUnit?: string;
+    yearsOfProduction?: string;
+    productionDetails?: Array<{
+      productId: number;
+      productName: string;
+      annualProduction: string;
+      unit: string;
+      areaOfProduction: string;
+      yearsOfProduction: string;
+      annualTurnover?: string;
+      turnoverUnit?: string;
+      additionalNotes?: string;
+    }>;
+    additionalInfo?: string;
+  }) => {
+    return apiRequest<{
+      message: string;
+      registrationId: number;
+      reusedFiles: boolean;
+      baseRegistrationId: number;
+    }>("/registrations/additional", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Dashboard API
+export const dashboardAPI = {
+  getStatistics: async () => {
+    try {
+      const stats = await apiRequest<{
+        totalRegistrations: number;
+        totalUsers: number;
+        totalProducts: number;
+        totalCategories: number;
+      }>("/dashboard/statistics");
+
+      return stats;
+    } catch (error) {
+      console.error("❌ Dashboard statistics error:", error);
+      // Return fallback data
+      return {
+        totalRegistrations: 0,
+        totalUsers: 0,
+        totalProducts: 0,
+        totalCategories: 0,
+      };
+    }
+  },
+
+  getRecentActivity: async () => {
+    try {
+      const activity = await apiRequest<
+        Array<{
+          id: number;
+          type: string;
+          message: string;
+          timestamp: string;
+        }>
+      >("/dashboard/activity");
+
+      return activity;
+    } catch (error) {
+      console.error("❌ Recent activity error:", error);
+      return [];
+    }
+  },
+};
+
+// Helper function to handle API errors
+export function handleAPIError(error: any): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "An unexpected error occurred";
+}
+
+// Helper function to check if user is authenticated
+export function isAuthenticated(): boolean {
+  return getAuthToken() !== null;
+}
+
+// Helper function to logout
+export function logout(): void {
+  localStorage.removeItem("user");
+  window.location.href = "/";
+}

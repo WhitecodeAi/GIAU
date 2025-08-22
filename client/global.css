@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 142 20% 90%;
+    --input: 142 20% 95%;
+    --ring: 142 71% 45%;
+
+    --geo-primary: 142 71% 45%;
+    --geo-secondary: 199 89% 48%;
+    --geo-accent: 158 64% 52%;
+    --geo-success: 120 60% 50%;
+    --geo-error: 0 84% 60%;
+    --geo-warning: 45 93% 47%;
+    --geo-neutral: 210 20% 98%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* GI Registration App Colors */
+    --geo-primary: 142 71% 45%;    /* Green */
+    --geo-secondary: 199 89% 48%;  /* Blue */
+    --geo-accent: 150 50% 60%;     /* Light Green */
+    --geo-success: 120 60% 50%;    /* Success Green */
+    --geo-error: 0 70% 50%;        /* Error Red */
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* GI Registration App Colors - Dark Mode */
+    --geo-primary: 142 71% 55%;
+    --geo-secondary: 199 89% 58%;
+    --geo-accent: 150 50% 70%;
+    --geo-success: 120 60% 60%;
+    --geo-error: 0 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  .desktop-container {
+    @apply min-h-screen bg-background;
+  }
+
+  .mobile-container {
+    @apply lg:max-w-none lg:min-h-screen lg:bg-background max-w-md mx-auto min-h-screen bg-background;
+  }
+
+  .desktop-layout {
+    @apply flex min-h-screen bg-gray-50;
+  }
+
+  .desktop-sidebar {
+    @apply w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col lg:flex hidden lg:w-64;
+  }
+
+  .mobile-sidebar {
+    @apply fixed inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col z-50 transform transition-transform lg:hidden;
+  }
+
+  .desktop-main {
+    @apply flex-1 flex flex-col lg:ml-0;
+  }
+
+  .desktop-header {
+    @apply bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between;
+  }
+
+  .desktop-content {
+    @apply flex-1 p-6 overflow-auto;
+  }
+
+  .card-container {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+
+  .form-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  }
+
+  .form-section {
+    @apply space-y-6;
+  }
+
+  .btn-primary {
+    @apply bg-[hsl(var(--geo-primary))] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[hsl(var(--geo-primary))]/90 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-[hsl(var(--geo-secondary))] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[hsl(var(--geo-secondary))]/90 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .btn-accent {
+    @apply bg-[hsl(var(--geo-accent))] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[hsl(var(--geo-accent))]/90 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .btn-success {
+    @apply bg-[hsl(var(--geo-success))] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[hsl(var(--geo-success))]/90 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply border-2 border-[hsl(var(--geo-primary))] text-[hsl(var(--geo-primary))] bg-transparent font-semibold py-3 px-6 rounded-lg hover:bg-[hsl(var(--geo-primary))] hover:text-white transition-all duration-200;
+  }
+
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply bg-gradient-to-r from-[hsl(var(--geo-primary))] to-[hsl(var(--geo-accent))] h-full transition-all duration-500 ease-out;
+  }
+
+  .step-indicator {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300;
+  }
+
+  .step-active {
+    @apply bg-[hsl(var(--geo-primary))] text-white;
+  }
+
+  .step-completed {
+    @apply bg-[hsl(var(--geo-success))] text-white;
+  }
+
+  .step-pending {
+    @apply bg-gray-300 text-gray-600;
+  }
+
+  .error-message {
+    @apply text-[hsl(var(--geo-error))] text-sm mt-1;
+  }
+
+  .success-message {
+    @apply text-[hsl(var(--geo-success))] text-sm mt-1;
+  }
+
+  .btn-desktop {
+    @apply min-w-[140px] h-12;
+  }
+
+  .input-desktop {
+    @apply h-12 text-base;
+  }
+}
