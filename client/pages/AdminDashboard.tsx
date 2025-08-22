@@ -15,6 +15,7 @@ import {
   Eye,
   FileSpreadsheet,
   UserPlus,
+  Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -26,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Registration {
   id: number;
@@ -57,7 +59,18 @@ interface UserForDropdown {
   registration_count: number;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  category_id: number;
+  category_name: string;
+}
+
 export default function AdminDashboard() {
+  // Debug environment
+  console.log("AdminDashboard component mounted");
+  console.log("Location:", window.location.href);
+  console.log("Fetch available:", typeof fetch !== "undefined");
   const [user, setUser] = useState<any>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +89,9 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserForDropdown[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isExportingByUser, setIsExportingByUser] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [isExportingByProducts, setIsExportingByProducts] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,48 +103,149 @@ export default function AdminDashboard() {
         return;
       }
       setUser(parsedUser);
-      fetchRegistrations();
-      fetchStatistics();
-      fetchUsers();
+
+      // Test basic connectivity first
+      const testConnectivity = async () => {
+        try {
+          console.log("Testing basic API connectivity...");
+          const response = await fetch("/api/ping");
+          if (!response.ok) {
+            throw new Error(`Ping failed: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Ping successful:", data);
+          return true;
+        } catch (error) {
+          console.error("Basic connectivity test failed:", error);
+          return false;
+        }
+      };
+
+      // Add a small delay to ensure server is ready
+      const initializeData = async () => {
+        const isConnected = await testConnectivity();
+        if (!isConnected) {
+          console.warn("Skipping data fetch due to connectivity issues");
+          return;
+        }
+
+        await Promise.all([
+          fetchRegistrations(),
+          fetchStatistics(),
+          fetchUsers(),
+          fetchProducts(),
+        ]);
+      };
+
+      // Add retry logic with delay
+      setTimeout(() => {
+        initializeData().catch((error) => {
+          console.error("Failed to initialize dashboard data:", error);
+        });
+      }, 100);
     } else {
       navigate("/");
     }
   }, [navigate, currentPage]);
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = async (retryCount = 0) => {
     try {
       setLoading(true);
+      console.log("Fetching registrations...");
       const response = await fetch(
         `/api/registrations/all?page=${currentPage}&limit=10`,
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Registrations data:", data);
 
       setRegistrations(data.registrations || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch registrations:", error);
+      // Retry once after 1 second delay
+      if (retryCount < 1) {
+        console.log("Retrying registrations fetch...");
+        setTimeout(() => fetchRegistrations(retryCount + 1), 1000);
+        return;
+      }
+      // Show user-friendly error
+      setRegistrations([]);
     } finally {
-      setLoading(false);
+      if (retryCount === 0) {
+        setLoading(false);
+      }
     }
   };
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = async (retryCount = 0) => {
     try {
+      console.log("Fetching statistics...");
       const response = await fetch("/api/dashboard/statistics");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Statistics data:", data);
       setStatistics(data);
     } catch (error) {
       console.error("Failed to fetch statistics:", error);
+      // Retry once after 1 second delay
+      if (retryCount < 1) {
+        console.log("Retrying statistics fetch...");
+        setTimeout(() => fetchStatistics(retryCount + 1), 1000);
+        return;
+      }
+      // Set default statistics to prevent UI issues
+      setStatistics({
+        totalRegistrations: 0,
+        activeProducts: 0,
+        thisMonth: 0,
+      });
     }
   };
 
   const fetchUsers = async () => {
     try {
+      console.log("Fetching users...");
       const response = await fetch("/api/users/dropdown");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Users data:", data);
       setUsers(data.users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      // Set empty users array to prevent UI issues
+      setUsers([]);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      console.log("Fetching products...");
+      const response = await fetch("/api/products");
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Products data:", data);
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      // Set empty products array to prevent UI issues
+      setProducts([]);
     }
   };
 
@@ -234,8 +351,17 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Export failed");
+        let errorMessage = "Export failed";
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
+        } catch (parseError) {
+          console.error("Failed to parse error response:", parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Export error:", error);
@@ -255,6 +381,8 @@ export default function AdminDashboard() {
 
     try {
       setIsExportingByUser(true);
+      console.log("Exporting user:", selectedUserId);
+
       const response = await fetch("/api/registrations/export-by-user", {
         method: "POST",
         headers: {
@@ -265,17 +393,17 @@ export default function AdminDashboard() {
         }),
       });
 
-      if (response.ok) {
-        // Get the CSV content and trigger download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
+      console.log("Export response status:", response.status);
 
-        // Get the filename from the Content-Disposition header if available
+      if (response.ok) {
+        // Get the filename from the Content-Disposition header BEFORE consuming the body
         const contentDisposition = response.headers.get("Content-Disposition");
-        let filename = `user_registrations_${selectedUserId}.csv`;
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .split("T")[0];
+        let filename = `user_registrations_${selectedUserId}_${timestamp}.csv`;
+
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);
           if (filenameMatch) {
@@ -283,14 +411,29 @@ export default function AdminDashboard() {
           }
         }
 
+        // Get the CSV content and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Export failed");
+        let errorMessage = "Export failed";
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
+        } catch (parseError) {
+          console.error("Failed to parse error response:", parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Export by user error:", error);
@@ -304,6 +447,80 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExportByProducts = async () => {
+    if (selectedProductIds.length === 0) {
+      alert("Please select at least one product");
+      return;
+    }
+
+    try {
+      setIsExportingByProducts(true);
+      console.log("Exporting products:", selectedProductIds);
+
+      const response = await fetch("/api/users/export-by-products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productIds: selectedProductIds.map((id) => parseInt(id)),
+        }),
+      });
+
+      console.log("Export response status:", response.status);
+
+      if (response.ok) {
+        // Get the filename from the Content-Disposition header BEFORE consuming the body
+        const contentDisposition = response.headers.get("Content-Disposition");
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .split("T")[0];
+        let filename = `users_by_products_${timestamp}.csv`;
+
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        // Get the CSV content and trigger download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        let errorMessage = "Export failed";
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`;
+        } catch (parseError) {
+          console.error("Failed to parse error response:", parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Export by products error:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to export users by products",
+      );
+    } finally {
+      setIsExportingByProducts(false);
+    }
+  };
+
   const filteredRegistrations = registrations.filter(
     (reg) =>
       reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -312,7 +529,12 @@ export default function AdminDashboard() {
       reg.voter_id?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  if (!user) return null;
+  if (!user) {
+    console.log("No user found, should redirect");
+    return null;
+  }
+
+  console.log("Rendering AdminDashboard for user:", user);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -329,6 +551,15 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <Button
+              onClick={() => navigate("/api-test")}
+              variant="outline"
+              size="sm"
+              className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200"
+            >
+              Debug API
+            </Button>
+
             <Button
               onClick={() => navigate("/admin/users")}
               variant="outline"
@@ -528,6 +759,85 @@ export default function AdminDashboard() {
                   {isExportingByUser
                     ? "Exporting..."
                     : "Export User Registrations"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Export by Products Section */}
+            <div className="border-t pt-4">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Export Users by Products
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Select products to export all users who produce them
+                  </p>
+                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+                    <div className="space-y-2">
+                      {products.length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          Loading products...
+                        </p>
+                      ) : (
+                        products.map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={`product-${product.id}`}
+                              checked={selectedProductIds.includes(
+                                product.id.toString(),
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedProductIds([
+                                    ...selectedProductIds,
+                                    product.id.toString(),
+                                  ]);
+                                } else {
+                                  setSelectedProductIds(
+                                    selectedProductIds.filter(
+                                      (id) => id !== product.id.toString(),
+                                    ),
+                                  );
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`product-${product.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {product.name}
+                              <span className="text-xs text-gray-500 ml-1">
+                                ({product.category_name})
+                              </span>
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  {selectedProductIds.length > 0 && (
+                    <p className="text-xs text-green-600 mt-2">
+                      {selectedProductIds.length} product(s) selected
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleExportByProducts}
+                  disabled={
+                    selectedProductIds.length === 0 || isExportingByProducts
+                  }
+                  className="bg-orange-600 hover:bg-orange-700"
+                  size="sm"
+                >
+                  <Package size={16} className="mr-2" />
+                  {isExportingByProducts
+                    ? "Exporting..."
+                    : "Export Users by Products"}
                 </Button>
               </div>
             </div>
