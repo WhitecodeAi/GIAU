@@ -937,7 +937,6 @@ export async function exportStatementOfCase(req: Request, res: Response) {
         ur.created_at,
         ur.photo_path,
         ur.signature_path,
-        ur.production_summary,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
         GROUP_CONCAT(DISTINCT p.name) as product_names
       FROM user_registrations ur
