@@ -669,6 +669,250 @@ async function generateFormGI3AHtml(
   `;
 }
 
+export async function exportNOC(req: Request, res: Response) {
+  try {
+    const { registrationIds }: ExportRequest = req.body;
+
+    if (!registrationIds || registrationIds.length === 0) {
+      return res.status(400).json({ error: "No registration IDs provided" });
+    }
+
+    // Fetch registration data
+    const placeholders = registrationIds.map(() => "?").join(",");
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path,
+        GROUP_CONCAT(DISTINCT pc.name) as category_names,
+        GROUP_CONCAT(DISTINCT p.name) as product_names
+      FROM user_registrations ur
+      LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
+      LEFT JOIN product_categories pc ON urc.category_id = pc.id
+      LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
+      LEFT JOIN products p ON usp.product_id = p.id
+      WHERE ur.id IN (${placeholders})
+      GROUP BY ur.id
+      ORDER BY ur.name
+    `,
+      registrationIds,
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "No registrations found" });
+    }
+
+    // Generate HTML for all NOCs
+    let nocHtml = "";
+
+    for (const registration of registrations) {
+      const nocPageHtml = await generateNOCHtml(registration);
+      nocHtml += nocPageHtml;
+    }
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>No Objection Certificates (NOC)</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 25mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.8;
+          font-size: 14pt;
+          color: #000;
+        }
+
+        .noc-page {
+          width: 100%;
+          margin: 0 auto 30px auto;
+          page-break-after: always;
+          background: #fff;
+          min-height: 100vh;
+          position: relative;
+        }
+
+        .noc-page:last-child {
+          page-break-after: avoid;
+        }
+
+        .noc-header {
+          text-align: center;
+          margin-bottom: 40px;
+          border-bottom: 3px solid #000;
+          padding-bottom: 20px;
+        }
+
+        .noc-title {
+          font-size: 20pt;
+          font-weight: bold;
+          margin: 0;
+          text-decoration: underline;
+          letter-spacing: 2px;
+        }
+
+        .noc-content {
+          text-align: justify;
+          line-height: 2.2;
+          margin-bottom: 40px;
+        }
+
+        .noc-paragraph {
+          margin-bottom: 25px;
+          text-indent: 30px;
+        }
+
+        .highlight {
+          font-weight: bold;
+          text-decoration: underline;
+        }
+
+        .signature-section {
+          margin-top: 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+          line-height: 2.5;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          margin-left: 50px;
+        }
+
+        .signature-line {
+          border-bottom: 2px solid #000;
+          width: 250px;
+          height: 80px;
+          margin: 30px auto;
+          display: block;
+        }
+
+        .signature-label {
+          font-weight: bold;
+          margin-top: 15px;
+          line-height: 1.5;
+        }
+
+        .underline-field {
+          border-bottom: 1px solid #000;
+          padding: 2px 8px;
+          font-weight: bold;
+          display: inline-block;
+          min-width: 200px;
+        }
+
+        .organization-name {
+          font-weight: bold;
+          font-size: 16pt;
+          color: #2c3e50;
+        }
+      </style>
+    </head>
+    <body>
+      ${nocHtml}
+    </body>
+    </html>
+    `;
+
+    // Return HTML for browser-based printing
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="no-objection-certificates.html"',
+    );
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export NOC error:", error);
+    res.status(500).json({ error: "Failed to export No Objection Certificates" });
+  }
+}
+
+async function generateNOCHtml(
+  registration: RegistrationData,
+): Promise<string> {
+  // Format registration date
+  const certificateDate = new Date().toLocaleDateString("en-GB");
+
+  // Get primary product name for GI
+  const primaryProduct =
+    registration.product_names?.split(",")[0] ||
+    registration.category_names?.split(",")[0] ||
+    "Bodo Traditional Food Product";
+
+  // Generate application number based on registration ID and date
+  const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+
+  // Organization details
+  const organizationName = "Bodo Traditional Food Producers Association";
+  const giArea = "Bodoland Territorial Area Districts (BTAD)";
+
+  return `
+    <div class="noc-page">
+      <div class="noc-header">
+        <div class="noc-title">No Objection Certificate (NOC)</div>
+      </div>
+
+      <div class="noc-content">
+        <div class="noc-paragraph">
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${primaryProduct}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+        </div>
+
+        <div class="noc-paragraph">
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, have no objection to the registration of <span class="highlight">${registration.name}</span> as an Authorised User.
+        </div>
+
+        <div class="noc-paragraph">
+          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods of "<span class="highlight">${primaryProduct}</span>" is done in <span class="highlight">${giArea}</span> by the said Authorised Users, then <span class="organization-name">${organizationName}</span> shall not be held responsible for any resulting actions by the competent authority.
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="date-place">
+          <div><strong>Date:</strong> <span class="underline-field">${certificateDate}</span></div>
+          <br>
+          <div><strong>Place:</strong> <span class="underline-field">Bodoland</span></div>
+        </div>
+
+        <div class="signature-area">
+          <div><strong>For and on behalf of</strong></div>
+          <div class="organization-name">${organizationName}</div>
+
+          <div class="signature-line"></div>
+
+          <div class="signature-label">
+            (Signature of GI Applicant's Association/ Organisation Head)
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export async function exportProducerCards(req: Request, res: Response) {
   try {
     const { registrationIds }: ExportRequest = req.body;
