@@ -1891,7 +1891,7 @@ async function getProductAssociation(productName: string): Promise<string> {
 // Helper functions for product-specific exports
 async function generateProductFormGI3AHtml(registration: any, productName: string): Promise<string> {
   const registrationDate = new Date(registration.created_at).toLocaleDateString("en-GB");
-  const associationName = getProductAssociation(productName);
+  const associationName = await getProductAssociation(productName);
 
   return `
     <div class="form-page">
