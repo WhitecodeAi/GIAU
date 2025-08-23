@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Request, Response } from "express";
 import { dbQuery, dbRun } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
 import { simpleFileStorage } from "../utils/simpleFileStorage";
