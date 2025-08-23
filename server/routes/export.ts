@@ -529,7 +529,6 @@ export async function exportFormGI3A(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          border-top: 1px solid #000;
           padding-top: 5px;
           margin-left: 50px;
         }
@@ -537,6 +536,21 @@ export async function exportFormGI3A(req: Request, res: Response) {
         .signature-label {
           margin-top: 10px;
           font-size: 11pt;
+        }
+
+        .signature-image {
+          max-width: 200px;
+          max-height: 60px;
+          object-fit: contain;
+          border: 1px solid #000;
+          padding: 5px;
+          background: #fff;
+        }
+
+        .signature-line {
+          height: 60px;
+          border-bottom: 1px solid #000;
+          margin-bottom: 10px;
         }
 
         .underline {
