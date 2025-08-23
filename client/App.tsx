@@ -15,6 +15,7 @@ import CompressionTest from "./pages/CompressionTest";
 import CameraTest from "./pages/CameraTest";
 import UsersManagement from "./pages/UsersManagement";
 import UserRegistrations from "./pages/UserRegistrations";
+import RegistrationDetails from "./pages/RegistrationDetails";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -32,6 +33,7 @@ const App = () => {
         />
         <Route path="/registration" element={<RegistrationForm />} />
         <Route path="/registrations" element={<AllRegistrations />} />
+        <Route path="/registration-details/:id" element={<RegistrationDetails />} />
         <Route path="/verify" element={<UserVerification />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/test-upload" element={<SimpleFileUpload />} />
