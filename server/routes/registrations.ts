@@ -2079,7 +2079,16 @@ async function generateProductNOCHtml(registration: any, productName: string): P
 
 async function generateProductStatementHtml(registration: any, productName: string): Promise<string> {
   const statementDate = new Date().toLocaleDateString("en-GB");
-  const organizationName = await getProductAssociation(productName);
+
+  // Use association from registration data if available, otherwise use static mapping
+  let organizationName = registration.product_association;
+  if (!organizationName) {
+    console.log(`⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`);
+    organizationName = await getProductAssociation(productName);
+  } else {
+    console.log(`✅ Using association from database for Statement: ${organizationName} for product: ${productName}`);
+  }
+
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   const registrationYear = new Date(registration.created_at).getFullYear();
