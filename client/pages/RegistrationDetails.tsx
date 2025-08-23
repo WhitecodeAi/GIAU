@@ -131,7 +131,7 @@ export default function RegistrationDetails() {
     const exportKey = `${productId}-${exportType}`;
 
     try {
-      setExportingStates(prev => ({ ...prev, [exportKey]: true }));
+      setExportingStates((prev) => ({ ...prev, [exportKey]: true }));
 
       const endpoint = `/api/registrations/export-product-${exportType}`;
       const response = await fetch(endpoint, {
@@ -182,7 +182,7 @@ export default function RegistrationDetails() {
           : `Failed to export ${exportType.toUpperCase()} for ${productName}`,
       );
     } finally {
-      setExportingStates(prev => ({ ...prev, [exportKey]: false }));
+      setExportingStates((prev) => ({ ...prev, [exportKey]: false }));
     }
   };
 

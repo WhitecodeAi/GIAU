@@ -1315,7 +1315,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required"
+        error: "Registration ID and product name are required",
       });
     }
 
@@ -1347,15 +1347,19 @@ export async function exportProductGI3A(req: Request, res: Response) {
     // Fetch product association from database - association name is stored in description field
     const productData = await dbQuery(
       `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
-      [productName]
+      [productName],
     );
 
     const registration = registrations[0];
     registration.product_names = productName;
-    registration.product_association = productData.length > 0 ? productData[0].description : null;
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    const formHtml = await generateProductFormGI3AHtml(registration, productName);
+    const formHtml = await generateProductFormGI3AHtml(
+      registration,
+      productName,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -1518,7 +1522,7 @@ export async function exportProductNOC(req: Request, res: Response) {
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required"
+        error: "Registration ID and product name are required",
       });
     }
 
@@ -1550,11 +1554,12 @@ export async function exportProductNOC(req: Request, res: Response) {
     // Fetch product association from database
     const productData = await dbQuery(
       `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
-      [productName]
+      [productName],
     );
 
     const registration = registrations[0];
-    registration.product_association = productData.length > 0 ? productData[0].description : null;
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
     const nocHtml = await generateProductNOCHtml(registration, productName);
@@ -1689,7 +1694,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required"
+        error: "Registration ID and product name are required",
       });
     }
 
@@ -1721,14 +1726,18 @@ export async function exportProductStatement(req: Request, res: Response) {
     // Fetch product association from database
     const productData = await dbQuery(
       `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
-      [productName]
+      [productName],
     );
 
     const registration = registrations[0];
-    registration.product_association = productData.length > 0 ? productData[0].description : null;
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    const statementHtml = await generateProductStatementHtml(registration, productName);
+    const statementHtml = await generateProductStatementHtml(
+      registration,
+      productName,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -1850,7 +1859,10 @@ export async function exportProductStatement(req: Request, res: Response) {
     `;
 
     res.setHeader("Content-Type", "text/html");
-    res.setHeader("Content-Disposition", 'inline; filename="statement-of-case.html"');
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="statement-of-case.html"',
+    );
     res.send(fullHtml);
   } catch (error) {
     console.error("Export Product Statement error:", error);
@@ -1868,13 +1880,15 @@ async function getProductAssociation(productName: string): Promise<string> {
        FROM products p
        LEFT JOIN product_categories pc ON p.category_id = pc.id
        WHERE p.name = ? LIMIT 1`,
-      [productName]
+      [productName],
     );
 
     console.log(`📋 Database query result:`, productResult);
 
     if (productResult.length > 0 && productResult[0].description) {
-      console.log(`✅ Found association in database: ${productResult[0].description}`);
+      console.log(
+        `✅ Found association in database: ${productResult[0].description}`,
+      );
       return productResult[0].description;
     }
 
@@ -1903,8 +1917,10 @@ async function getProductAssociation(productName: string): Promise<string> {
 
     // Check for partial matches (in case of slight variations)
     for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
-      if (productName.toLowerCase().includes(key.toLowerCase()) ||
-          key.toLowerCase().includes(productName.toLowerCase())) {
+      if (
+        productName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(productName.toLowerCase())
+      ) {
         console.log(`✅ Found partial match: ${value} for key: ${key}`);
         return value;
       }
@@ -1920,16 +1936,25 @@ async function getProductAssociation(productName: string): Promise<string> {
 }
 
 // Helper functions for product-specific exports
-async function generateProductFormGI3AHtml(registration: any, productName: string): Promise<string> {
-  const registrationDate = new Date(registration.created_at).toLocaleDateString("en-GB");
+async function generateProductFormGI3AHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
+  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+    "en-GB",
+  );
 
   // Use association from registration data if available, otherwise use static mapping
   let associationName = registration.product_association;
   if (!associationName) {
-    console.log(`⚠️ No association found in registration data, using static mapping for: ${productName}`);
+    console.log(
+      `⚠️ No association found in registration data, using static mapping for: ${productName}`,
+    );
     associationName = await getProductAssociation(productName);
   } else {
-    console.log(`✅ Using association from database: ${associationName} for product: ${productName}`);
+    console.log(
+      `✅ Using association from database: ${associationName} for product: ${productName}`,
+    );
   }
 
   return `
@@ -2020,17 +2045,24 @@ async function generateProductFormGI3AHtml(registration: any, productName: strin
   `;
 }
 
-async function generateProductNOCHtml(registration: any, productName: string): Promise<string> {
+async function generateProductNOCHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
   if (!organizationName) {
-    console.log(`⚠️ No association found in registration data for NOC, using static mapping for: ${productName}`);
+    console.log(
+      `⚠️ No association found in registration data for NOC, using static mapping for: ${productName}`,
+    );
     organizationName = await getProductAssociation(productName);
   } else {
-    console.log(`✅ Using association from database for NOC: ${organizationName} for product: ${productName}`);
+    console.log(
+      `✅ Using association from database for NOC: ${organizationName} for product: ${productName}`,
+    );
   }
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
@@ -2077,16 +2109,23 @@ async function generateProductNOCHtml(registration: any, productName: string): P
   `;
 }
 
-async function generateProductStatementHtml(registration: any, productName: string): Promise<string> {
+async function generateProductStatementHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
   const statementDate = new Date().toLocaleDateString("en-GB");
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
   if (!organizationName) {
-    console.log(`⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`);
+    console.log(
+      `⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`,
+    );
     organizationName = await getProductAssociation(productName);
   } else {
-    console.log(`✅ Using association from database for Statement: ${organizationName} for product: ${productName}`);
+    console.log(
+      `✅ Using association from database for Statement: ${organizationName} for product: ${productName}`,
+    );
   }
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
@@ -2095,9 +2134,13 @@ async function generateProductStatementHtml(registration: any, productName: stri
   const currentYear = new Date().getFullYear();
   const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
 
-  const estimatedProduction = registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+  const estimatedProduction =
+    registration.age > 40 ? "500-1000 kg" : "250-500 kg";
   const turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
-  const turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
+  const turnoverWords =
+    registration.age > 40
+      ? "Two Lakh Fifty Thousand Only"
+      : "One Lakh Fifty Thousand Only";
 
   return `
     <div class="statement-page">
