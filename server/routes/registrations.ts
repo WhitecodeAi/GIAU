@@ -1862,9 +1862,9 @@ async function getProductAssociation(productName: string): Promise<string> {
   console.log(`🔍 Looking up association for product: "${productName}"`);
 
   try {
-    // Try to fetch from database first
+    // Try to fetch from database first - association name is stored in description field
     const productResult = await dbQuery(
-      `SELECT p.name, p.association_name, pc.name as category_name
+      `SELECT p.name, p.description, pc.name as category_name
        FROM products p
        LEFT JOIN product_categories pc ON p.category_id = pc.id
        WHERE p.name = ? LIMIT 1`,
@@ -1873,9 +1873,9 @@ async function getProductAssociation(productName: string): Promise<string> {
 
     console.log(`📋 Database query result:`, productResult);
 
-    if (productResult.length > 0 && productResult[0].association_name) {
-      console.log(`✅ Found association in database: ${productResult[0].association_name}`);
-      return productResult[0].association_name;
+    if (productResult.length > 0 && productResult[0].description) {
+      console.log(`✅ Found association in database: ${productResult[0].description}`);
+      return productResult[0].description;
     }
 
     // Fallback to static mapping if no database field exists
