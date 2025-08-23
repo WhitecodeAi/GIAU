@@ -1837,37 +1837,55 @@ export async function exportProductStatement(req: Request, res: Response) {
   }
 }
 
-// Product-to-Association mapping
-const PRODUCT_ASSOCIATIONS: { [key: string]: string } = {
-  "Bodo Aronai": "Association of Bodo Traditional Weaver",
-  "Bodo Gamsa": "Association of Bodo Traditional Weaver",
-  "Bodo Napham": "Association of Traditional Food Products",
-  "Bodo Kham": "Bodo Musical Artisan's Association",
-  "Bodo Keradapini": "Bodo Ethnic- Agro Food Producer's Association",
-  "Bodo Dokhona": "Association of Bodo Traditional Weaver",
-  "Bodo Gongar Dunja": "Association of Bodo Traditional Weaver",
-  "Bodo Eri Silk": "Association of Bodo Traditional Weaver",
-  "Bodo Indi Silk": "Association of Bodo Traditional Weaver",
-  "Bodo Gamus": "Association of Bodo Traditional Weaver",
-  "Bodo Jomgra": "Bodo Musical Artisan's Association",
-};
+async function getProductAssociation(productName: string): Promise<string> {
+  try {
+    // Try to fetch from database first
+    const productResult = await dbQuery(
+      `SELECT p.name, p.association_name, pc.name as category_name
+       FROM products p
+       LEFT JOIN product_categories pc ON p.category_id = pc.id
+       WHERE p.name = ? LIMIT 1`,
+      [productName]
+    );
 
-function getProductAssociation(productName: string): string {
-  // Check for exact match first
-  if (PRODUCT_ASSOCIATIONS[productName]) {
-    return PRODUCT_ASSOCIATIONS[productName];
-  }
-
-  // Check for partial matches (in case of slight variations)
-  for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
-    if (productName.toLowerCase().includes(key.toLowerCase()) ||
-        key.toLowerCase().includes(productName.toLowerCase())) {
-      return value;
+    if (productResult.length > 0 && productResult[0].association_name) {
+      return productResult[0].association_name;
     }
-  }
 
-  // Default fallback
-  return "Bodo Traditional Producers Association";
+    // Fallback to static mapping if no database field exists
+    const PRODUCT_ASSOCIATIONS: { [key: string]: string } = {
+      "Bodo Aronai": "Association of Bodo Traditional Weaver",
+      "Bodo Gamsa": "Association of Bodo Traditional Weaver",
+      "Bodo Napham": "Association of Traditional Food Products",
+      "Bodo Kham": "Bodo Musical Artisan's Association",
+      "Bodo Keradapini": "Bodo Ethnic- Agro Food Producer's Association",
+      "Bodo Dokhona": "Association of Bodo Traditional Weaver",
+      "Bodo Gongar Dunja": "Association of Bodo Traditional Weaver",
+      "Bodo Eri Silk": "Association of Bodo Traditional Weaver",
+      "Bodo Indi Silk": "Association of Bodo Traditional Weaver",
+      "Bodo Gamus": "Association of Bodo Traditional Weaver",
+      "Bodo Jomgra": "Bodo Musical Artisan's Association",
+    };
+
+    // Check for exact match first
+    if (PRODUCT_ASSOCIATIONS[productName]) {
+      return PRODUCT_ASSOCIATIONS[productName];
+    }
+
+    // Check for partial matches (in case of slight variations)
+    for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
+      if (productName.toLowerCase().includes(key.toLowerCase()) ||
+          key.toLowerCase().includes(productName.toLowerCase())) {
+        return value;
+      }
+    }
+
+    // Default fallback
+    return "Bodo Traditional Producers Association";
+  } catch (error) {
+    console.error("Error fetching product association:", error);
+    return "Bodo Traditional Producers Association";
+  }
 }
 
 // Helper functions for product-specific exports
