@@ -672,7 +672,7 @@ async function generateFormGI3AHtml(
           </div>
 
           <div class="signature-area">
-            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            ${signatureHtml}
             <div class="signature-label">
               <strong>SIGNATURE</strong><br>
               (${registration.name})
