@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, FileText, Package, Eye } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  FileText,
+  Package,
+  Eye,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +66,9 @@ interface RegistrationDetails {
 export default function RegistrationDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [registration, setRegistration] = useState<RegistrationDetails | null>(null);
+  const [registration, setRegistration] = useState<RegistrationDetails | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,18 +105,18 @@ export default function RegistrationDetails() {
   }, [id]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const formatTurnover = (amount?: number, unit?: string) => {
     if (!amount) return "Not specified";
-    return `₹${amount.toLocaleString('en-IN')} ${unit || 'Lakh'}`;
+    return `₹${amount.toLocaleString("en-IN")} ${unit || "Lakh"}`;
   };
 
   if (loading) {
@@ -134,9 +146,11 @@ export default function RegistrationDetails() {
             >
               <ArrowLeft size={24} />
             </Button>
-            <h1 className="text-2xl font-bold text-gray-800">Registration Details</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Registration Details
+            </h1>
           </div>
-          
+
           <Alert className="border-red-200 bg-red-50">
             <AlertDescription className="text-red-800">
               {error}
@@ -164,7 +178,9 @@ export default function RegistrationDetails() {
             <ArrowLeft size={24} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Registration Details</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Registration Details
+            </h1>
             <p className="text-gray-600">Registration ID: {registration.id}</p>
           </div>
         </div>
@@ -183,19 +199,31 @@ export default function RegistrationDetails() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Full Name</label>
-                    <p className="text-gray-900 font-medium">{registration.name}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Full Name
+                    </label>
+                    <p className="text-gray-900 font-medium">
+                      {registration.name}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Age</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Age
+                    </label>
                     <p className="text-gray-900">{registration.age} years</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Gender</label>
-                    <p className="text-gray-900 capitalize">{registration.gender}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Gender
+                    </label>
+                    <p className="text-gray-900 capitalize">
+                      {registration.gender}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Phone</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Phone
+                    </label>
                     <p className="text-gray-900 flex items-center gap-1">
                       <Phone className="w-4 h-4" />
                       {registration.phone}
@@ -203,7 +231,9 @@ export default function RegistrationDetails() {
                   </div>
                   {registration.email && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Email</label>
+                      <label className="text-sm font-medium text-gray-500">
+                        Email
+                      </label>
                       <p className="text-gray-900 flex items-center gap-1">
                         <Mail className="w-4 h-4" />
                         {registration.email}
@@ -211,7 +241,9 @@ export default function RegistrationDetails() {
                     </div>
                   )}
                   <div className="md:col-span-2">
-                    <label className="text-sm font-medium text-gray-500">Address</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Address
+                    </label>
                     <p className="text-gray-900 flex items-start gap-1">
                       <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
                       {registration.address}
@@ -224,20 +256,32 @@ export default function RegistrationDetails() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {registration.aadhar_number && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Aadhar Number</label>
-                      <p className="text-gray-900 font-mono">{registration.aadhar_number}</p>
+                      <label className="text-sm font-medium text-gray-500">
+                        Aadhar Number
+                      </label>
+                      <p className="text-gray-900 font-mono">
+                        {registration.aadhar_number}
+                      </p>
                     </div>
                   )}
                   {registration.voter_id && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Voter ID</label>
-                      <p className="text-gray-900 font-mono">{registration.voter_id}</p>
+                      <label className="text-sm font-medium text-gray-500">
+                        Voter ID
+                      </label>
+                      <p className="text-gray-900 font-mono">
+                        {registration.voter_id}
+                      </p>
                     </div>
                   )}
                   {registration.pan_number && (
                     <div>
-                      <label className="text-sm font-medium text-gray-500">PAN Number</label>
-                      <p className="text-gray-900 font-mono">{registration.pan_number}</p>
+                      <label className="text-sm font-medium text-gray-500">
+                        PAN Number
+                      </label>
+                      <p className="text-gray-900 font-mono">
+                        {registration.pan_number}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -255,10 +299,16 @@ export default function RegistrationDetails() {
               <CardContent className="space-y-6">
                 {/* Categories */}
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Product Categories</label>
+                  <label className="text-sm font-medium text-gray-500 mb-2 block">
+                    Product Categories
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {registration.categories.map((category) => (
-                      <Badge key={category.id} variant="secondary" className="bg-blue-100 text-blue-800">
+                      <Badge
+                        key={category.id}
+                        variant="secondary"
+                        className="bg-blue-100 text-blue-800"
+                      >
                         {category.name}
                       </Badge>
                     ))}
@@ -270,13 +320,22 @@ export default function RegistrationDetails() {
                 {/* Existing Products */}
                 {registration.existing_products.length > 0 && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500 mb-2 block">Existing Products</label>
+                    <label className="text-sm font-medium text-gray-500 mb-2 block">
+                      Existing Products
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {registration.existing_products.map((product) => (
-                        <div key={product.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="font-medium text-green-800">{product.name}</p>
+                        <div
+                          key={product.id}
+                          className="bg-green-50 border border-green-200 rounded-lg p-3"
+                        >
+                          <p className="font-medium text-green-800">
+                            {product.name}
+                          </p>
                           {product.description && (
-                            <p className="text-sm text-green-600">{product.description}</p>
+                            <p className="text-sm text-green-600">
+                              {product.description}
+                            </p>
                           )}
                         </div>
                       ))}
@@ -287,13 +346,22 @@ export default function RegistrationDetails() {
                 {/* Selected Products */}
                 {registration.selected_products.length > 0 && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500 mb-2 block">Selected Products for Future</label>
+                    <label className="text-sm font-medium text-gray-500 mb-2 block">
+                      Selected Products for Future
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {registration.selected_products.map((product) => (
-                        <div key={product.id} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                          <p className="font-medium text-purple-800">{product.name}</p>
+                        <div
+                          key={product.id}
+                          className="bg-purple-50 border border-purple-200 rounded-lg p-3"
+                        >
+                          <p className="font-medium text-purple-800">
+                            {product.name}
+                          </p>
                           {product.description && (
-                            <p className="text-sm text-purple-600">{product.description}</p>
+                            <p className="text-sm text-purple-600">
+                              {product.description}
+                            </p>
                           )}
                         </div>
                       ))}
@@ -315,40 +383,66 @@ export default function RegistrationDetails() {
                 <CardContent>
                   <div className="space-y-4">
                     {registration.production_details.map((detail) => (
-                      <div key={detail.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-800 mb-3">{detail.productName}</h4>
+                      <div
+                        key={detail.id}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                      >
+                        <h4 className="font-semibold text-gray-800 mb-3">
+                          {detail.productName}
+                        </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                           {detail.annualProduction && (
                             <div>
-                              <label className="text-gray-500">Annual Production</label>
-                              <p className="font-medium">{detail.annualProduction} {detail.unit || ''}</p>
+                              <label className="text-gray-500">
+                                Annual Production
+                              </label>
+                              <p className="font-medium">
+                                {detail.annualProduction} {detail.unit || ""}
+                              </p>
                             </div>
                           )}
                           {detail.areaOfProduction && (
                             <div>
-                              <label className="text-gray-500">Area of Production</label>
-                              <p className="font-medium">{detail.areaOfProduction}</p>
+                              <label className="text-gray-500">
+                                Area of Production
+                              </label>
+                              <p className="font-medium">
+                                {detail.areaOfProduction}
+                              </p>
                             </div>
                           )}
                           {detail.yearsOfProduction && (
                             <div>
-                              <label className="text-gray-500">Years of Production</label>
-                              <p className="font-medium">{detail.yearsOfProduction} years</p>
+                              <label className="text-gray-500">
+                                Years of Production
+                              </label>
+                              <p className="font-medium">
+                                {detail.yearsOfProduction} years
+                              </p>
                             </div>
                           )}
                           {detail.annualTurnover && (
                             <div>
-                              <label className="text-gray-500">Annual Turnover</label>
+                              <label className="text-gray-500">
+                                Annual Turnover
+                              </label>
                               <p className="font-medium">
-                                {formatTurnover(detail.annualTurnover, detail.turnoverUnit)}
+                                {formatTurnover(
+                                  detail.annualTurnover,
+                                  detail.turnoverUnit,
+                                )}
                               </p>
                             </div>
                           )}
                         </div>
                         {detail.additionalNotes && (
                           <div className="mt-3">
-                            <label className="text-gray-500 text-sm">Additional Notes</label>
-                            <p className="text-gray-700">{detail.additionalNotes}</p>
+                            <label className="text-gray-500 text-sm">
+                              Additional Notes
+                            </label>
+                            <p className="text-gray-700">
+                              {detail.additionalNotes}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -371,35 +465,60 @@ export default function RegistrationDetails() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Registered By</label>
-                  <p className="text-gray-900 font-medium">{registration.username}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Registered By
+                  </label>
+                  <p className="text-gray-900 font-medium">
+                    {registration.username}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Registration Date</label>
-                  <p className="text-gray-900">{formatDate(registration.created_at)}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Registration Date
+                  </label>
+                  <p className="text-gray-900">
+                    {formatDate(registration.created_at)}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Last Updated</label>
-                  <p className="text-gray-900">{formatDate(registration.updated_at)}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Last Updated
+                  </label>
+                  <p className="text-gray-900">
+                    {formatDate(registration.updated_at)}
+                  </p>
                 </div>
                 {registration.area_of_production && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Area of Production</label>
-                    <p className="text-gray-900">{registration.area_of_production}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Area of Production
+                    </label>
+                    <p className="text-gray-900">
+                      {registration.area_of_production}
+                    </p>
                   </div>
                 )}
                 {registration.annual_turnover && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Annual Turnover</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Annual Turnover
+                    </label>
                     <p className="text-gray-900">
-                      {formatTurnover(registration.annual_turnover, registration.turnover_unit)}
+                      {formatTurnover(
+                        registration.annual_turnover,
+                        registration.turnover_unit,
+                      )}
                     </p>
                   </div>
                 )}
                 {registration.years_of_production && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Years of Production</label>
-                    <p className="text-gray-900">{registration.years_of_production} years</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Years of Production
+                    </label>
+                    <p className="text-gray-900">
+                      {registration.years_of_production} years
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -415,30 +534,37 @@ export default function RegistrationDetails() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(registration.documentUrls).map(([key, url]) => {
-                    const documentNames: { [key: string]: string } = {
-                      aadharCard: "Aadhar Card",
-                      panCard: "PAN Card",
-                      proofOfProduction: "Proof of Production",
-                      signature: "Signature",
-                      photo: "Photo"
-                    };
+                  {Object.entries(registration.documentUrls).map(
+                    ([key, url]) => {
+                      const documentNames: { [key: string]: string } = {
+                        aadharCard: "Aadhar Card",
+                        panCard: "PAN Card",
+                        proofOfProduction: "Proof of Production",
+                        signature: "Signature",
+                        photo: "Photo",
+                      };
 
-                    return (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700">{documentNames[key]}</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(url, '_blank')}
-                          className="text-xs"
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between"
                         >
-                          <Eye size={12} className="mr-1" />
-                          View
-                        </Button>
-                      </div>
-                    );
-                  })}
+                          <span className="text-sm text-gray-700">
+                            {documentNames[key]}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(url, "_blank")}
+                            className="text-xs"
+                          >
+                            <Eye size={12} className="mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      );
+                    },
+                  )}
                 </div>
               </CardContent>
             </Card>
