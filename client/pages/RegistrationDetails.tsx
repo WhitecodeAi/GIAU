@@ -10,6 +10,7 @@ import {
   FileText,
   Package,
   Eye,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +72,9 @@ export default function RegistrationDetails() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportingStates, setExportingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
@@ -117,6 +121,69 @@ export default function RegistrationDetails() {
   const formatTurnover = (amount?: number, unit?: string) => {
     if (!amount) return "Not specified";
     return `₹${amount.toLocaleString("en-IN")} ${unit || "Lakh"}`;
+  };
+
+  const handleExportProduct = async (
+    productId: number,
+    productName: string,
+    exportType: "gi3a" | "noc" | "statement",
+  ) => {
+    const exportKey = `${productId}-${exportType}`;
+
+    try {
+      setExportingStates((prev) => ({ ...prev, [exportKey]: true }));
+
+      const endpoint = `/api/registrations/export-product-${exportType}`;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registrationId: registration!.id,
+          productId: productId,
+          productName: productName,
+        }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        // Read response as text first to avoid "body stream already read" error
+        let errorMessage = `Export failed with status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          // If it's not JSON, use the text as error message
+          console.error("Failed to parse error response:", parseError);
+        }
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error(`Export ${exportType} error:`, error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : `Failed to export ${exportType.toUpperCase()} for ${productName}`,
+      );
+    } finally {
+      setExportingStates((prev) => ({ ...prev, [exportKey]: false }));
+    }
   };
 
   if (loading) {
@@ -387,9 +454,88 @@ export default function RegistrationDetails() {
                         key={detail.id}
                         className="bg-gray-50 border border-gray-200 rounded-lg p-4"
                       >
-                        <h4 className="font-semibold text-gray-800 mb-3">
-                          {detail.productName}
-                        </h4>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-800">
+                            {detail.productName}
+                          </h4>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "gi3a",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-gi3a`
+                                ]
+                              }
+                              className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-gi3a`
+                              ]
+                                ? "..."
+                                : "Form GI 3A"}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "noc",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-noc`
+                                ]
+                              }
+                              className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-noc`
+                              ]
+                                ? "..."
+                                : "NOC"}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "statement",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-statement`
+                                ]
+                              }
+                              className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-statement`
+                              ]
+                                ? "..."
+                                : "Statement"}
+                            </Button>
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                           {detail.annualProduction && (
                             <div>

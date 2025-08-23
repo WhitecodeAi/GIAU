@@ -865,8 +865,8 @@ async function generateNOCHtml(
   // Generate application number based on registration ID and date
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
 
-  // Organization details
-  const organizationName = "Bodo Traditional Food Producers Association";
+  // Organization details - Generic for bulk exports covering multiple associations
+  const organizationName = "Bodo Traditional Producers Consortium";
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   return `
@@ -1112,8 +1112,8 @@ async function generateStatementOfCaseHtml(
     registration.category_names?.split(",")[0] ||
     "Bodo Traditional Food Product";
 
-  // Organization details
-  const organizationName = "Bodo Traditional Food Producers Association";
+  // Organization details - Generic for bulk exports covering multiple associations
+  const organizationName = "Bodo Traditional Producers Consortium";
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   // Calculate years of experience based on registration date (minimum 2 years)

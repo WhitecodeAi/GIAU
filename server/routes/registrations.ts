@@ -1307,3 +1307,889 @@ export async function verifyRegistration(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to verify registration" });
   }
 }
+
+// Product-specific export functions
+export async function exportProductGI3A(req: Request, res: Response) {
+  try {
+    const { registrationId, productId, productName } = req.body;
+
+    if (!registrationId || !productName) {
+      return res.status(400).json({
+        error: "Registration ID and product name are required",
+      });
+    }
+
+    // Fetch registration data
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path
+      FROM user_registrations ur
+      WHERE ur.id = ?
+    `,
+      [registrationId],
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Fetch product association from database - association name is stored in description field
+    const productData = await dbQuery(
+      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
+      [productName],
+    );
+
+    const registration = registrations[0];
+    registration.product_names = productName;
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
+
+    // Generate HTML for the specific product
+    const formHtml = await generateProductFormGI3AHtml(
+      registration,
+      productName,
+    );
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Form GI 3A - ${productName}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.6;
+          font-size: 12pt;
+          color: #000;
+        }
+
+        .form-page {
+          width: 100%;
+          margin: 0 auto;
+          background: #fff;
+          min-height: 100vh;
+        }
+
+        .form-header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #000;
+          padding-bottom: 15px;
+        }
+
+        .form-title {
+          font-size: 14pt;
+          font-weight: bold;
+          margin: 5px 0;
+          line-height: 1.4;
+        }
+
+        .form-subtitle {
+          font-size: 12pt;
+          margin: 3px 0;
+          font-style: italic;
+        }
+
+        .form-number {
+          font-size: 16pt;
+          font-weight: bold;
+          margin: 10px 0;
+          text-decoration: underline;
+        }
+
+        .application-title {
+          font-size: 13pt;
+          font-weight: bold;
+          margin: 10px 0;
+        }
+
+        .rule-reference {
+          font-size: 11pt;
+          margin: 5px 0;
+          font-style: italic;
+        }
+
+        .form-field {
+          margin: 15px 0;
+          line-height: 1.8;
+        }
+
+        .field-number {
+          font-weight: bold;
+          margin-right: 10px;
+        }
+
+        .field-label {
+          font-weight: normal;
+        }
+
+        .field-value {
+          font-weight: bold;
+          border-bottom: 1px solid #000;
+          padding: 2px 5px;
+          min-width: 200px;
+          display: inline-block;
+        }
+
+        .declaration-section {
+          margin-top: 30px;
+          page-break-inside: avoid;
+        }
+
+        .declaration-title {
+          font-weight: bold;
+          margin-bottom: 15px;
+          text-decoration: underline;
+        }
+
+        .declaration-item {
+          margin: 10px 0;
+          padding-left: 20px;
+          text-indent: -20px;
+        }
+
+        .signature-section {
+          margin-top: 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          border-top: 1px solid #000;
+          padding-top: 5px;
+          margin-left: 50px;
+        }
+
+        .signature-label {
+          margin-top: 10px;
+          font-size: 11pt;
+        }
+
+        .underline {
+          border-bottom: 1px solid #000;
+          padding: 2px 5px;
+          min-width: 150px;
+          display: inline-block;
+        }
+      </style>
+    </head>
+    <body>
+      ${formHtml}
+    </body>
+    </html>
+    `;
+
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Disposition", 'inline; filename="form-gi-3a.html"');
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Product GI 3A error:", error);
+    res.status(500).json({ error: "Failed to export Form GI 3A" });
+  }
+}
+
+export async function exportProductNOC(req: Request, res: Response) {
+  try {
+    const { registrationId, productId, productName } = req.body;
+
+    if (!registrationId || !productName) {
+      return res.status(400).json({
+        error: "Registration ID and product name are required",
+      });
+    }
+
+    // Fetch registration data
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path
+      FROM user_registrations ur
+      WHERE ur.id = ?
+    `,
+      [registrationId],
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Fetch product association from database
+    const productData = await dbQuery(
+      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
+      [productName],
+    );
+
+    const registration = registrations[0];
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
+
+    // Generate HTML for the specific product
+    const nocHtml = await generateProductNOCHtml(registration, productName);
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>NOC - ${productName}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 25mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.8;
+          font-size: 14pt;
+          color: #000;
+        }
+
+        .noc-page {
+          width: 100%;
+          margin: 0 auto;
+          background: #fff;
+          min-height: 100vh;
+          position: relative;
+        }
+
+        .noc-header {
+          text-align: center;
+          margin-bottom: 40px;
+          border-bottom: 3px solid #000;
+          padding-bottom: 20px;
+        }
+
+        .noc-title {
+          font-size: 20pt;
+          font-weight: bold;
+          margin: 0;
+          text-decoration: underline;
+          letter-spacing: 2px;
+        }
+
+        .noc-content {
+          text-align: justify;
+          line-height: 2.2;
+          margin-bottom: 40px;
+        }
+
+        .noc-paragraph {
+          margin-bottom: 25px;
+          text-indent: 30px;
+        }
+
+        .highlight {
+          font-weight: bold;
+          text-decoration: underline;
+        }
+
+        .signature-section {
+          margin-top: 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+          line-height: 2.5;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          margin-left: 50px;
+        }
+
+        .signature-line {
+          border-bottom: 2px solid #000;
+          width: 250px;
+          height: 80px;
+          margin: 30px auto;
+          display: block;
+        }
+
+        .signature-label {
+          font-weight: bold;
+          margin-top: 15px;
+          line-height: 1.5;
+        }
+
+        .underline-field {
+          border-bottom: 1px solid #000;
+          padding: 2px 8px;
+          font-weight: bold;
+          display: inline-block;
+          min-width: 200px;
+        }
+
+        .organization-name {
+          font-weight: bold;
+          font-size: 16pt;
+          color: #2c3e50;
+        }
+      </style>
+    </head>
+    <body>
+      ${nocHtml}
+    </body>
+    </html>
+    `;
+
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Disposition", 'inline; filename="noc.html"');
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Product NOC error:", error);
+    res.status(500).json({ error: "Failed to export NOC" });
+  }
+}
+
+export async function exportProductStatement(req: Request, res: Response) {
+  try {
+    const { registrationId, productId, productName } = req.body;
+
+    if (!registrationId || !productName) {
+      return res.status(400).json({
+        error: "Registration ID and product name are required",
+      });
+    }
+
+    // Fetch registration data
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path
+      FROM user_registrations ur
+      WHERE ur.id = ?
+    `,
+      [registrationId],
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Fetch product association from database
+    const productData = await dbQuery(
+      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
+      [productName],
+    );
+
+    const registration = registrations[0];
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
+
+    // Generate HTML for the specific product
+    const statementHtml = await generateProductStatementHtml(
+      registration,
+      productName,
+    );
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Statement of Case - ${productName}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 25mm;
+        }
+
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 0;
+          line-height: 1.8;
+          font-size: 14pt;
+          color: #000;
+        }
+
+        .statement-page {
+          width: 100%;
+          margin: 0 auto;
+          background: #fff;
+          min-height: 100vh;
+          position: relative;
+        }
+
+        .statement-header {
+          text-align: center;
+          margin-bottom: 40px;
+          border-bottom: 3px solid #000;
+          padding-bottom: 20px;
+        }
+
+        .statement-title {
+          font-size: 18pt;
+          font-weight: bold;
+          margin: 0;
+          text-decoration: underline;
+          letter-spacing: 2px;
+        }
+
+        .statement-content {
+          text-align: justify;
+          line-height: 2.0;
+          margin-bottom: 40px;
+        }
+
+        .statement-paragraph {
+          margin-bottom: 20px;
+          text-indent: 30px;
+        }
+
+        .highlight {
+          font-weight: bold;
+          border-bottom: 1px solid #000;
+          padding: 2px 4px;
+        }
+
+        .signature-section {
+          margin-top: 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          page-break-inside: avoid;
+        }
+
+        .date-place {
+          flex: 1;
+          line-height: 2.5;
+        }
+
+        .signature-area {
+          flex: 1;
+          text-align: center;
+          margin-left: 50px;
+        }
+
+        .signature-line {
+          border-bottom: 2px solid #000;
+          width: 250px;
+          height: 80px;
+          margin: 30px auto;
+          display: block;
+        }
+
+        .signature-label {
+          font-weight: bold;
+          margin-top: 15px;
+          line-height: 1.5;
+        }
+
+        .underline-field {
+          border-bottom: 1px solid #000;
+          padding: 2px 8px;
+          font-weight: bold;
+          display: inline-block;
+          min-width: 150px;
+        }
+
+        .organization-name {
+          font-weight: bold;
+          color: #2c3e50;
+        }
+
+        .currency {
+          font-family: 'Times New Roman', serif;
+        }
+      </style>
+    </head>
+    <body>
+      ${statementHtml}
+    </body>
+    </html>
+    `;
+
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="statement-of-case.html"',
+    );
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Product Statement error:", error);
+    res.status(500).json({ error: "Failed to export Statement of Case" });
+  }
+}
+
+async function getProductAssociation(productName: string): Promise<string> {
+  console.log(`🔍 Looking up association for product: "${productName}"`);
+
+  try {
+    // Try to fetch from database first - association name is stored in description field
+    const productResult = await dbQuery(
+      `SELECT p.name, p.description, pc.name as category_name
+       FROM products p
+       LEFT JOIN product_categories pc ON p.category_id = pc.id
+       WHERE p.name = ? LIMIT 1`,
+      [productName],
+    );
+
+    console.log(`📋 Database query result:`, productResult);
+
+    if (productResult.length > 0 && productResult[0].description) {
+      console.log(
+        `✅ Found association in database: ${productResult[0].description}`,
+      );
+      return productResult[0].description;
+    }
+
+    // Fallback to static mapping if no database field exists
+    console.log(`🔄 Falling back to static mapping for: ${productName}`);
+
+    const PRODUCT_ASSOCIATIONS: { [key: string]: string } = {
+      "Bodo Aronai": "Association of Bodo Traditional Weaver",
+      "Bodo Gamsa": "Association of Bodo Traditional Weaver",
+      "Bodo Napham": "Association of Traditional Food Products",
+      "Bodo Kham": "Bodo Musical Artisan's Association",
+      "Bodo Keradapini": "Bodo Ethnic- Agro Food Producer's Association",
+      "Bodo Dokhona": "Association of Bodo Traditional Weaver",
+      "Bodo Gongar Dunja": "Association of Bodo Traditional Weaver",
+      "Bodo Eri Silk": "Association of Bodo Traditional Weaver",
+      "Bodo Indi Silk": "Association of Bodo Traditional Weaver",
+      "Bodo Gamus": "Association of Bodo Traditional Weaver",
+      "Bodo Jomgra": "Bodo Musical Artisan's Association",
+    };
+
+    // Check for exact match first
+    if (PRODUCT_ASSOCIATIONS[productName]) {
+      console.log(`✅ Found exact match: ${PRODUCT_ASSOCIATIONS[productName]}`);
+      return PRODUCT_ASSOCIATIONS[productName];
+    }
+
+    // Check for partial matches (in case of slight variations)
+    for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
+      if (
+        productName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(productName.toLowerCase())
+      ) {
+        console.log(`✅ Found partial match: ${value} for key: ${key}`);
+        return value;
+      }
+    }
+
+    // Default fallback
+    console.log(`⚠️ No match found, using default association`);
+    return "Bodo Traditional Producers Association";
+  } catch (error) {
+    console.error("❌ Error fetching product association:", error);
+    return "Bodo Traditional Producers Association";
+  }
+}
+
+// Helper functions for product-specific exports
+async function generateProductFormGI3AHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
+  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+    "en-GB",
+  );
+
+  // Use association from registration data if available, otherwise use static mapping
+  let associationName = registration.product_association;
+  if (!associationName) {
+    console.log(
+      `⚠️ No association found in registration data, using static mapping for: ${productName}`,
+    );
+    associationName = await getProductAssociation(productName);
+  } else {
+    console.log(
+      `✅ Using association from database: ${associationName} for product: ${productName}`,
+    );
+  }
+
+  return `
+    <div class="form-page">
+      <div class="form-header">
+        <div class="form-title">Geographical Indications of Goods (Registration & Protection) Act, 1999</div>
+        <div class="form-subtitle">Geographical Indications of Goods (Registration & Protection) Rules, 2002</div>
+
+        <div class="form-number">Form GI 3A</div>
+
+        <div class="application-title">Application for the Registration of an Authorized User</div>
+        <div class="rule-reference">Section 17 (1), Rule 56 (1)</div>
+      </div>
+
+      <div class="form-content">
+        <div class="form-field">
+          <span class="field-number">1.</span>
+          <span class="field-label">Name of the Applicant (proposed Authorized user):</span>
+          <span class="field-value">${registration.name}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">2.</span>
+          <span class="field-label">Address of the applicant:</span>
+          <span class="field-value">${registration.address}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">3.</span>
+          <span class="field-label">Address of service (if different from Above):</span>
+          <span class="field-value">Same as above</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">4.</span>
+          <span class="field-label">Registered Geographical Indication for which application is made:</span>
+          <span class="field-value">${productName}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">5.</span>
+          <span class="field-label">Email id:</span>
+          <span class="field-value">${registration.email || "Not provided"}</span>
+        </div>
+
+        <div class="form-field">
+          <span class="field-number">6.</span>
+          <span class="field-label">Phone/mobile number:</span>
+          <span class="field-value">${registration.phone}</span>
+        </div>
+
+        <div class="declaration-section">
+          <div class="declaration-title">Declaration:</div>
+
+          <div class="declaration-item">
+            <strong>1.</strong> I hereby declare that I have enclosed the statement of case and evidence of due service of copy of my application to the registered proprietor (${associationName}) for (${productName}), registered as a Geographical Indication.
+          </div>
+
+          <div class="declaration-item">
+            <strong>2.</strong> I also declare that all the above information is true and correct to the best of my knowledge and belief.
+          </div>
+
+          <div class="declaration-item">
+            <strong>3.</strong> I undertake that if any of the information is found incorrect or false, my application may be rejected and if already accepted, my registration may be revoked and my name removed from Part B of the register.
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div class="date-place">
+            <div style="margin-bottom: 20px;">
+              <strong>Date:</strong> <span class="underline">${registrationDate}</span>
+            </div>
+            <div>
+              <strong>Place:</strong> <span class="underline">Bodoland</span>
+            </div>
+          </div>
+
+          <div class="signature-area">
+            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            <div class="signature-label">
+              <strong>SIGNATURE</strong><br>
+              (${registration.name})
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function generateProductNOCHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
+  const certificateDate = new Date().toLocaleDateString("en-GB");
+  const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+
+  // Use association from registration data if available, otherwise use static mapping
+  let organizationName = registration.product_association;
+  if (!organizationName) {
+    console.log(
+      `⚠️ No association found in registration data for NOC, using static mapping for: ${productName}`,
+    );
+    organizationName = await getProductAssociation(productName);
+  } else {
+    console.log(
+      `✅ Using association from database for NOC: ${organizationName} for product: ${productName}`,
+    );
+  }
+
+  const giArea = "Bodoland Territorial Area Districts (BTAD)";
+
+  return `
+    <div class="noc-page">
+      <div class="noc-header">
+        <div class="noc-title">No Objection Certificate (NOC)</div>
+      </div>
+
+      <div class="noc-content">
+        <div class="noc-paragraph">
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${productName}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+        </div>
+
+        <div class="noc-paragraph">
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, have no objection to the registration of <span class="highlight">${registration.name}</span> as an Authorised User for <span class="highlight">${productName}</span>.
+        </div>
+
+        <div class="noc-paragraph">
+          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods of "<span class="highlight">${productName}</span>" is done in <span class="highlight">${giArea}</span> by the said Authorised Users, then <span class="organization-name">${organizationName}</span> shall not be held responsible for any resulting actions by the competent authority.
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="date-place">
+          <div><strong>Date:</strong> <span class="underline-field">${certificateDate}</span></div>
+          <br>
+          <div><strong>Place:</strong> <span class="underline-field">Bodoland</span></div>
+        </div>
+
+        <div class="signature-area">
+          <div><strong>For and on behalf of</strong></div>
+          <div class="organization-name">${organizationName}</div>
+
+          <div class="signature-line"></div>
+
+          <div class="signature-label">
+            (Signature of GI Applicant's Association/ Organisation Head)
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function generateProductStatementHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
+  const statementDate = new Date().toLocaleDateString("en-GB");
+
+  // Use association from registration data if available, otherwise use static mapping
+  let organizationName = registration.product_association;
+  if (!organizationName) {
+    console.log(
+      `⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`,
+    );
+    organizationName = await getProductAssociation(productName);
+  } else {
+    console.log(
+      `✅ Using association from database for Statement: ${organizationName} for product: ${productName}`,
+    );
+  }
+
+  const giArea = "Bodoland Territorial Area Districts (BTAD)";
+
+  const registrationYear = new Date(registration.created_at).getFullYear();
+  const currentYear = new Date().getFullYear();
+  const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
+
+  const estimatedProduction =
+    registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+  const turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
+  const turnoverWords =
+    registration.age > 40
+      ? "Two Lakh Fifty Thousand Only"
+      : "One Lakh Fifty Thousand Only";
+
+  return `
+    <div class="statement-page">
+      <div class="statement-header">
+        <div class="statement-title">STATEMENT OF CASE</div>
+      </div>
+
+      <div class="statement-content">
+        <div class="statement-paragraph">
+          I, <span class="highlight">${registration.name}</span>, aged about <span class="highlight">${registration.age}</span> years, having address at <span class="highlight">${registration.address}</span>, I am the producer of <span class="highlight">${productName}</span>.
+        </div>
+
+        <div class="statement-paragraph">
+          I have applied for registration as an "Authorized User" for Registered Geographical Indication, <span class="highlight">${productName}</span>, and the No Objection Certificate received from the registered proprietor of <span class="organization-name">${organizationName}</span> is attached for your reference.
+        </div>
+
+        <div class="statement-paragraph">
+          I am involved in the process production of <span class="highlight">${productName}</span> since <span class="highlight">${yearsOfExperience}</span> years within the designated <span class="highlight">${giArea}</span> GI Area.
+        </div>
+
+        <div class="statement-paragraph">
+          That my estimated production trading relating <span class="highlight">${productName}</span> is about <span class="highlight">${estimatedProduction}</span> per year and as on date the annual turnover is approximately <span class="currency highlight">${turnoverAmount}</span>/- (<span class="highlight">${turnoverWords}</span>).
+        </div>
+
+        <div class="statement-paragraph">
+          I herein undertake, I am aware and shall adhere and confirm to all the regulating criteria (present and future) relating to specification/description and quality as set forth by the Inspection Body setup by the Registered Proprietor of <span class="highlight">${productName}</span>.
+        </div>
+
+        <div class="statement-paragraph">
+          I reiterate that the particulars set out herein are true to the best of my knowledge, information and belief.
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="date-place">
+          <div><strong>Dated:</strong> <span class="underline-field">${statementDate}</span></div>
+          <br>
+          <div><strong>Place:</strong> <span class="underline-field">Bodoland</span></div>
+        </div>
+
+        <div class="signature-area">
+          <div class="signature-line"></div>
+
+          <div class="signature-label">
+            (Signature and Name of the Authorised User)<br>
+            <strong>${registration.name}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
