@@ -75,6 +75,7 @@ export default function RegistrationDetails() {
   const [exportingStates, setExportingStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [isExportingCard, setIsExportingCard] = useState(false);
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
