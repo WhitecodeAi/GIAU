@@ -274,20 +274,31 @@ export default function RegistrationDetails() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white">
       <div className="desktop-content max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pt-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="text-[hsl(var(--geo-secondary))] hover:text-[hsl(var(--geo-secondary))]/80"
-          >
-            <ArrowLeft size={24} />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Registration Details
-            </h1>
-            <p className="text-gray-600">Registration ID: {registration.id}</p>
+        <div className="flex items-center justify-between mb-8 pt-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="text-[hsl(var(--geo-secondary))] hover:text-[hsl(var(--geo-secondary))]/80"
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Registration Details
+              </h1>
+              <p className="text-gray-600">Registration ID: {registration.id}</p>
+            </div>
           </div>
+
+          <Button
+            onClick={handleExportCard}
+            disabled={isExportingCard}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Download size={16} className="mr-2" />
+            {isExportingCard ? "Exporting..." : "Export Card"}
+          </Button>
         </div>
 
         {/* Registration Content */}
