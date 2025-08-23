@@ -1984,7 +1984,7 @@ async function generateProductFormGI3AHtml(registration: any, productName: strin
 async function generateProductNOCHtml(registration: any, productName: string): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  const organizationName = getProductAssociation(productName);
+  const organizationName = await getProductAssociation(productName);
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   return `
