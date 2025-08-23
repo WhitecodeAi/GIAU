@@ -75,7 +75,6 @@ export default function RegistrationDetails() {
   const [exportingStates, setExportingStates] = useState<{
     [key: string]: boolean;
   }>({});
-  const [isExportingCard, setIsExportingCard] = useState(false);
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
@@ -122,43 +121,6 @@ export default function RegistrationDetails() {
   const formatTurnover = (amount?: number, unit?: string) => {
     if (!amount) return "Not specified";
     return `₹${amount.toLocaleString("en-IN")} ${unit || "Lakh"}`;
-  };
-
-  const handleExportCard = async () => {
-    try {
-      setIsExportingCard(true);
-      const response = await fetch("/api/registrations/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ registrationIds: [registration!.id] }),
-      });
-
-      if (response.ok) {
-        // Get the HTML content and open in new window for printing
-        const htmlContent = await response.text();
-        const newWindow = window.open("", "_blank");
-        if (newWindow) {
-          newWindow.document.write(htmlContent);
-          newWindow.document.close();
-
-          // Auto-trigger print dialog after page loads
-          newWindow.onload = () => {
-            setTimeout(() => {
-              newWindow.print();
-            }, 500);
-          };
-        }
-      } else {
-        throw new Error("Export failed");
-      }
-    } catch (error) {
-      console.error("Export card error:", error);
-      alert("Failed to export producer card");
-    } finally {
-      setIsExportingCard(false);
-    }
   };
 
   const handleExportProduct = async (
@@ -274,31 +236,20 @@ export default function RegistrationDetails() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white">
       <div className="desktop-content max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pt-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate(-1)}
-              className="text-[hsl(var(--geo-secondary))] hover:text-[hsl(var(--geo-secondary))]/80"
-            >
-              <ArrowLeft size={24} />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Registration Details
-              </h1>
-              <p className="text-gray-600">Registration ID: {registration.id}</p>
-            </div>
-          </div>
-
+        <div className="flex items-center gap-4 mb-8 pt-6">
           <Button
-            onClick={handleExportCard}
-            disabled={isExportingCard}
-            className="bg-green-600 hover:bg-green-700"
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="text-[hsl(var(--geo-secondary))] hover:text-[hsl(var(--geo-secondary))]/80"
           >
-            <Download size={16} className="mr-2" />
-            {isExportingCard ? "Exporting..." : "Export Card"}
+            <ArrowLeft size={24} />
           </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Registration Details
+            </h1>
+            <p className="text-gray-600">Registration ID: {registration.id}</p>
+          </div>
         </div>
 
         {/* Registration Content */}
