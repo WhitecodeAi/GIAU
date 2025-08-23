@@ -591,6 +591,11 @@ async function generateFormGI3AHtml(
     registration.category_names?.split(",")[0] ||
     "Bodo Traditional Food Product";
 
+  // Get signature image URL if available
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
+    : `<div class="signature-line"></div>`;
+
   return `
     <div class="form-page">
       <div class="form-header">
