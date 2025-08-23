@@ -670,6 +670,9 @@ export default function AdminDashboard() {
                     : "Select All"}
                 </Button>
 
+                {/* Removed: Export Cards, Form GI 3A, NOC, and Statement buttons */}
+                {/* These functionalities are now available in individual registration details pages */}
+                {/*
                 <Button
                   onClick={handleExportSelected}
                   disabled={selectedRegistrations.size === 0}
@@ -717,6 +720,7 @@ export default function AdminDashboard() {
                     ? "Exporting..."
                     : `Statement (${selectedRegistrations.size})`}
                 </Button>
+                */}
               </div>
             </div>
 
