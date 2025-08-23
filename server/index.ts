@@ -152,6 +152,11 @@ export function createServer() {
   app.post("/api/users/export", exportUsersWithDateRange); // Admin route for user export
   app.post("/api/registrations/export-by-user", exportRegistrationsByUser); // Admin route for user-specific export
   app.post("/api/users/export-by-products", exportUsersByProducts); // Admin route for product-wise export
+
+  // Product-specific export routes
+  app.post("/api/registrations/export-product-gi3a", exportProductGI3A); // Admin route for product-specific Form GI 3A
+  app.post("/api/registrations/export-product-noc", exportProductNOC); // Admin route for product-specific NOC
+  app.post("/api/registrations/export-product-statement", exportProductStatement); // Admin route for product-specific Statement
   app.get("/api/registrations/:id", getRegistrationById);
 
   // User routes (admin)
