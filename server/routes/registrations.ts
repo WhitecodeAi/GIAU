@@ -1837,9 +1837,43 @@ export async function exportProductStatement(req: Request, res: Response) {
   }
 }
 
+// Product-to-Association mapping
+const PRODUCT_ASSOCIATIONS: { [key: string]: string } = {
+  "Bodo Aronai": "Association of Bodo Traditional Weaver",
+  "Bodo Gamsa": "Association of Bodo Traditional Weaver",
+  "Bodo Napham": "Association of Traditional Food Products",
+  "Bodo Kham": "Bodo Musical Artisan's Association",
+  "Bodo Keradapini": "Bodo Ethnic- Agro Food Producer's Association",
+  "Bodo Dokhona": "Association of Bodo Traditional Weaver",
+  "Bodo Gongar Dunja": "Association of Bodo Traditional Weaver",
+  "Bodo Eri Silk": "Association of Bodo Traditional Weaver",
+  "Bodo Indi Silk": "Association of Bodo Traditional Weaver",
+  "Bodo Gamus": "Association of Bodo Traditional Weaver",
+  "Bodo Jomgra": "Bodo Musical Artisan's Association",
+};
+
+function getProductAssociation(productName: string): string {
+  // Check for exact match first
+  if (PRODUCT_ASSOCIATIONS[productName]) {
+    return PRODUCT_ASSOCIATIONS[productName];
+  }
+
+  // Check for partial matches (in case of slight variations)
+  for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
+    if (productName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(productName.toLowerCase())) {
+      return value;
+    }
+  }
+
+  // Default fallback
+  return "Bodo Traditional Producers Association";
+}
+
 // Helper functions for product-specific exports
 async function generateProductFormGI3AHtml(registration: any, productName: string): Promise<string> {
   const registrationDate = new Date(registration.created_at).toLocaleDateString("en-GB");
+  const associationName = getProductAssociation(productName);
 
   return `
     <div class="form-page">
