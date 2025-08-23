@@ -1207,7 +1207,7 @@ async function generateStatementOfCaseHtml(
         </div>
 
         <div class="signature-area">
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature and Name of the Authorised User)<br>
