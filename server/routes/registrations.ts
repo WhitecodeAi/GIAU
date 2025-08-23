@@ -1344,7 +1344,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
       return res.status(404).json({ error: "Registration not found" });
     }
 
-    // Fetch product association from database using same method as registration details
+    // Fetch product association from database - association name is stored in description field
     const productData = await dbQuery(
       `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
       [productName]
@@ -1352,7 +1352,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
     const registration = registrations[0];
     registration.product_names = productName;
-    registration.product_association = productData.length > 0 ? productData[0].association_name : null;
+    registration.product_association = productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
     const formHtml = await generateProductFormGI3AHtml(registration, productName);
