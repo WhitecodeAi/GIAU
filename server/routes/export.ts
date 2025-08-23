@@ -1096,6 +1096,17 @@ export async function exportStatementOfCase(req: Request, res: Response) {
         .currency {
           font-family: 'Times New Roman', serif;
         }
+
+        .statement-signature-image {
+          max-width: 250px;
+          max-height: 80px;
+          object-fit: contain;
+          border: 2px solid #000;
+          padding: 10px;
+          background: #fff;
+          margin: 30px auto;
+          display: block;
+        }
       </style>
     </head>
     <body>
