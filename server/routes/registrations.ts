@@ -1958,6 +1958,11 @@ async function generateProductFormGI3AHtml(
     );
   }
 
+  // Get signature image HTML if available
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
+    : `<div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
+
   return `
     <div class="form-page">
       <div class="form-header">
@@ -2034,7 +2039,7 @@ async function generateProductFormGI3AHtml(
           </div>
 
           <div class="signature-area">
-            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            ${signatureHtml}
             <div class="signature-label">
               <strong>SIGNATURE</strong><br>
               (${registration.name})
