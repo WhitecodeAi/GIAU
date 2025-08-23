@@ -1718,7 +1718,14 @@ export async function exportProductStatement(req: Request, res: Response) {
       return res.status(404).json({ error: "Registration not found" });
     }
 
+    // Fetch product association from database
+    const productData = await dbQuery(
+      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
+      [productName]
+    );
+
     const registration = registrations[0];
+    registration.product_association = productData.length > 0 ? productData[0].association_name : null;
 
     // Generate HTML for the specific product
     const statementHtml = await generateProductStatementHtml(registration, productName);
