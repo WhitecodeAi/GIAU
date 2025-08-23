@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { dbQuery, dbRun } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
+import type { Request, Response } from "express";
 import { simpleFileStorage } from "../utils/simpleFileStorage";
 import { compressedFileStorage } from "../utils/compressedFileStorage";
 import multer from "multer";
