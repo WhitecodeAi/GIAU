@@ -35,6 +35,7 @@ import {
   exportProductGI3A,
   exportProductNOC,
   exportProductStatement,
+  exportProductCard,
 } from "./routes/registrations";
 
 // User routes
