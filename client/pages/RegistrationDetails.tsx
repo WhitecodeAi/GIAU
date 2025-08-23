@@ -445,9 +445,88 @@ export default function RegistrationDetails() {
                         key={detail.id}
                         className="bg-gray-50 border border-gray-200 rounded-lg p-4"
                       >
-                        <h4 className="font-semibold text-gray-800 mb-3">
-                          {detail.productName}
-                        </h4>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-800">
+                            {detail.productName}
+                          </h4>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "gi3a",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-gi3a`
+                                ]
+                              }
+                              className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-gi3a`
+                              ]
+                                ? "..."
+                                : "Form GI 3A"}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "noc",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-noc`
+                                ]
+                              }
+                              className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-noc`
+                              ]
+                                ? "..."
+                                : "NOC"}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "statement",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-statement`
+                                ]
+                              }
+                              className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-statement`
+                              ]
+                                ? "..."
+                                : "Statement"}
+                            </Button>
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                           {detail.annualProduction && (
                             <div>
