@@ -133,21 +133,13 @@ export default function RegistrationDetails() {
     try {
       setExportingStates((prev) => ({ ...prev, [exportKey]: true }));
 
-      // Handle card export differently - use the general export endpoint
-      let endpoint: string;
-      let body: any;
-
-      if (exportType === "card") {
-        endpoint = "/api/registrations/export";
-        body = JSON.stringify({ registrationIds: [registration!.id] });
-      } else {
-        endpoint = `/api/registrations/export-product-${exportType}`;
-        body = JSON.stringify({
-          registrationId: registration!.id,
-          productId: productId,
-          productName: productName,
-        });
-      }
+      // Use product-specific endpoints for all export types
+      const endpoint = `/api/registrations/export-product-${exportType}`;
+      const body = JSON.stringify({
+        registrationId: registration!.id,
+        productId: productId,
+        productName: productName,
+      });
 
       const response = await fetch(endpoint, {
         method: "POST",
