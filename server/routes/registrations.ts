@@ -2016,7 +2016,16 @@ async function generateProductFormGI3AHtml(registration: any, productName: strin
 async function generateProductNOCHtml(registration: any, productName: string): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  const organizationName = await getProductAssociation(productName);
+
+  // Use association from registration data if available, otherwise use static mapping
+  let organizationName = registration.product_association;
+  if (!organizationName) {
+    console.log(`⚠️ No association found in registration data for NOC, using static mapping for: ${productName}`);
+    organizationName = await getProductAssociation(productName);
+  } else {
+    console.log(`✅ Using association from database for NOC: ${organizationName} for product: ${productName}`);
+  }
+
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   return `
