@@ -1554,7 +1554,7 @@ export async function exportProductNOC(req: Request, res: Response) {
     );
 
     const registration = registrations[0];
-    registration.product_association = productData.length > 0 ? productData[0].association_name : null;
+    registration.product_association = productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
     const nocHtml = await generateProductNOCHtml(registration, productName);
