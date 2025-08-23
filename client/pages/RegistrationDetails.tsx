@@ -72,6 +72,9 @@ export default function RegistrationDetails() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportingStates, setExportingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
