@@ -2013,7 +2013,7 @@ async function generateProductNOCHtml(registration: any, productName: string): P
 
 async function generateProductStatementHtml(registration: any, productName: string): Promise<string> {
   const statementDate = new Date().toLocaleDateString("en-GB");
-  const organizationName = "Bodo Traditional Food Producers Association";
+  const organizationName = getProductAssociation(productName);
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
   const registrationYear = new Date(registration.created_at).getFullYear();
