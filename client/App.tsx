@@ -19,7 +19,7 @@ import RegistrationDetails from "./pages/RegistrationDetails";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 
-const App = () => {
+function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -49,6 +49,7 @@ const App = () => {
       <Toaster />
     </BrowserRouter>
   );
-};
+}
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
