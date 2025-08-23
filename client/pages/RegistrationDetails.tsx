@@ -126,24 +126,35 @@ export default function RegistrationDetails() {
   const handleExportProduct = async (
     productId: number,
     productName: string,
-    exportType: "gi3a" | "noc" | "statement",
+    exportType: "gi3a" | "noc" | "statement" | "card",
   ) => {
     const exportKey = `${productId}-${exportType}`;
 
     try {
       setExportingStates((prev) => ({ ...prev, [exportKey]: true }));
 
-      const endpoint = `/api/registrations/export-product-${exportType}`;
+      // Handle card export differently - use the general export endpoint
+      let endpoint: string;
+      let body: any;
+
+      if (exportType === "card") {
+        endpoint = "/api/registrations/export";
+        body = JSON.stringify({ registrationIds: [registration!.id] });
+      } else {
+        endpoint = `/api/registrations/export-product-${exportType}`;
+        body = JSON.stringify({
+          registrationId: registration!.id,
+          productId: productId,
+          productName: productName,
+        });
+      }
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          registrationId: registration!.id,
-          productId: productId,
-          productName: productName,
-        }),
+        body: body,
       });
 
       if (response.ok) {
