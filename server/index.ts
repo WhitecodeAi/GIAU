@@ -161,6 +161,7 @@ export function createServer() {
     "/api/registrations/export-product-statement",
     exportProductStatement,
   ); // Admin route for product-specific Statement
+  app.post("/api/registrations/export-product-card", exportProductCard); // Admin route for product-specific Card
   app.get("/api/registrations/:id", getRegistrationById);
 
   // User routes (admin)
