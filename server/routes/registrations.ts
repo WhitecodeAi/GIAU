@@ -1928,7 +1928,7 @@ async function generateProductFormGI3AHtml(registration: any, productName: strin
           <div class="declaration-title">Declaration:</div>
 
           <div class="declaration-item">
-            <strong>1.</strong> I hereby declare that I have enclosed the statement of case and evidence of due service of copy of my application to the registered proprietor (Bodo Traditional Food Producers Association) for (${productName}), registered as a Geographical Indication.
+            <strong>1.</strong> I hereby declare that I have enclosed the statement of case and evidence of due service of copy of my application to the registered proprietor (${associationName}) for (${productName}), registered as a Geographical Indication.
           </div>
 
           <div class="declaration-item">
