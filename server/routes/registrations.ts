@@ -1908,7 +1908,15 @@ async function getProductAssociation(productName: string): Promise<string> {
 // Helper functions for product-specific exports
 async function generateProductFormGI3AHtml(registration: any, productName: string): Promise<string> {
   const registrationDate = new Date(registration.created_at).toLocaleDateString("en-GB");
-  const associationName = await getProductAssociation(productName);
+
+  // Use association from registration data if available, otherwise use static mapping
+  let associationName = registration.product_association;
+  if (!associationName) {
+    console.log(`⚠️ No association found in registration data, using static mapping for: ${productName}`);
+    associationName = await getProductAssociation(productName);
+  } else {
+    console.log(`✅ Using association from database: ${associationName} for product: ${productName}`);
+  }
 
   return `
     <div class="form-page">
