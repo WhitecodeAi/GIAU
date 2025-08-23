@@ -683,14 +683,14 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button
+            {/* <Button
               onClick={() => navigate("/api-test")}
               variant="outline"
               size="sm"
               className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border-yellow-200"
             >
               Debug API
-            </Button>
+            </Button> */}
 
             <Button
               onClick={() => navigate("/admin/users")}
