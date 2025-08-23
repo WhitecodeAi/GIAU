@@ -32,6 +32,9 @@ import {
   getRegistrationById,
   generateReport,
   verifyRegistration,
+  exportProductGI3A,
+  exportProductNOC,
+  exportProductStatement,
 } from "./routes/registrations";
 
 // User routes
