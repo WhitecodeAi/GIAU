@@ -123,6 +123,60 @@ export default function RegistrationDetails() {
     return `₹${amount.toLocaleString("en-IN")} ${unit || "Lakh"}`;
   };
 
+  const handleExportProduct = async (
+    productId: number,
+    productName: string,
+    exportType: "gi3a" | "noc" | "statement",
+  ) => {
+    const exportKey = `${productId}-${exportType}`;
+
+    try {
+      setExportingStates(prev => ({ ...prev, [exportKey]: true }));
+
+      const endpoint = `/api/registrations/export-product-${exportType}`;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registrationId: registration!.id,
+          productId: productId,
+          productName: productName,
+        }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Export failed`);
+      }
+    } catch (error) {
+      console.error(`Export ${exportType} error:`, error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : `Failed to export ${exportType.toUpperCase()} for ${productName}`,
+      );
+    } finally {
+      setExportingStates(prev => ({ ...prev, [exportKey]: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white">
