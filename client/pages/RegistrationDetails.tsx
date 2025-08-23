@@ -124,6 +124,43 @@ export default function RegistrationDetails() {
     return `₹${amount.toLocaleString("en-IN")} ${unit || "Lakh"}`;
   };
 
+  const handleExportCard = async () => {
+    try {
+      setIsExportingCard(true);
+      const response = await fetch("/api/registrations/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationIds: [registration!.id] }),
+      });
+
+      if (response.ok) {
+        // Get the HTML content and open in new window for printing
+        const htmlContent = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(htmlContent);
+          newWindow.document.close();
+
+          // Auto-trigger print dialog after page loads
+          newWindow.onload = () => {
+            setTimeout(() => {
+              newWindow.print();
+            }, 500);
+          };
+        }
+      } else {
+        throw new Error("Export failed");
+      }
+    } catch (error) {
+      console.error("Export card error:", error);
+      alert("Failed to export producer card");
+    } finally {
+      setIsExportingCard(false);
+    }
+  };
+
   const handleExportProduct = async (
     productId: number,
     productName: string,
