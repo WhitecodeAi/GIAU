@@ -529,7 +529,6 @@ export async function exportFormGI3A(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          border-top: 1px solid #000;
           padding-top: 5px;
           margin-left: 50px;
         }
@@ -537,6 +536,21 @@ export async function exportFormGI3A(req: Request, res: Response) {
         .signature-label {
           margin-top: 10px;
           font-size: 11pt;
+        }
+
+        .signature-image {
+          max-width: 200px;
+          max-height: 60px;
+          object-fit: contain;
+          border: 1px solid #000;
+          padding: 5px;
+          background: #fff;
+        }
+
+        .signature-line {
+          height: 60px;
+          border-bottom: 1px solid #000;
+          margin-bottom: 10px;
         }
 
         .underline {
@@ -576,6 +590,11 @@ async function generateFormGI3AHtml(
     registration.product_names?.split(",")[0] ||
     registration.category_names?.split(",")[0] ||
     "Bodo Traditional Food Product";
+
+  // Get signature image URL if available
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
+    : `<div class="signature-line"></div>`;
 
   return `
     <div class="form-page">
@@ -653,7 +672,7 @@ async function generateFormGI3AHtml(
           </div>
 
           <div class="signature-area">
-            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            ${signatureHtml}
             <div class="signature-label">
               <strong>SIGNATURE</strong><br>
               (${registration.name})
@@ -1077,6 +1096,17 @@ export async function exportStatementOfCase(req: Request, res: Response) {
         .currency {
           font-family: 'Times New Roman', serif;
         }
+
+        .statement-signature-image {
+          max-width: 250px;
+          max-height: 80px;
+          object-fit: contain;
+          border: 2px solid #000;
+          padding: 10px;
+          background: #fff;
+          margin: 30px auto;
+          display: block;
+        }
       </style>
     </head>
     <body>
@@ -1132,6 +1162,11 @@ async function generateStatementOfCaseHtml(
       ? "Two Lakh Fifty Thousand Only"
       : "One Lakh Fifty Thousand Only";
 
+  // Get signature image HTML if available
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
+    : `<div class="signature-line"></div>`;
+
   return `
     <div class="statement-page">
       <div class="statement-header">
@@ -1172,7 +1207,7 @@ async function generateStatementOfCaseHtml(
         </div>
 
         <div class="signature-area">
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature and Name of the Authorised User)<br>
