@@ -1838,6 +1838,8 @@ export async function exportProductStatement(req: Request, res: Response) {
 }
 
 async function getProductAssociation(productName: string): Promise<string> {
+  console.log(`🔍 Looking up association for product: "${productName}"`);
+
   try {
     // Try to fetch from database first
     const productResult = await dbQuery(
@@ -1848,11 +1850,16 @@ async function getProductAssociation(productName: string): Promise<string> {
       [productName]
     );
 
+    console.log(`📋 Database query result:`, productResult);
+
     if (productResult.length > 0 && productResult[0].association_name) {
+      console.log(`✅ Found association in database: ${productResult[0].association_name}`);
       return productResult[0].association_name;
     }
 
     // Fallback to static mapping if no database field exists
+    console.log(`🔄 Falling back to static mapping for: ${productName}`);
+
     const PRODUCT_ASSOCIATIONS: { [key: string]: string } = {
       "Bodo Aronai": "Association of Bodo Traditional Weaver",
       "Bodo Gamsa": "Association of Bodo Traditional Weaver",
@@ -1869,6 +1876,7 @@ async function getProductAssociation(productName: string): Promise<string> {
 
     // Check for exact match first
     if (PRODUCT_ASSOCIATIONS[productName]) {
+      console.log(`✅ Found exact match: ${PRODUCT_ASSOCIATIONS[productName]}`);
       return PRODUCT_ASSOCIATIONS[productName];
     }
 
@@ -1876,14 +1884,16 @@ async function getProductAssociation(productName: string): Promise<string> {
     for (const [key, value] of Object.entries(PRODUCT_ASSOCIATIONS)) {
       if (productName.toLowerCase().includes(key.toLowerCase()) ||
           key.toLowerCase().includes(productName.toLowerCase())) {
+        console.log(`✅ Found partial match: ${value} for key: ${key}`);
         return value;
       }
     }
 
     // Default fallback
+    console.log(`⚠️ No match found, using default association`);
     return "Bodo Traditional Producers Association";
   } catch (error) {
-    console.error("Error fetching product association:", error);
+    console.error("❌ Error fetching product association:", error);
     return "Bodo Traditional Producers Association";
   }
 }
