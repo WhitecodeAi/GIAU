@@ -477,6 +477,31 @@ export default function RegistrationDetails() {
                                 handleExportProduct(
                                   detail.productId || detail.id,
                                   detail.productName,
+                                  "card",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-card`
+                                ]
+                              }
+                              className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-card`
+                              ]
+                                ? "..."
+                                : "Card"}
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
                                   "gi3a",
                                 )
                               }
