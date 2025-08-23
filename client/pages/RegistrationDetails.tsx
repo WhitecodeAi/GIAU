@@ -126,24 +126,27 @@ export default function RegistrationDetails() {
   const handleExportProduct = async (
     productId: number,
     productName: string,
-    exportType: "gi3a" | "noc" | "statement",
+    exportType: "gi3a" | "noc" | "statement" | "card",
   ) => {
     const exportKey = `${productId}-${exportType}`;
 
     try {
       setExportingStates((prev) => ({ ...prev, [exportKey]: true }));
 
+      // Use product-specific endpoints for all export types
       const endpoint = `/api/registrations/export-product-${exportType}`;
+      const body = JSON.stringify({
+        registrationId: registration!.id,
+        productId: productId,
+        productName: productName,
+      });
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          registrationId: registration!.id,
-          productId: productId,
-          productName: productName,
-        }),
+        body: body,
       });
 
       if (response.ok) {
@@ -162,16 +165,28 @@ export default function RegistrationDetails() {
           };
         }
       } else {
-        // Read response as text first to avoid "body stream already read" error
+        // Handle error response more safely
         let errorMessage = `Export failed with status: ${response.status}`;
-        try {
-          const errorText = await response.text();
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch (parseError) {
-          // If it's not JSON, use the text as error message
-          console.error("Failed to parse error response:", parseError);
+
+        // Only try to read the response body if it exists and hasn't been read
+        if (response.body && !response.bodyUsed) {
+          try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              const errorText = await response.text();
+              if (errorText) {
+                errorMessage = errorText;
+              }
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error response:", parseError);
+            // Use the default error message if parsing fails
+          }
         }
+
         throw new Error(errorMessage);
       }
     } catch (error) {
@@ -459,6 +474,31 @@ export default function RegistrationDetails() {
                             {detail.productName}
                           </h4>
                           <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleExportProduct(
+                                  detail.productId || detail.id,
+                                  detail.productName,
+                                  "card",
+                                )
+                              }
+                              disabled={
+                                exportingStates[
+                                  `${detail.productId || detail.id}-card`
+                                ]
+                              }
+                              className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                            >
+                              <Download size={12} className="mr-1" />
+                              {exportingStates[
+                                `${detail.productId || detail.id}-card`
+                              ]
+                                ? "..."
+                                : "Card"}
+                            </Button>
+
                             <Button
                               size="sm"
                               variant="outline"

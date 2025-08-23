@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { dbQuery, dbRun } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
+import type { Request, Response } from "express";
 import { simpleFileStorage } from "../utils/simpleFileStorage";
 import { compressedFileStorage } from "../utils/compressedFileStorage";
 import multer from "multer";
@@ -2189,6 +2190,333 @@ async function generateProductStatementHtml(
             <strong>${registration.name}</strong>
           </div>
         </div>
+      </div>
+    </div>
+  `;
+}
+
+export async function exportProductCard(req: Request, res: Response) {
+  try {
+    const { registrationId, productId, productName } = req.body;
+
+    if (!registrationId || !productName) {
+      return res.status(400).json({
+        error: "Registration ID and product name are required",
+      });
+    }
+
+    // Fetch registration data
+    const registrations = await dbQuery(
+      `
+      SELECT
+        ur.id,
+        ur.name,
+        ur.address,
+        ur.age,
+        ur.phone,
+        ur.email,
+        ur.aadhar_number,
+        ur.voter_id,
+        ur.created_at,
+        ur.photo_path,
+        ur.signature_path
+      FROM user_registrations ur
+      WHERE ur.id = ?
+    `,
+      [registrationId],
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Fetch product association from database - association name is stored in description field
+    const productData = await dbQuery(
+      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
+      [productName],
+    );
+
+    const registration = registrations[0];
+    registration.product_names = productName;
+    registration.product_association =
+      productData.length > 0 ? productData[0].description : null;
+
+    // Generate HTML for the specific product card
+    const cardHtml = await generateProductCardHtml(registration, productName);
+
+    // Create complete HTML document
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Producer Card - ${productName}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 10mm;
+        }
+
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+
+        .card {
+          width: 200mm;
+          height: 130mm;
+          border: 4px solid #2c3e50;
+          margin: 0 auto;
+          position: relative;
+          background: #fff;
+          box-sizing: border-box;
+          padding: 0;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .card-header {
+          background: #2c3e50;
+          color: white;
+          text-align: center;
+          padding: 12px;
+          font-weight: bold;
+          font-size: 18px;
+          margin: 0;
+          letter-spacing: 1px;
+        }
+
+        .card-content {
+          padding: 20px;
+          height: calc(100% - 70px);
+          display: flex;
+          position: relative;
+        }
+
+        .left-section {
+          flex: 1;
+          padding-right: 20px;
+        }
+
+        .right-section {
+          width: 120px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 15px;
+        }
+
+        .field {
+          margin-bottom: 10px;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .field-label {
+          font-weight: bold;
+          display: inline-block;
+          min-width: 140px;
+          color: #2c3e50;
+        }
+
+        .field-value {
+          color: #34495e;
+          font-weight: 500;
+        }
+
+        .profile-photo {
+          width: 100px;
+          height: 120px;
+          border: 2px solid #bdc3c7;
+          background: #ecf0f1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          color: #7f8c8d;
+          text-align: center;
+          object-fit: cover;
+          border-radius: 4px;
+        }
+
+        .membership-box {
+          text-align: center;
+          background: #ecf0f1;
+          padding: 10px;
+          border-radius: 4px;
+          border: 1px solid #bdc3c7;
+          width: 100px;
+        }
+
+        .membership-no {
+          font-weight: bold;
+          font-size: 11px;
+          color: #2c3e50;
+          line-height: 1.2;
+        }
+
+        .signature-section {
+          position: absolute;
+          bottom: 25px;
+          left: 20px;
+          right: 140px;
+        }
+
+        .signature-label {
+          font-size: 12px;
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: #2c3e50;
+        }
+
+        .signature-box {
+          width: 180px;
+          height: 60px;
+          border: 2px solid #bdc3c7;
+          background: #f8f9fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          color: #7f8c8d;
+          border-radius: 4px;
+        }
+
+        .signature-stamp {
+          max-width: 170px;
+          max-height: 55px;
+          object-fit: contain;
+        }
+
+        .yellow-footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 12px;
+          background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
+        }
+      </style>
+    </head>
+    <body>
+      ${cardHtml}
+    </body>
+    </html>
+    `;
+
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="producer-card.html"',
+    );
+    res.send(fullHtml);
+  } catch (error) {
+    console.error("Export Product Card error:", error);
+    res.status(500).json({ error: "Failed to export producer card" });
+  }
+}
+
+async function generateProductCardHtml(
+  registration: any,
+  productName: string,
+): Promise<string> {
+  // Generate membership number (BTF prefix + ID)
+  const membershipNo = `BTF - ${registration.id.toString().padStart(2, "0")}`;
+
+  // Get photo URL if available
+  let photoHtml = `<div class="profile-photo">Profile Photo</div>`;
+  if (registration.photo_path) {
+    const photoUrl = simpleFileStorage.getFileUrl(registration.photo_path);
+    photoHtml = `<img src="${photoUrl}" alt="Profile Photo" class="profile-photo" />`;
+  }
+
+  // Get signature/stamp if available
+  let signatureHtml = `<div class="signature-box">Stamp or Sign of the Association Head:<br/>Signature</div>`;
+  if (registration.signature_path) {
+    const signatureUrl = simpleFileStorage.getFileUrl(
+      registration.signature_path,
+    );
+    signatureHtml = `<img src="${signatureUrl}" alt="Signature" class="signature-stamp" />`;
+  }
+
+  // Format registration date
+  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+    "en-GB",
+  );
+
+  // Use association from registration data if available, otherwise use static mapping
+  let associationName = registration.product_association;
+  if (!associationName) {
+    console.log(
+      `⚠️ No association found in registration data for Card, using static mapping for: ${productName}`,
+    );
+    associationName = await getProductAssociation(productName);
+  } else {
+    console.log(
+      `✅ Using association from database for Card: ${associationName} for product: ${productName}`,
+    );
+  }
+
+  return `
+    <div class="card">
+      <div class="card-header">
+        FOOD PRODUCT – PRODUCER'S CARD
+      </div>
+
+      <div class="card-content">
+        <div class="left-section">
+          <div class="field">
+            <span class="field-label">Date of Registration:</span>
+            <span class="field-value">${registrationDate}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Name:</span>
+            <span class="field-value">${registration.name}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Address:</span>
+            <span class="field-value">${registration.address}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Age:</span>
+            <span class="field-value">${registration.age}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Mobile Number:</span>
+            <span class="field-value">${registration.phone}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Products Name:</span>
+            <span class="field-value">${productName}</span>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Card Issued By (Association Name):</span>
+            <span class="field-value">${associationName}</span>
+          </div>
+        </div>
+
+        <div class="right-section">
+          <div class="membership-box">
+            <div class="membership-no">Membership No:</div>
+            <div class="membership-no">${membershipNo}</div>
+          </div>
+
+          ${photoHtml}
+        </div>
+
+        <div class="signature-section">
+          <div class="signature-label">Stamp or Sign of the Association Head:</div>
+          ${signatureHtml}
+        </div>
+
+        <div class="yellow-footer"></div>
       </div>
     </div>
   `;
