@@ -92,9 +92,11 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [isExportingByProducts, setIsExportingByProducts] = useState(false);
-  const [isExportingGI3A, setIsExportingGI3A] = useState(false);
-  const [isExportingNOC, setIsExportingNOC] = useState(false);
-  const [isExportingStatement, setIsExportingStatement] = useState(false);
+  // Removed: Export Cards, Form GI 3A, NOC, and Statement functionality
+  // These are now available in individual registration details pages
+  // const [isExportingGI3A, setIsExportingGI3A] = useState(false);
+  // const [isExportingNOC, setIsExportingNOC] = useState(false);
+  // const [isExportingStatement, setIsExportingStatement] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -275,174 +277,29 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleExportSelected = async () => {
-    if (selectedRegistrations.size === 0) {
-      alert("Please select registrations to export");
-      return;
-    }
+  // Removed: Export Cards functionality - now available in registration details
+  // const handleExportSelected = async () => {
+  //   if (selectedRegistrations.size === 0) {
+  //     alert("Please select registrations to export");
+  //     return;
+  //   }
+  //   ...
+  // };
 
-    try {
-      const selectedIds = Array.from(selectedRegistrations);
-      const response = await fetch("/api/registrations/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ registrationIds: selectedIds }),
-      });
+  // Removed: Form GI 3A export functionality - now available in registration details
+  // const handleExportFormGI3A = async () => {
+  //   ...
+  // };
 
-      if (response.ok) {
-        // Get the HTML content and open in new window for printing
-        const htmlContent = await response.text();
-        const newWindow = window.open("", "_blank");
-        if (newWindow) {
-          newWindow.document.write(htmlContent);
-          newWindow.document.close();
+  // Removed: NOC export functionality - now available in registration details
+  // const handleExportNOC = async () => {
+  //   ...
+  // };
 
-          // Auto-trigger print dialog after page loads
-          newWindow.onload = () => {
-            setTimeout(() => {
-              newWindow.print();
-            }, 500);
-          };
-        }
-      } else {
-        throw new Error("Export failed");
-      }
-    } catch (error) {
-      console.error("Export error:", error);
-      alert("Failed to export registrations");
-    }
-  };
-
-  const handleExportFormGI3A = async () => {
-    if (selectedRegistrations.size === 0) {
-      alert("Please select registrations to export as Form GI 3A");
-      return;
-    }
-
-    try {
-      setIsExportingGI3A(true);
-      const selectedIds = Array.from(selectedRegistrations);
-      const response = await fetch("/api/registrations/export-gi3a", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ registrationIds: selectedIds }),
-      });
-
-      if (response.ok) {
-        // Get the HTML content and open in new window for printing
-        const htmlContent = await response.text();
-        const newWindow = window.open("", "_blank");
-        if (newWindow) {
-          newWindow.document.write(htmlContent);
-          newWindow.document.close();
-
-          // Auto-trigger print dialog after page loads
-          newWindow.onload = () => {
-            setTimeout(() => {
-              newWindow.print();
-            }, 500);
-          };
-        }
-      } else {
-        throw new Error("Form GI 3A export failed");
-      }
-    } catch (error) {
-      console.error("Form GI 3A export error:", error);
-      alert("Failed to export Form GI 3A");
-    } finally {
-      setIsExportingGI3A(false);
-    }
-  };
-
-  const handleExportNOC = async () => {
-    if (selectedRegistrations.size === 0) {
-      alert("Please select registrations to export as NOC");
-      return;
-    }
-
-    try {
-      setIsExportingNOC(true);
-      const selectedIds = Array.from(selectedRegistrations);
-      const response = await fetch("/api/registrations/export-noc", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ registrationIds: selectedIds }),
-      });
-
-      if (response.ok) {
-        // Get the HTML content and open in new window for printing
-        const htmlContent = await response.text();
-        const newWindow = window.open("", "_blank");
-        if (newWindow) {
-          newWindow.document.write(htmlContent);
-          newWindow.document.close();
-
-          // Auto-trigger print dialog after page loads
-          newWindow.onload = () => {
-            setTimeout(() => {
-              newWindow.print();
-            }, 500);
-          };
-        }
-      } else {
-        throw new Error("NOC export failed");
-      }
-    } catch (error) {
-      console.error("NOC export error:", error);
-      alert("Failed to export No Objection Certificates");
-    } finally {
-      setIsExportingNOC(false);
-    }
-  };
-
-  const handleExportStatement = async () => {
-    if (selectedRegistrations.size === 0) {
-      alert("Please select registrations to export as Statement of Case");
-      return;
-    }
-
-    try {
-      setIsExportingStatement(true);
-      const selectedIds = Array.from(selectedRegistrations);
-      const response = await fetch("/api/registrations/export-statement", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ registrationIds: selectedIds }),
-      });
-
-      if (response.ok) {
-        // Get the HTML content and open in new window for printing
-        const htmlContent = await response.text();
-        const newWindow = window.open("", "_blank");
-        if (newWindow) {
-          newWindow.document.write(htmlContent);
-          newWindow.document.close();
-
-          // Auto-trigger print dialog after page loads
-          newWindow.onload = () => {
-            setTimeout(() => {
-              newWindow.print();
-            }, 500);
-          };
-        }
-      } else {
-        throw new Error("Statement of Case export failed");
-      }
-    } catch (error) {
-      console.error("Statement of Case export error:", error);
-      alert("Failed to export Statement of Case documents");
-    } finally {
-      setIsExportingStatement(false);
-    }
-  };
+  // Removed: Statement of Case export functionality - now available in registration details
+  // const handleExportStatement = async () => {
+  //   ...
+  // };
 
   const handleDateRangeChange = (
     startDate: string | null,
