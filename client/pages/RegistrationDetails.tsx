@@ -162,8 +162,17 @@ export default function RegistrationDetails() {
           };
         }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Export failed`);
+        // Read response as text first to avoid "body stream already read" error
+        let errorMessage = `Export failed with status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          // If it's not JSON, use the text as error message
+          console.error("Failed to parse error response:", parseError);
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error(`Export ${exportType} error:`, error);
