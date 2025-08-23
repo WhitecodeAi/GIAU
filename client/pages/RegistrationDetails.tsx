@@ -165,16 +165,28 @@ export default function RegistrationDetails() {
           };
         }
       } else {
-        // Read response as text first to avoid "body stream already read" error
+        // Handle error response more safely
         let errorMessage = `Export failed with status: ${response.status}`;
-        try {
-          const errorText = await response.text();
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch (parseError) {
-          // If it's not JSON, use the text as error message
-          console.error("Failed to parse error response:", parseError);
+
+        // Only try to read the response body if it exists and hasn't been read
+        if (response.body && !response.bodyUsed) {
+          try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              const errorText = await response.text();
+              if (errorText) {
+                errorMessage = errorText;
+              }
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error response:", parseError);
+            // Use the default error message if parsing fails
+          }
         }
+
         throw new Error(errorMessage);
       }
     } catch (error) {
