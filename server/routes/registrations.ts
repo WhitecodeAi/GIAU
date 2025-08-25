@@ -1981,9 +1981,16 @@ async function generateProductFormGI3AHtml(
   }
 
   // Get signature image HTML if available
+  console.log('🔍 Form GI 3A Generation Debug:');
+  console.log('- Registration Name:', registration.name);
+  console.log('- Product Name:', productName);
+  console.log('- Signature Path:', registration.signature_path);
+
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
     : `<div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
+
+  console.log('- Generated signature HTML:', signatureHtml.substring(0, 100) + '...');
 
   return `
     <div class="form-page">
