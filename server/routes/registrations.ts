@@ -1742,6 +1742,12 @@ export async function exportProductStatement(req: Request, res: Response) {
     registration.product_association =
       productData.length > 0 ? productData[0].description : null;
 
+    // Debug: Log signature path for Statement export
+    console.log('🔍 Statement Export Debug:');
+    console.log('- Registration ID:', registration.id);
+    console.log('- Signature Path:', registration.signature_path);
+    console.log('- Has signature_path:', !!registration.signature_path);
+
     // Generate HTML for the specific product
     const statementHtml = await generateProductStatementHtml(
       registration,
