@@ -245,6 +245,15 @@ export default function TestSignatureExport() {
                 </pre>
               </div>
             )}
+
+            {compareResult && (
+              <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-2">Comparison Results:</h4>
+                <pre className="text-xs text-blue-700 overflow-auto max-h-60">
+                  {JSON.stringify(compareResult, null, 2)}
+                </pre>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
