@@ -45,6 +45,7 @@ function App() {
         <Route path="/api-test" element={<ApiTest />} />
         <Route path="/compression-test" element={<CompressionTest />} />
         <Route path="/camera-test" element={<CameraTest />} />
+        <Route path="/test-signature" element={<TestSignatureExport />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
