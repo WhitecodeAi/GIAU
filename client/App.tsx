@@ -16,6 +16,7 @@ import CameraTest from "./pages/CameraTest";
 import UsersManagement from "./pages/UsersManagement";
 import UserRegistrations from "./pages/UserRegistrations";
 import RegistrationDetails from "./pages/RegistrationDetails";
+import TestSignatureExport from "./pages/TestSignatureExport";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 
