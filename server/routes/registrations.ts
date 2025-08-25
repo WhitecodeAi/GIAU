@@ -1923,9 +1923,11 @@ async function getProductAssociation(productName: string): Promise<string> {
       "Bodo Gamsa": "Association of Bodo Traditional Weaver",
       "Bodo Napham": "Association of Traditional Food Products",
       "Bodo Kham": "Bodo Musical Artisan's Association",
-      "Bodo Keradapini": "Bodo Ethnic- Agro Food Producer's Association",
+      "Bodo Keradapini": "Bodo Ethnic Agro Food Producer's Association",
       "Bodo Dokhona": "Association of Bodo Traditional Weaver",
       "Bodo Gongar Dunja": "Association of Bodo Traditional Weaver",
+      "Bodo Gongar Dunjia": "Bodo Ethnic Agro Food Producer's Association",
+      "Bodo Ondla": "Association of Traditional Food Products",
       "Bodo Eri Silk": "Association of Bodo Traditional Weaver",
       "Bodo Indi Silk": "Association of Bodo Traditional Weaver",
       "Bodo Gamus": "Association of Bodo Traditional Weaver",
@@ -1955,6 +1957,47 @@ async function getProductAssociation(productName: string): Promise<string> {
   } catch (error) {
     console.error("❌ Error fetching product association:", error);
     return "Bodo Traditional Producers Association";
+  }
+}
+
+// Helper function to get association stamp by association name
+async function getAssociationStamp(
+  associationName: string,
+): Promise<string | null> {
+  console.log(`🔍 Looking up stamp for association: "${associationName}"`);
+
+  try {
+    // First try exact match
+    let associationResult = await dbQuery(
+      `SELECT stamp_image_path FROM associations WHERE name = ? LIMIT 1`,
+      [associationName],
+    );
+
+    // If no exact match, try fuzzy matching (remove hyphens, extra spaces, etc.)
+    if (associationResult.length === 0) {
+      console.log(`🔄 Trying fuzzy match for: ${associationName}`);
+      const normalizedInput = associationName.replace(/[-\s]+/g, " ").trim();
+
+      associationResult = await dbQuery(
+        `SELECT stamp_image_path FROM associations WHERE REPLACE(REPLACE(name, '-', ' '), '  ', ' ') = ? LIMIT 1`,
+        [normalizedInput],
+      );
+    }
+
+    console.log(`📋 Association query result:`, associationResult);
+
+    if (associationResult.length > 0 && associationResult[0].stamp_image_path) {
+      console.log(
+        `✅ Found association stamp: ${associationResult[0].stamp_image_path}`,
+      );
+      return associationResult[0].stamp_image_path;
+    }
+
+    console.log(`⚠️ No stamp found for association: ${associationName}`);
+    return null;
+  } catch (error) {
+    console.error("❌ Error fetching association stamp:", error);
+    return null;
   }
 }
 
@@ -2105,6 +2148,17 @@ async function generateProductNOCHtml(
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
+  // Get association stamp for NOC signature
+  const associationStampPath = await getAssociationStamp(organizationName);
+  let signatureHtml = `<div class="signature-line"></div>`;
+  if (associationStampPath) {
+    const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 80px; object-fit: contain; margin: 30px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
+    console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
+  } else {
+    console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
+  }
+
   return `
     <div class="noc-page">
       <div class="noc-header">
@@ -2136,7 +2190,7 @@ async function generateProductNOCHtml(
           <div><strong>For and on behalf of</strong></div>
           <div class="organization-name">${organizationName}</div>
 
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature of GI Applicant's Association/ Organisation Head)
@@ -2483,19 +2537,8 @@ async function generateProductCardHtml(
     photoHtml = `<img src="${photoUrl}" alt="Profile Photo" class="profile-photo" />`;
   }
 
-  // Get signature/stamp if available
+  // Get association stamp instead of user signature for Card export
   let signatureHtml = `<div class="signature-box">Stamp or Sign of the Association Head:<br/>Signature</div>`;
-  if (registration.signature_path) {
-    const signatureUrl = simpleFileStorage.getFileUrl(
-      registration.signature_path,
-    );
-    signatureHtml = `<img src="${signatureUrl}" alt="Signature" class="signature-stamp" />`;
-  }
-
-  // Format registration date
-  const registrationDate = new Date(registration.created_at).toLocaleDateString(
-    "en-GB",
-  );
 
   // Use association from registration data if available, otherwise use static mapping
   let associationName = registration.product_association;
@@ -2509,6 +2552,21 @@ async function generateProductCardHtml(
       `✅ Using association from database for Card: ${associationName} for product: ${productName}`,
     );
   }
+
+  // Get association stamp instead of user signature
+  const associationStampPath = await getAssociationStamp(associationName);
+  if (associationStampPath) {
+    const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" class="signature-stamp" />`;
+    console.log(`✅ Using association stamp: ${stampUrl}`);
+  } else {
+    console.log(`⚠️ No association stamp found for: ${associationName}`);
+  }
+
+  // Format registration date
+  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+    "en-GB",
+  );
 
   return `
     <div class="card">
