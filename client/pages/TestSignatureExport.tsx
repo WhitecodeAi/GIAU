@@ -98,6 +98,41 @@ export default function TestSignatureExport() {
     }
   };
 
+  const testSignatureDebug = async () => {
+    setIsExporting(true);
+    setResult("");
+    setDebugResult(null);
+
+    try {
+      const response = await fetch('/api/test/signature-debug', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          registrationId: 13
+        })
+      });
+
+      if (response.ok) {
+        const debugData = await response.json();
+        setDebugResult(debugData);
+
+        if (debugData.registration.has_signature_path) {
+          setResult("✅ DEBUG: Registration has signature path!");
+        } else {
+          setResult("❌ DEBUG: Registration does NOT have signature path!");
+        }
+      } else {
+        setResult(`❌ DEBUG ERROR: ${response.status}`);
+      }
+    } catch (error) {
+      setResult(`❌ DEBUG ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white p-8">
       <div className="max-w-4xl mx-auto">
