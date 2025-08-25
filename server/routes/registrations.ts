@@ -1500,6 +1500,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
           min-width: 150px;
           display: inline-block;
         }
+
+        .signature-image {
+          max-width: 250px;
+          max-height: 80px;
+          object-fit: contain;
+          margin: 10px auto;
+          display: block;
+        }
       </style>
     </head>
     <body>
