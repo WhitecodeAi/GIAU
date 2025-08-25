@@ -2508,13 +2508,30 @@ async function generateProductCardHtml(
     photoHtml = `<img src="${photoUrl}" alt="Profile Photo" class="profile-photo" />`;
   }
 
-  // Get signature/stamp if available
+  // Get association stamp instead of user signature for Card export
   let signatureHtml = `<div class="signature-box">Stamp or Sign of the Association Head:<br/>Signature</div>`;
-  if (registration.signature_path) {
-    const signatureUrl = simpleFileStorage.getFileUrl(
-      registration.signature_path,
+
+  // Use association from registration data if available, otherwise use static mapping
+  let associationName = registration.product_association;
+  if (!associationName) {
+    console.log(
+      `⚠️ No association found in registration data for Card, using static mapping for: ${productName}`,
     );
-    signatureHtml = `<img src="${signatureUrl}" alt="Signature" class="signature-stamp" />`;
+    associationName = await getProductAssociation(productName);
+  } else {
+    console.log(
+      `✅ Using association from database for Card: ${associationName} for product: ${productName}`,
+    );
+  }
+
+  // Get association stamp instead of user signature
+  const associationStampPath = await getAssociationStamp(associationName);
+  if (associationStampPath) {
+    const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" class="signature-stamp" />`;
+    console.log(`✅ Using association stamp: ${stampUrl}`);
+  } else {
+    console.log(`⚠️ No association stamp found for: ${associationName}`);
   }
 
   // Format registration date
