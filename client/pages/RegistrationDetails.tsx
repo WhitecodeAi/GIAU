@@ -11,7 +11,15 @@ import {
   Package,
   Eye,
   Download,
+  Edit3,
+  Save,
+  X,
+  Upload,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +83,10 @@ export default function RegistrationDetails() {
   const [exportingStates, setExportingStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState<Partial<RegistrationDetails>>({});
+  const [saving, setSaving] = useState(false);
+  const [uploadingDocuments, setUploadingDocuments] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
@@ -107,6 +119,98 @@ export default function RegistrationDetails() {
 
     fetchRegistrationDetails();
   }, [id]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedData({
+      name: registration?.name,
+      age: registration?.age,
+      gender: registration?.gender,
+      phone: registration?.phone,
+      email: registration?.email,
+      address: registration?.address,
+      aadhar_number: registration?.aadhar_number,
+      voter_id: registration?.voter_id,
+      pan_number: registration?.pan_number,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedData({});
+  };
+
+  const handleSaveEdit = async () => {
+    if (!registration || !id) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/registrations/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update registration');
+      }
+
+      const updatedData = await response.json();
+      setRegistration({ ...registration, ...editedData });
+      setIsEditing(false);
+      setEditedData({});
+      toast.success('Registration updated successfully');
+    } catch (error) {
+      console.error('Error updating registration:', error);
+      toast.error('Failed to update registration');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDocumentUpload = async (documentType: string, file: File) => {
+    if (!registration || !id) return;
+
+    setUploadingDocuments(prev => ({ ...prev, [documentType]: true }));
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', documentType);
+      formData.append('registrationId', id);
+
+      const response = await fetch('/api/upload-document', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload document');
+      }
+
+      const result = await response.json();
+
+      // Update the document URL in the registration state
+      setRegistration(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          documentUrls: {
+            ...prev.documentUrls,
+            [documentType]: result.url
+          }
+        };
+      });
+
+      toast.success(`${documentType} updated successfully`);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast.error(`Failed to upload ${documentType}`);
+    } finally {
+      setUploadingDocuments(prev => ({ ...prev, [documentType]: false }));
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
@@ -259,11 +363,41 @@ export default function RegistrationDetails() {
           >
             <ArrowLeft size={24} />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-800">
               Registration Details
             </h1>
             <p className="text-gray-600">Registration ID: {registration.id}</p>
+          </div>
+          <div className="flex gap-2">
+            {!isEditing ? (
+              <Button
+                onClick={handleEdit}
+                className="bg-[hsl(var(--geo-primary))] hover:bg-[hsl(var(--geo-primary))]/90"
+              >
+                <Edit3 size={16} className="mr-2" />
+                Edit Details
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                >
+                  <X size={16} className="mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  className="bg-[hsl(var(--geo-success))] hover:bg-[hsl(var(--geo-success))]/90"
+                >
+                  <Save size={16} className="mr-2" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -284,88 +418,171 @@ export default function RegistrationDetails() {
                     <label className="text-sm font-medium text-gray-500">
                       Full Name
                     </label>
-                    <p className="text-gray-900 font-medium">
-                      {registration.name}
-                    </p>
+                    {isEditing ? (
+                      <Input
+                        value={editedData.name || ''}
+                        onChange={(e) => setEditedData({...editedData, name: e.target.value})}
+                        placeholder="Enter full name"
+                      />
+                    ) : (
+                      <p className="text-gray-900 font-medium">
+                        {registration.name}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
                       Age
                     </label>
-                    <p className="text-gray-900">{registration.age} years</p>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        value={editedData.age || ''}
+                        onChange={(e) => setEditedData({...editedData, age: parseInt(e.target.value) || 0})}
+                        placeholder="Enter age"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{registration.age} years</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
                       Gender
                     </label>
-                    <p className="text-gray-900 capitalize">
-                      {registration.gender}
-                    </p>
+                    {isEditing ? (
+                      <Select
+                        value={editedData.gender || ''}
+                        onValueChange={(value) => setEditedData({...editedData, gender: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-gray-900 capitalize">
+                        {registration.gender}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">
                       Phone
                     </label>
-                    <p className="text-gray-900 flex items-center gap-1">
-                      <Phone className="w-4 h-4" />
-                      {registration.phone}
-                    </p>
-                  </div>
-                  {registration.email && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">
-                        Email
-                      </label>
+                    {isEditing ? (
+                      <Input
+                        value={editedData.phone || ''}
+                        onChange={(e) => setEditedData({...editedData, phone: e.target.value})}
+                        placeholder="Enter phone number"
+                      />
+                    ) : (
                       <p className="text-gray-900 flex items-center gap-1">
-                        <Mail className="w-4 h-4" />
-                        {registration.email}
+                        <Phone className="w-4 h-4" />
+                        {registration.phone}
                       </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Email
+                    </label>
+                    {isEditing ? (
+                      <Input
+                        type="email"
+                        value={editedData.email || ''}
+                        onChange={(e) => setEditedData({...editedData, email: e.target.value})}
+                        placeholder="Enter email address"
+                      />
+                    ) : (
+                      registration.email && (
+                        <p className="text-gray-900 flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          {registration.email}
+                        </p>
+                      )
+                    )}
+                  </div>
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-500">
                       Address
                     </label>
-                    <p className="text-gray-900 flex items-start gap-1">
-                      <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                      {registration.address}
-                    </p>
+                    {isEditing ? (
+                      <Textarea
+                        value={editedData.address || ''}
+                        onChange={(e) => setEditedData({...editedData, address: e.target.value})}
+                        placeholder="Enter address"
+                        rows={3}
+                      />
+                    ) : (
+                      <p className="text-gray-900 flex items-start gap-1">
+                        <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
+                        {registration.address}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <Separator />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {registration.aadhar_number && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">
-                        Aadhar Number
-                      </label>
-                      <p className="text-gray-900 font-mono">
-                        {registration.aadhar_number}
-                      </p>
-                    </div>
-                  )}
-                  {registration.voter_id && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">
-                        Voter ID
-                      </label>
-                      <p className="text-gray-900 font-mono">
-                        {registration.voter_id}
-                      </p>
-                    </div>
-                  )}
-                  {registration.pan_number && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">
-                        PAN Number
-                      </label>
-                      <p className="text-gray-900 font-mono">
-                        {registration.pan_number}
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Aadhar Number
+                    </label>
+                    {isEditing ? (
+                      <Input
+                        value={editedData.aadhar_number || ''}
+                        onChange={(e) => setEditedData({...editedData, aadhar_number: e.target.value})}
+                        placeholder="Enter Aadhar number"
+                      />
+                    ) : (
+                      registration.aadhar_number && (
+                        <p className="text-gray-900 font-mono">
+                          {registration.aadhar_number}
+                        </p>
+                      )
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Voter ID
+                    </label>
+                    {isEditing ? (
+                      <Input
+                        value={editedData.voter_id || ''}
+                        onChange={(e) => setEditedData({...editedData, voter_id: e.target.value})}
+                        placeholder="Enter Voter ID"
+                      />
+                    ) : (
+                      registration.voter_id && (
+                        <p className="text-gray-900 font-mono">
+                          {registration.voter_id}
+                        </p>
+                      )
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      PAN Number
+                    </label>
+                    {isEditing ? (
+                      <Input
+                        value={editedData.pan_number || ''}
+                        onChange={(e) => setEditedData({...editedData, pan_number: e.target.value})}
+                        placeholder="Enter PAN number"
+                      />
+                    ) : (
+                      registration.pan_number && (
+                        <p className="text-gray-900 font-mono">
+                          {registration.pan_number}
+                        </p>
+                      )
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -733,20 +950,46 @@ export default function RegistrationDetails() {
                       return (
                         <div
                           key={key}
-                          className="flex items-center justify-between"
+                          className="flex items-center justify-between p-2 border rounded-lg"
                         >
                           <span className="text-sm text-gray-700">
                             {documentNames[key]}
                           </span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => window.open(url, "_blank")}
-                            className="text-xs"
-                          >
-                            <Eye size={12} className="mr-1" />
-                            View
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(url, "_blank")}
+                              className="text-xs"
+                            >
+                              <Eye size={12} className="mr-1" />
+                              View
+                            </Button>
+                            <div className="relative">
+                              <input
+                                type="file"
+                                id={`file-${key}`}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                accept="image/*,.pdf"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleDocumentUpload(key, file);
+                                  }
+                                }}
+                                disabled={uploadingDocuments[key]}
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                                disabled={uploadingDocuments[key]}
+                              >
+                                <Upload size={12} className="mr-1" />
+                                {uploadingDocuments[key] ? 'Uploading...' : 'Update'}
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       );
                     },
