@@ -217,6 +217,14 @@ export default function TestSignatureExport() {
               >
                 {isExporting ? "Testing..." : "Debug Signature"}
               </Button>
+
+              <Button
+                onClick={testComparison}
+                disabled={isExporting}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {isExporting ? "Testing..." : "Compare HTML"}
+              </Button>
             </div>
             
             {result && (
