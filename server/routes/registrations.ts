@@ -2539,19 +2539,6 @@ async function generateProductCardHtml(
     "en-GB",
   );
 
-  // Use association from registration data if available, otherwise use static mapping
-  let associationName = registration.product_association;
-  if (!associationName) {
-    console.log(
-      `⚠️ No association found in registration data for Card, using static mapping for: ${productName}`,
-    );
-    associationName = await getProductAssociation(productName);
-  } else {
-    console.log(
-      `✅ Using association from database for Card: ${associationName} for product: ${productName}`,
-    );
-  }
-
   return `
     <div class="card">
       <div class="card-header">
