@@ -16,6 +16,7 @@ import CameraTest from "./pages/CameraTest";
 import UsersManagement from "./pages/UsersManagement";
 import UserRegistrations from "./pages/UserRegistrations";
 import RegistrationDetails from "./pages/RegistrationDetails";
+import TestSignatureExport from "./pages/TestSignatureExport";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -44,6 +45,7 @@ function App() {
         <Route path="/api-test" element={<ApiTest />} />
         <Route path="/compression-test" element={<CompressionTest />} />
         <Route path="/camera-test" element={<CameraTest />} />
+        <Route path="/test-signature" element={<TestSignatureExport />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

@@ -1500,6 +1500,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
           min-width: 150px;
           display: inline-block;
         }
+
+        .signature-image {
+          max-width: 250px;
+          max-height: 80px;
+          object-fit: contain;
+          margin: 10px auto;
+          display: block;
+        }
       </style>
     </head>
     <body>
@@ -1734,6 +1742,12 @@ export async function exportProductStatement(req: Request, res: Response) {
     registration.product_association =
       productData.length > 0 ? productData[0].description : null;
 
+    // Debug: Log signature path for Statement export
+    console.log("🔍 Statement Export Debug:");
+    console.log("- Registration ID:", registration.id);
+    console.log("- Signature Path:", registration.signature_path);
+    console.log("- Has signature_path:", !!registration.signature_path);
+
     // Generate HTML for the specific product
     const statementHtml = await generateProductStatementHtml(
       registration,
@@ -1851,6 +1865,14 @@ export async function exportProductStatement(req: Request, res: Response) {
         .currency {
           font-family: 'Times New Roman', serif;
         }
+
+        .statement-signature-image {
+          max-width: 250px;
+          max-height: 80px;
+          object-fit: contain;
+          margin: 20px auto;
+          display: block;
+        }
       </style>
     </head>
     <body>
@@ -1958,6 +1980,21 @@ async function generateProductFormGI3AHtml(
     );
   }
 
+  // Get signature image HTML if available
+  console.log("🔍 Form GI 3A Generation Debug:");
+  console.log("- Registration Name:", registration.name);
+  console.log("- Product Name:", productName);
+  console.log("- Signature Path:", registration.signature_path);
+
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
+    : `<div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
+
+  console.log(
+    "- Generated signature HTML:",
+    signatureHtml.substring(0, 100) + "...",
+  );
+
   return `
     <div class="form-page">
       <div class="form-header">
@@ -2034,7 +2071,7 @@ async function generateProductFormGI3AHtml(
           </div>
 
           <div class="signature-area">
-            <div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>
+            ${signatureHtml}
             <div class="signature-label">
               <strong>SIGNATURE</strong><br>
               (${registration.name})
@@ -2143,6 +2180,21 @@ async function generateProductStatementHtml(
       ? "Two Lakh Fifty Thousand Only"
       : "One Lakh Fifty Thousand Only";
 
+  // Get signature image HTML if available
+  console.log("🔍 Statement Generation Debug:");
+  console.log("- Registration Name:", registration.name);
+  console.log("- Product Name:", productName);
+  console.log("- Signature Path:", registration.signature_path);
+
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
+    : `<div class="signature-line"></div>`;
+
+  console.log(
+    "- Generated signature HTML:",
+    signatureHtml.substring(0, 100) + "...",
+  );
+
   return `
     <div class="statement-page">
       <div class="statement-header">
@@ -2183,7 +2235,7 @@ async function generateProductStatementHtml(
         </div>
 
         <div class="signature-area">
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature and Name of the Authorised User)<br>

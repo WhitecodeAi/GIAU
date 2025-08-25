@@ -38,6 +38,10 @@ import {
   exportProductCard,
 } from "./routes/registrations";
 
+// Test routes
+import { testSignatureDebug } from "./routes/test-signature";
+import { compareSignatureGeneration } from "./routes/compare-signature";
+
 // User routes
 import {
   getUserCount,
@@ -163,6 +167,10 @@ export function createServer() {
   ); // Admin route for product-specific Statement
   app.post("/api/registrations/export-product-card", exportProductCard); // Admin route for product-specific Card
   app.get("/api/registrations/:id", getRegistrationById);
+
+  // Test routes
+  app.post("/api/test/signature-debug", testSignatureDebug); // Test signature functionality
+  app.post("/api/test/compare-signature", compareSignatureGeneration); // Compare signature generation
 
   // User routes (admin)
   app.get("/api/users/count", getUserCount);
