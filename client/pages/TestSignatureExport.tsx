@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function TestSignatureExport() {
   const [isExporting, setIsExporting] = useState(false);
   const [result, setResult] = useState<string>("");
+  const [debugResult, setDebugResult] = useState<any>(null);
 
   const testFormGI3A = async () => {
     setIsExporting(true);
