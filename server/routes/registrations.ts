@@ -2130,6 +2130,17 @@ async function generateProductNOCHtml(
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
+  // Get association stamp for NOC signature
+  const associationStampPath = await getAssociationStamp(organizationName);
+  let signatureHtml = `<div class="signature-line"></div>`;
+  if (associationStampPath) {
+    const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 80px; object-fit: contain; margin: 30px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
+    console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
+  } else {
+    console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
+  }
+
   return `
     <div class="noc-page">
       <div class="noc-header">
