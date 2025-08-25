@@ -1958,6 +1958,31 @@ async function getProductAssociation(productName: string): Promise<string> {
   }
 }
 
+// Helper function to get association stamp by association name
+async function getAssociationStamp(associationName: string): Promise<string | null> {
+  console.log(`🔍 Looking up stamp for association: "${associationName}"`);
+
+  try {
+    const associationResult = await dbQuery(
+      `SELECT stamp_image_path FROM associations WHERE name = ? LIMIT 1`,
+      [associationName]
+    );
+
+    console.log(`📋 Association query result:`, associationResult);
+
+    if (associationResult.length > 0 && associationResult[0].stamp_image_path) {
+      console.log(`✅ Found association stamp: ${associationResult[0].stamp_image_path}`);
+      return associationResult[0].stamp_image_path;
+    }
+
+    console.log(`⚠️ No stamp found for association: ${associationName}`);
+    return null;
+  } catch (error) {
+    console.error("❌ Error fetching association stamp:", error);
+    return null;
+  }
+}
+
 // Helper functions for product-specific exports
 async function generateProductFormGI3AHtml(
   registration: any,
