@@ -2148,6 +2148,11 @@ async function generateProductStatementHtml(
       ? "Two Lakh Fifty Thousand Only"
       : "One Lakh Fifty Thousand Only";
 
+  // Get signature image HTML if available
+  const signatureHtml = registration.signature_path
+    ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
+    : `<div class="signature-line"></div>`;
+
   return `
     <div class="statement-page">
       <div class="statement-header">
@@ -2188,7 +2193,7 @@ async function generateProductStatementHtml(
         </div>
 
         <div class="signature-area">
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature and Name of the Authorised User)<br>
