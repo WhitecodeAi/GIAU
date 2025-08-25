@@ -40,6 +40,7 @@ import {
 
 // Test routes
 import { testSignatureDebug } from "./routes/test-signature";
+import { compareSignatureGeneration } from "./routes/compare-signature";
 
 // User routes
 import {
