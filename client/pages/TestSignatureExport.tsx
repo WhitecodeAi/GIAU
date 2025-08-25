@@ -134,6 +134,46 @@ export default function TestSignatureExport() {
     }
   };
 
+  const testComparison = async () => {
+    setIsExporting(true);
+    setResult("");
+    setCompareResult(null);
+
+    try {
+      const response = await fetch('/api/test/compare-signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          registrationId: 13,
+          productName: "Bodo Gongar Dunjia"
+        })
+      });
+
+      if (response.ok) {
+        const compareData = await response.json();
+        setCompareResult(compareData);
+
+        if (compareData.registration.has_signature_path) {
+          if (compareData.generated_html.are_identical) {
+            setResult("🤔 COMPARISON: Both HTML are identical but Statement still not working!");
+          } else {
+            setResult("🔍 COMPARISON: Found differences in HTML generation!");
+          }
+        } else {
+          setResult("❌ COMPARISON: Registration does NOT have signature path!");
+        }
+      } else {
+        setResult(`❌ COMPARE ERROR: ${response.status}`);
+      }
+    } catch (error) {
+      setResult(`❌ COMPARE ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white p-8">
       <div className="max-w-4xl mx-auto">
