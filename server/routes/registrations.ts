@@ -1349,7 +1349,7 @@ export async function updateRegistration(req: Request, res: Response) {
     // Check if registration exists
     const existingRegistration = await dbQuery(
       "SELECT id FROM user_registrations WHERE id = ?",
-      [id]
+      [id],
     );
 
     if (existingRegistration.length === 0) {
@@ -1373,7 +1373,7 @@ export async function updateRegistration(req: Request, res: Response) {
         voter_id ? voter_id.toUpperCase() : null,
         pan_number || null,
         id,
-      ]
+      ],
     );
 
     res.json({ message: "Registration updated successfully" });
@@ -1441,7 +1441,7 @@ export async function uploadDocument(req: Request, res: Response) {
     // Check if registration exists
     const existingRegistration = await dbQuery(
       "SELECT id FROM user_registrations WHERE id = ?",
-      [registrationId]
+      [registrationId],
     );
 
     if (existingRegistration.length === 0) {
@@ -1452,7 +1452,7 @@ export async function uploadDocument(req: Request, res: Response) {
     const savedResult = await compressedFileStorage.saveFile(
       registrationId,
       file.originalname,
-      file.buffer
+      file.buffer,
     );
 
     // Update the registration with the new file path
@@ -1468,7 +1468,7 @@ export async function uploadDocument(req: Request, res: Response) {
 
     await dbRun(
       `UPDATE user_registrations SET ${column} = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [savedResult.relativePath, registrationId]
+      [savedResult.relativePath, registrationId],
     );
 
     // Generate URL for the uploaded file

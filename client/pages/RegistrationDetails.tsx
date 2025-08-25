@@ -18,7 +18,13 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,9 +90,13 @@ export default function RegistrationDetails() {
     [key: string]: boolean;
   }>({});
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState<Partial<RegistrationDetails>>({});
+  const [editedData, setEditedData] = useState<Partial<RegistrationDetails>>(
+    {},
+  );
   const [saving, setSaving] = useState(false);
-  const [uploadingDocuments, setUploadingDocuments] = useState<{[key: string]: boolean}>({});
+  const [uploadingDocuments, setUploadingDocuments] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
@@ -146,25 +156,25 @@ export default function RegistrationDetails() {
     setSaving(true);
     try {
       const response = await fetch(`/api/registrations/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(editedData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update registration');
+        throw new Error("Failed to update registration");
       }
 
       const updatedData = await response.json();
       setRegistration({ ...registration, ...editedData });
       setIsEditing(false);
       setEditedData({});
-      toast.success('Registration updated successfully');
+      toast.success("Registration updated successfully");
     } catch (error) {
-      console.error('Error updating registration:', error);
-      toast.error('Failed to update registration');
+      console.error("Error updating registration:", error);
+      toast.error("Failed to update registration");
     } finally {
       setSaving(false);
     }
@@ -173,42 +183,42 @@ export default function RegistrationDetails() {
   const handleDocumentUpload = async (documentType: string, file: File) => {
     if (!registration || !id) return;
 
-    setUploadingDocuments(prev => ({ ...prev, [documentType]: true }));
+    setUploadingDocuments((prev) => ({ ...prev, [documentType]: true }));
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', documentType);
-      formData.append('registrationId', id);
+      formData.append("file", file);
+      formData.append("type", documentType);
+      formData.append("registrationId", id);
 
-      const response = await fetch('/api/upload-document', {
-        method: 'POST',
+      const response = await fetch("/api/upload-document", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload document');
+        throw new Error("Failed to upload document");
       }
 
       const result = await response.json();
 
       // Update the document URL in the registration state
-      setRegistration(prev => {
+      setRegistration((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
           documentUrls: {
             ...prev.documentUrls,
-            [documentType]: result.url
-          }
+            [documentType]: result.url,
+          },
         };
       });
 
       toast.success(`${documentType} updated successfully`);
     } catch (error) {
-      console.error('Error uploading document:', error);
+      console.error("Error uploading document:", error);
       toast.error(`Failed to upload ${documentType}`);
     } finally {
-      setUploadingDocuments(prev => ({ ...prev, [documentType]: false }));
+      setUploadingDocuments((prev) => ({ ...prev, [documentType]: false }));
     }
   };
 
@@ -394,7 +404,7 @@ export default function RegistrationDetails() {
                   className="bg-[hsl(var(--geo-success))] hover:bg-[hsl(var(--geo-success))]/90"
                 >
                   <Save size={16} className="mr-2" />
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? "Saving..." : "Save Changes"}
                 </Button>
               </>
             )}
@@ -420,8 +430,10 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Input
-                        value={editedData.name || ''}
-                        onChange={(e) => setEditedData({...editedData, name: e.target.value})}
+                        value={editedData.name || ""}
+                        onChange={(e) =>
+                          setEditedData({ ...editedData, name: e.target.value })
+                        }
                         placeholder="Enter full name"
                       />
                     ) : (
@@ -437,8 +449,13 @@ export default function RegistrationDetails() {
                     {isEditing ? (
                       <Input
                         type="number"
-                        value={editedData.age || ''}
-                        onChange={(e) => setEditedData({...editedData, age: parseInt(e.target.value) || 0})}
+                        value={editedData.age || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            age: parseInt(e.target.value) || 0,
+                          })
+                        }
                         placeholder="Enter age"
                       />
                     ) : (
@@ -451,8 +468,10 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Select
-                        value={editedData.gender || ''}
-                        onValueChange={(value) => setEditedData({...editedData, gender: value})}
+                        value={editedData.gender || ""}
+                        onValueChange={(value) =>
+                          setEditedData({ ...editedData, gender: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select gender" />
@@ -475,8 +494,13 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Input
-                        value={editedData.phone || ''}
-                        onChange={(e) => setEditedData({...editedData, phone: e.target.value})}
+                        value={editedData.phone || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            phone: e.target.value,
+                          })
+                        }
                         placeholder="Enter phone number"
                       />
                     ) : (
@@ -493,8 +517,13 @@ export default function RegistrationDetails() {
                     {isEditing ? (
                       <Input
                         type="email"
-                        value={editedData.email || ''}
-                        onChange={(e) => setEditedData({...editedData, email: e.target.value})}
+                        value={editedData.email || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            email: e.target.value,
+                          })
+                        }
                         placeholder="Enter email address"
                       />
                     ) : (
@@ -512,8 +541,13 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Textarea
-                        value={editedData.address || ''}
-                        onChange={(e) => setEditedData({...editedData, address: e.target.value})}
+                        value={editedData.address || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            address: e.target.value,
+                          })
+                        }
                         placeholder="Enter address"
                         rows={3}
                       />
@@ -535,8 +569,13 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Input
-                        value={editedData.aadhar_number || ''}
-                        onChange={(e) => setEditedData({...editedData, aadhar_number: e.target.value})}
+                        value={editedData.aadhar_number || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            aadhar_number: e.target.value,
+                          })
+                        }
                         placeholder="Enter Aadhar number"
                       />
                     ) : (
@@ -553,8 +592,13 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Input
-                        value={editedData.voter_id || ''}
-                        onChange={(e) => setEditedData({...editedData, voter_id: e.target.value})}
+                        value={editedData.voter_id || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            voter_id: e.target.value,
+                          })
+                        }
                         placeholder="Enter Voter ID"
                       />
                     ) : (
@@ -571,8 +615,13 @@ export default function RegistrationDetails() {
                     </label>
                     {isEditing ? (
                       <Input
-                        value={editedData.pan_number || ''}
-                        onChange={(e) => setEditedData({...editedData, pan_number: e.target.value})}
+                        value={editedData.pan_number || ""}
+                        onChange={(e) =>
+                          setEditedData({
+                            ...editedData,
+                            pan_number: e.target.value,
+                          })
+                        }
                         placeholder="Enter PAN number"
                       />
                     ) : (
@@ -986,7 +1035,9 @@ export default function RegistrationDetails() {
                                 disabled={uploadingDocuments[key]}
                               >
                                 <Upload size={12} className="mr-1" />
-                                {uploadingDocuments[key] ? 'Uploading...' : 'Update'}
+                                {uploadingDocuments[key]
+                                  ? "Uploading..."
+                                  : "Update"}
                               </Button>
                             </div>
                           </div>
