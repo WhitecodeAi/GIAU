@@ -1309,6 +1309,187 @@ export async function verifyRegistration(req: Request, res: Response) {
   }
 }
 
+export async function updateRegistration(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      age,
+      gender,
+      phone,
+      email,
+      address,
+      aadhar_number,
+      voter_id,
+      pan_number,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !age || !gender || !phone || !address) {
+      return res.status(400).json({
+        error: "Missing required fields: name, age, gender, phone, address",
+      });
+    }
+
+    // Validate Aadhar number format if provided
+    if (aadhar_number && !/^\d{12}$/.test(aadhar_number)) {
+      return res.status(400).json({
+        error: "Aadhar number must be exactly 12 digits",
+      });
+    }
+
+    // Validate Voter ID format if provided
+    if (voter_id && !/^[A-Z]{3}\d{7}$/.test(voter_id.toUpperCase())) {
+      return res.status(400).json({
+        error:
+          "Voter ID must be in format: 3 letters followed by 7 digits (e.g., ABC1234567)",
+      });
+    }
+
+    // Check if registration exists
+    const existingRegistration = await dbQuery(
+      "SELECT id FROM user_registrations WHERE id = ?",
+      [id],
+    );
+
+    if (existingRegistration.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Update the registration
+    await dbRun(
+      `UPDATE user_registrations SET
+       name = ?, age = ?, gender = ?, phone = ?, email = ?, address = ?,
+       aadhar_number = ?, voter_id = ?, pan_number = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [
+        name,
+        parseInt(age),
+        gender,
+        phone,
+        email || null,
+        address,
+        aadhar_number || null,
+        voter_id ? voter_id.toUpperCase() : null,
+        pan_number || null,
+        id,
+      ],
+    );
+
+    res.json({ message: "Registration updated successfully" });
+  } catch (error) {
+    console.error("Update registration error:", error);
+
+    // Handle unique constraint violations
+    if (
+      error.code === "ER_DUP_ENTRY" ||
+      error.code === "SQLITE_CONSTRAINT_UNIQUE"
+    ) {
+      const errorMessage = error.message || "";
+
+      if (
+        errorMessage.includes("aadhar_number") ||
+        errorMessage.includes("unique_aadhar_number")
+      ) {
+        return res.status(409).json({
+          error: "This Aadhar number is already registered in the system",
+          field: "aadharNumber",
+        });
+      }
+
+      if (
+        errorMessage.includes("voter_id") ||
+        errorMessage.includes("unique_voter_id")
+      ) {
+        return res.status(409).json({
+          error: "This Voter ID is already registered in the system",
+          field: "voterId",
+        });
+      }
+    }
+
+    res.status(500).json({ error: "Failed to update registration" });
+  }
+}
+
+export async function uploadDocument(req: Request, res: Response) {
+  try {
+    const { registrationId, type } = req.body;
+    const file = req.file;
+
+    if (!registrationId || !type || !file) {
+      return res.status(400).json({
+        error: "Registration ID, document type, and file are required",
+      });
+    }
+
+    // Validate document type
+    const validTypes = [
+      "aadharCard",
+      "panCard",
+      "proofOfProduction",
+      "signature",
+      "photo",
+    ];
+
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({
+        error: "Invalid document type",
+      });
+    }
+
+    // Check if registration exists
+    const existingRegistration = await dbQuery(
+      "SELECT id FROM user_registrations WHERE id = ?",
+      [registrationId],
+    );
+
+    if (existingRegistration.length === 0) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Save the new file using compressed file storage
+    const savedResult = await compressedFileStorage.saveFile(
+      registrationId,
+      file.originalname,
+      file.buffer,
+    );
+
+    // Update the registration with the new file path
+    const columnMap = {
+      aadharCard: "aadhar_card_path",
+      panCard: "pan_card_path",
+      proofOfProduction: "proof_of_production_path",
+      signature: "signature_path",
+      photo: "photo_path",
+    };
+
+    const column = columnMap[type];
+
+    await dbRun(
+      `UPDATE user_registrations SET ${column} = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [savedResult.relativePath, registrationId],
+    );
+
+    // Generate URL for the uploaded file
+    const fileUrl = simpleFileStorage.getFileUrl(savedResult.relativePath);
+
+    res.json({
+      message: "Document uploaded successfully",
+      url: fileUrl,
+      compressionStats: {
+        originalSize: savedResult.originalSize,
+        compressedSize: savedResult.compressedSize,
+        compressionRatio: savedResult.compressionRatio,
+        isCompressed: savedResult.isCompressed,
+      },
+    });
+  } catch (error) {
+    console.error("Upload document error:", error);
+    res.status(500).json({ error: "Failed to upload document" });
+  }
+}
+
 // Product-specific export functions
 export async function exportProductGI3A(req: Request, res: Response) {
   try {

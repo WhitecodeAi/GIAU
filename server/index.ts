@@ -32,6 +32,8 @@ import {
   getRegistrationById,
   generateReport,
   verifyRegistration,
+  updateRegistration,
+  uploadDocument,
   exportProductGI3A,
   exportProductNOC,
   exportProductStatement,
@@ -167,6 +169,8 @@ export function createServer() {
   ); // Admin route for product-specific Statement
   app.post("/api/registrations/export-product-card", exportProductCard); // Admin route for product-specific Card
   app.get("/api/registrations/:id", getRegistrationById);
+  app.put("/api/registrations/:id", updateRegistration);
+  app.post("/api/upload-document", upload.single("file"), uploadDocument);
 
   // Test routes
   app.post("/api/test/signature-debug", testSignatureDebug); // Test signature functionality
