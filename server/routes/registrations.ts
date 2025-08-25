@@ -1961,31 +1961,35 @@ async function getProductAssociation(productName: string): Promise<string> {
 }
 
 // Helper function to get association stamp by association name
-async function getAssociationStamp(associationName: string): Promise<string | null> {
+async function getAssociationStamp(
+  associationName: string,
+): Promise<string | null> {
   console.log(`🔍 Looking up stamp for association: "${associationName}"`);
 
   try {
     // First try exact match
     let associationResult = await dbQuery(
       `SELECT stamp_image_path FROM associations WHERE name = ? LIMIT 1`,
-      [associationName]
+      [associationName],
     );
 
     // If no exact match, try fuzzy matching (remove hyphens, extra spaces, etc.)
     if (associationResult.length === 0) {
       console.log(`🔄 Trying fuzzy match for: ${associationName}`);
-      const normalizedInput = associationName.replace(/[-\s]+/g, ' ').trim();
+      const normalizedInput = associationName.replace(/[-\s]+/g, " ").trim();
 
       associationResult = await dbQuery(
         `SELECT stamp_image_path FROM associations WHERE REPLACE(REPLACE(name, '-', ' '), '  ', ' ') = ? LIMIT 1`,
-        [normalizedInput]
+        [normalizedInput],
       );
     }
 
     console.log(`📋 Association query result:`, associationResult);
 
     if (associationResult.length > 0 && associationResult[0].stamp_image_path) {
-      console.log(`✅ Found association stamp: ${associationResult[0].stamp_image_path}`);
+      console.log(
+        `✅ Found association stamp: ${associationResult[0].stamp_image_path}`,
+      );
       return associationResult[0].stamp_image_path;
     }
 
