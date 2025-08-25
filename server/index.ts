@@ -38,6 +38,9 @@ import {
   exportProductCard,
 } from "./routes/registrations";
 
+// Test routes
+import { testSignatureDebug } from "./routes/test-signature";
+
 // User routes
 import {
   getUserCount,
