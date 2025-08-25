@@ -1743,10 +1743,10 @@ export async function exportProductStatement(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Debug: Log signature path for Statement export
-    console.log('🔍 Statement Export Debug:');
-    console.log('- Registration ID:', registration.id);
-    console.log('- Signature Path:', registration.signature_path);
-    console.log('- Has signature_path:', !!registration.signature_path);
+    console.log("🔍 Statement Export Debug:");
+    console.log("- Registration ID:", registration.id);
+    console.log("- Signature Path:", registration.signature_path);
+    console.log("- Has signature_path:", !!registration.signature_path);
 
     // Generate HTML for the specific product
     const statementHtml = await generateProductStatementHtml(
@@ -1981,16 +1981,19 @@ async function generateProductFormGI3AHtml(
   }
 
   // Get signature image HTML if available
-  console.log('🔍 Form GI 3A Generation Debug:');
-  console.log('- Registration Name:', registration.name);
-  console.log('- Product Name:', productName);
-  console.log('- Signature Path:', registration.signature_path);
+  console.log("🔍 Form GI 3A Generation Debug:");
+  console.log("- Registration Name:", registration.name);
+  console.log("- Product Name:", productName);
+  console.log("- Signature Path:", registration.signature_path);
 
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
     : `<div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
 
-  console.log('- Generated signature HTML:', signatureHtml.substring(0, 100) + '...');
+  console.log(
+    "- Generated signature HTML:",
+    signatureHtml.substring(0, 100) + "...",
+  );
 
   return `
     <div class="form-page">
@@ -2178,16 +2181,19 @@ async function generateProductStatementHtml(
       : "One Lakh Fifty Thousand Only";
 
   // Get signature image HTML if available
-  console.log('🔍 Statement Generation Debug:');
-  console.log('- Registration Name:', registration.name);
-  console.log('- Product Name:', productName);
-  console.log('- Signature Path:', registration.signature_path);
+  console.log("🔍 Statement Generation Debug:");
+  console.log("- Registration Name:", registration.name);
+  console.log("- Product Name:", productName);
+  console.log("- Signature Path:", registration.signature_path);
 
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
     : `<div class="signature-line"></div>`;
 
-  console.log('- Generated signature HTML:', signatureHtml.substring(0, 100) + '...');
+  console.log(
+    "- Generated signature HTML:",
+    signatureHtml.substring(0, 100) + "...",
+  );
 
   return `
     <div class="statement-page">

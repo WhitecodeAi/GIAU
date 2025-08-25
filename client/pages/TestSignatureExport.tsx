@@ -11,33 +11,35 @@ export default function TestSignatureExport() {
   const testFormGI3A = async () => {
     setIsExporting(true);
     setResult("");
-    
+
     try {
-      const response = await fetch('/api/registrations/export-product-gi3a', {
-        method: 'POST',
+      const response = await fetch("/api/registrations/export-product-gi3a", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           registrationId: 13,
           productId: 1,
-          productName: "Bodo Gongar Dunjia"
-        })
+          productName: "Bodo Gongar Dunjia",
+        }),
       });
 
       if (response.ok) {
         const htmlContent = await response.text();
-        
+
         // Check if signature image is included
-        const hasSignatureImage = htmlContent.includes('class="signature-image"');
-        const hasSignaturePath = htmlContent.includes('signature_path');
-        
+        const hasSignatureImage = htmlContent.includes(
+          'class="signature-image"',
+        );
+        const hasSignaturePath = htmlContent.includes("signature_path");
+
         if (hasSignatureImage) {
           setResult("✅ SUCCESS: Form GI 3A now includes signature image!");
         } else {
           setResult("❌ ISSUE: Form GI 3A does not include signature image");
         }
-        
+
         // Open in new window for visual verification
         const newWindow = window.open("", "_blank");
         if (newWindow) {
@@ -48,7 +50,9 @@ export default function TestSignatureExport() {
         setResult(`❌ ERROR: Export failed with status ${response.status}`);
       }
     } catch (error) {
-      setResult(`❌ ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setResult(
+        `❌ ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsExporting(false);
     }
@@ -57,32 +61,41 @@ export default function TestSignatureExport() {
   const testStatement = async () => {
     setIsExporting(true);
     setResult("");
-    
+
     try {
-      const response = await fetch('/api/registrations/export-product-statement', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "/api/registrations/export-product-statement",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            registrationId: 13,
+            productId: 1,
+            productName: "Bodo Gongar Dunjia",
+          }),
         },
-        body: JSON.stringify({
-          registrationId: 13,
-          productId: 1,
-          productName: "Bodo Gongar Dunjia"
-        })
-      });
+      );
 
       if (response.ok) {
         const htmlContent = await response.text();
-        
+
         // Check if signature image is included
-        const hasSignatureImage = htmlContent.includes('class="statement-signature-image"');
-        
+        const hasSignatureImage = htmlContent.includes(
+          'class="statement-signature-image"',
+        );
+
         if (hasSignatureImage) {
-          setResult("✅ SUCCESS: Statement of Case now includes signature image!");
+          setResult(
+            "✅ SUCCESS: Statement of Case now includes signature image!",
+          );
         } else {
-          setResult("❌ ISSUE: Statement of Case does not include signature image");
+          setResult(
+            "❌ ISSUE: Statement of Case does not include signature image",
+          );
         }
-        
+
         // Open in new window for visual verification
         const newWindow = window.open("", "_blank");
         if (newWindow) {
@@ -93,7 +106,9 @@ export default function TestSignatureExport() {
         setResult(`❌ ERROR: Export failed with status ${response.status}`);
       }
     } catch (error) {
-      setResult(`❌ ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setResult(
+        `❌ ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsExporting(false);
     }
@@ -105,14 +120,14 @@ export default function TestSignatureExport() {
     setDebugResult(null);
 
     try {
-      const response = await fetch('/api/test/signature-debug', {
-        method: 'POST',
+      const response = await fetch("/api/test/signature-debug", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          registrationId: 13
-        })
+          registrationId: 13,
+        }),
       });
 
       if (response.ok) {
@@ -128,7 +143,9 @@ export default function TestSignatureExport() {
         setResult(`❌ DEBUG ERROR: ${response.status}`);
       }
     } catch (error) {
-      setResult(`❌ DEBUG ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setResult(
+        `❌ DEBUG ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsExporting(false);
     }
@@ -140,15 +157,15 @@ export default function TestSignatureExport() {
     setCompareResult(null);
 
     try {
-      const response = await fetch('/api/test/compare-signature', {
-        method: 'POST',
+      const response = await fetch("/api/test/compare-signature", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           registrationId: 13,
-          productName: "Bodo Gongar Dunjia"
-        })
+          productName: "Bodo Gongar Dunjia",
+        }),
       });
 
       if (response.ok) {
@@ -157,18 +174,24 @@ export default function TestSignatureExport() {
 
         if (compareData.registration.has_signature_path) {
           if (compareData.generated_html.are_identical) {
-            setResult("🤔 COMPARISON: Both HTML are identical but Statement still not working!");
+            setResult(
+              "🤔 COMPARISON: Both HTML are identical but Statement still not working!",
+            );
           } else {
             setResult("🔍 COMPARISON: Found differences in HTML generation!");
           }
         } else {
-          setResult("❌ COMPARISON: Registration does NOT have signature path!");
+          setResult(
+            "❌ COMPARISON: Registration does NOT have signature path!",
+          );
         }
       } else {
         setResult(`❌ COMPARE ERROR: ${response.status}`);
       }
     } catch (error) {
-      setResult(`❌ COMPARE ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setResult(
+        `❌ COMPARE ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsExporting(false);
     }
@@ -180,7 +203,7 @@ export default function TestSignatureExport() {
         <h1 className="text-3xl font-bold text-gray-800 mb-8">
           Signature Export Verification Test
         </h1>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Test Signature Functionality</CardTitle>
@@ -188,11 +211,12 @@ export default function TestSignatureExport() {
           <CardContent className="space-y-6">
             <div>
               <p className="text-gray-600 mb-4">
-                Testing Registration ID 13 (Ajay Kulkarni) which has a signature document.
-                This will verify that signatures are now included in Form GI 3A and Statement exports.
+                Testing Registration ID 13 (Ajay Kulkarni) which has a signature
+                document. This will verify that signatures are now included in
+                Form GI 3A and Statement exports.
               </p>
             </div>
-            
+
             <div className="flex gap-4 flex-wrap">
               <Button
                 onClick={testFormGI3A}
@@ -226,20 +250,24 @@ export default function TestSignatureExport() {
                 {isExporting ? "Testing..." : "Compare HTML"}
               </Button>
             </div>
-            
+
             {result && (
-              <div className={`p-4 rounded-lg ${
-                result.includes('SUCCESS')
-                  ? 'bg-green-100 text-green-800 border border-green-200'
-                  : 'bg-red-100 text-red-800 border border-red-200'
-              }`}>
+              <div
+                className={`p-4 rounded-lg ${
+                  result.includes("SUCCESS")
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : "bg-red-100 text-red-800 border border-red-200"
+                }`}
+              >
                 {result}
               </div>
             )}
 
             {debugResult && (
               <div className="bg-gray-100 p-4 rounded-lg border border-gray-200">
-                <h4 className="font-semibold text-gray-800 mb-2">Debug Results:</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  Debug Results:
+                </h4>
                 <pre className="text-xs text-gray-700 overflow-auto max-h-60">
                   {JSON.stringify(debugResult, null, 2)}
                 </pre>
@@ -248,7 +276,9 @@ export default function TestSignatureExport() {
 
             {compareResult && (
               <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-800 mb-2">Comparison Results:</h4>
+                <h4 className="font-semibold text-blue-800 mb-2">
+                  Comparison Results:
+                </h4>
                 <pre className="text-xs text-blue-700 overflow-auto max-h-60">
                   {JSON.stringify(compareResult, null, 2)}
                 </pre>

@@ -10,7 +10,10 @@ export async function testSignatureDebug(req: Request, res: Response) {
       return res.status(400).json({ error: "Registration ID is required" });
     }
 
-    console.log('🔍 Testing Signature Debug for Registration ID:', registrationId);
+    console.log(
+      "🔍 Testing Signature Debug for Registration ID:",
+      registrationId,
+    );
 
     // Fetch registration data
     const registrations = await dbQuery(
@@ -39,11 +42,11 @@ export async function testSignatureDebug(req: Request, res: Response) {
 
     const registration = registrations[0];
 
-    console.log('📋 Registration Data:', {
+    console.log("📋 Registration Data:", {
       id: registration.id,
       name: registration.name,
       signature_path: registration.signature_path,
-      has_signature: !!registration.signature_path
+      has_signature: !!registration.signature_path,
     });
 
     let signatureUrl = null;
@@ -51,16 +54,18 @@ export async function testSignatureDebug(req: Request, res: Response) {
 
     if (registration.signature_path) {
       try {
-        signatureUrl = simpleFileStorage.getFileUrl(registration.signature_path);
-        console.log('🔗 Generated Signature URL:', signatureUrl);
-        
+        signatureUrl = simpleFileStorage.getFileUrl(
+          registration.signature_path,
+        );
+        console.log("🔗 Generated Signature URL:", signatureUrl);
+
         signatureHtml = `<img src="${signatureUrl}" alt="Signature" class="statement-signature-image" />`;
-        console.log('📝 Generated Signature HTML:', signatureHtml);
+        console.log("📝 Generated Signature HTML:", signatureHtml);
       } catch (error) {
-        console.error('❌ Error generating signature URL:', error);
+        console.error("❌ Error generating signature URL:", error);
       }
     } else {
-      console.log('⚠️ No signature path found');
+      console.log("⚠️ No signature path found");
       signatureHtml = '<div class="signature-line"></div>';
     }
 
@@ -69,19 +74,19 @@ export async function testSignatureDebug(req: Request, res: Response) {
         id: registration.id,
         name: registration.name,
         signature_path: registration.signature_path,
-        has_signature_path: !!registration.signature_path
+        has_signature_path: !!registration.signature_path,
       },
       signature: {
         url: signatureUrl,
-        html: signatureHtml
+        html: signatureHtml,
       },
       test_images: {
         form_gi3a_class: `<img src="${signatureUrl}" alt="Signature" class="signature-image" />`,
-        statement_class: `<img src="${signatureUrl}" alt="Signature" class="statement-signature-image" />`
-      }
+        statement_class: `<img src="${signatureUrl}" alt="Signature" class="statement-signature-image" />`,
+      },
     };
 
-    console.log('✅ Test Result:', JSON.stringify(testResult, null, 2));
+    console.log("✅ Test Result:", JSON.stringify(testResult, null, 2));
 
     res.json(testResult);
   } catch (error) {
