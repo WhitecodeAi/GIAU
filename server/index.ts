@@ -167,6 +167,9 @@ export function createServer() {
   app.post("/api/registrations/export-product-card", exportProductCard); // Admin route for product-specific Card
   app.get("/api/registrations/:id", getRegistrationById);
 
+  // Test routes
+  app.post("/api/test/signature-debug", testSignatureDebug); // Test signature functionality
+
   // User routes (admin)
   app.get("/api/users/count", getUserCount);
   app.get("/api/users", authenticateToken, getAllUsers);
