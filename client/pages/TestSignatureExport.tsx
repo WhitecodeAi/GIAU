@@ -152,7 +152,7 @@ export default function TestSignatureExport() {
               </p>
             </div>
             
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <Button
                 onClick={testFormGI3A}
                 disabled={isExporting}
@@ -160,13 +160,21 @@ export default function TestSignatureExport() {
               >
                 {isExporting ? "Testing..." : "Test Form GI 3A"}
               </Button>
-              
+
               <Button
                 onClick={testStatement}
                 disabled={isExporting}
                 className="bg-teal-600 hover:bg-teal-700"
               >
                 {isExporting ? "Testing..." : "Test Statement"}
+              </Button>
+
+              <Button
+                onClick={testSignatureDebug}
+                disabled={isExporting}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {isExporting ? "Testing..." : "Debug Signature"}
               </Button>
             </div>
             
