@@ -180,11 +180,20 @@ export default function TestSignatureExport() {
             
             {result && (
               <div className={`p-4 rounded-lg ${
-                result.includes('SUCCESS') 
+                result.includes('SUCCESS')
                   ? 'bg-green-100 text-green-800 border border-green-200'
                   : 'bg-red-100 text-red-800 border border-red-200'
               }`}>
                 {result}
+              </div>
+            )}
+
+            {debugResult && (
+              <div className="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-semibold text-gray-800 mb-2">Debug Results:</h4>
+                <pre className="text-xs text-gray-700 overflow-auto max-h-60">
+                  {JSON.stringify(debugResult, null, 2)}
+                </pre>
               </div>
             )}
           </CardContent>
