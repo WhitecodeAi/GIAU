@@ -170,6 +170,7 @@ export function createServer() {
 
   // Test routes
   app.post("/api/test/signature-debug", testSignatureDebug); // Test signature functionality
+  app.post("/api/test/compare-signature", compareSignatureGeneration); // Compare signature generation
 
   // User routes (admin)
   app.get("/api/users/count", getUserCount);
