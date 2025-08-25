@@ -32,6 +32,8 @@ import {
   getRegistrationById,
   generateReport,
   verifyRegistration,
+  updateRegistration,
+  uploadDocument,
   exportProductGI3A,
   exportProductNOC,
   exportProductStatement,
