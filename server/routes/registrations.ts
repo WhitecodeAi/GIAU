@@ -2172,7 +2172,7 @@ async function generateProductNOCHtml(
           <div><strong>For and on behalf of</strong></div>
           <div class="organization-name">${organizationName}</div>
 
-          <div class="signature-line"></div>
+          ${signatureHtml}
 
           <div class="signature-label">
             (Signature of GI Applicant's Association/ Organisation Head)
