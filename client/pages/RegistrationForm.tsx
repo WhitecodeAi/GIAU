@@ -1406,7 +1406,7 @@ export default function RegistrationForm() {
           <Button
             className="btn-accent btn-desktop"
             onClick={handleConfirmSubmit}
-            disabled={loading}
+            disabled={loading || !validateCurrentStep()}
           >
             {loading ? "Submitting..." : "Submit Registration"}
           </Button>
