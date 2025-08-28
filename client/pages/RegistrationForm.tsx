@@ -229,10 +229,17 @@ export default function RegistrationForm() {
       case 4:
         return formData.existingProducts.length > 0; // Now compulsory - must select at least one existing product
       case 5:
-        // Check if all existing products have their production details filled
+        // All production details must be filled for each selected product
         return formData.existingProducts.every((productId) => {
           const details = formData.existingProductDetails[productId];
-          return details && details.areaOfProduction && details.unit;
+          return (
+            !!details &&
+            !!details.areaOfProduction &&
+            !!details.unit &&
+            !!details.annualProduction &&
+            !!details.annualTurnover &&
+            !!details.yearsOfProduction
+          );
         });
       default:
         return false;
@@ -524,17 +531,22 @@ export default function RegistrationForm() {
       case 4:
         return ""; // Optional step
       case 5:
-        const missingProducts = formData.existingProducts.filter(
-          (productId) => {
-            const details = formData.existingProductDetails[productId];
-            return !details || !details.areaOfProduction || !details.unit;
-          },
-        );
-        if (missingProducts.length > 0) {
-          const productNames = missingProducts.map(
+        const incomplete = formData.existingProducts.filter((productId) => {
+          const d = formData.existingProductDetails[productId];
+          return (
+            !d ||
+            !d.areaOfProduction ||
+            !d.unit ||
+            !d.annualProduction ||
+            !d.annualTurnover ||
+            !d.yearsOfProduction
+          );
+        });
+        if (incomplete.length > 0) {
+          const productNames = incomplete.map(
             (id) => products.find((p) => p.id === id)?.name || `Product ${id}`,
           );
-          return `Please provide Area of Production and Unit for: ${productNames.join(", ")}`;
+          return `Please complete all production details (Area of Production, Annual Production, Unit, Annual Turnover, Years of Production) for: ${productNames.join(", ")}`;
         }
         return "";
       default:
@@ -1197,6 +1209,7 @@ export default function RegistrationForm() {
                           <span className="text-red-500">*</span>
                         </Label>
                         <Input
+                          required
                           value={details.areaOfProduction}
                           onChange={(e) =>
                             updateProductDetail(
@@ -1220,9 +1233,10 @@ export default function RegistrationForm() {
                         </Label>
                         <div className="flex gap-2 mt-2">
                           <Input
+                            required
                             value={details.annualProduction}
                             onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, ""); // ✅ only numbers
+                              const value = e.target.value.replace(/\D/g, "");
                               updateProductDetail(
                                 product.id,
                                 "annualProduction",
@@ -1269,6 +1283,7 @@ export default function RegistrationForm() {
                         </Label>
                         <div className="flex gap-2 mt-2">
                           <Input
+                            required
                             type="number"
                             value={details.annualTurnover}
                             onChange={(e) =>
@@ -1314,6 +1329,7 @@ export default function RegistrationForm() {
                         </Label>
                         <div className="flex items-center gap-2 mt-2">
                           <Input
+                            required
                             type="number"
                             value={details.yearsOfProduction}
                             onChange={(e) => {
