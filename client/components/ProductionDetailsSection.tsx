@@ -98,6 +98,7 @@ export const ProductionDetailsSection: React.FC<
                     </p>
                     <div className="flex gap-2 mt-2">
                       <Input
+                        required
                         type="text"
                         value={detail.annualProduction}
                         onChange={(e) => {
@@ -152,6 +153,7 @@ export const ProductionDetailsSection: React.FC<
                     </p>
                     <div className="flex gap-2 mt-2">
                       <Input
+                        required
                         type="number"
                         value={detail.annualTurnover || ""}
                         onChange={(e) =>
@@ -203,6 +205,7 @@ export const ProductionDetailsSection: React.FC<
                       The place where the products are produced
                     </p>
                     <Input
+                      required
                       value={detail.areaOfProduction}
                       onChange={(e) =>
                         updateProductionDetail(
@@ -227,6 +230,7 @@ export const ProductionDetailsSection: React.FC<
                     </Label>
                     <div className="flex items-center gap-2 mt-2">
                       <Input
+                        required
                         type="number"
                         value={detail.yearsOfProduction}
                         onChange={(e) => {
