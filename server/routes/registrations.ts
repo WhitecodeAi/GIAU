@@ -2524,7 +2524,8 @@ export async function exportProductCard(req: Request, res: Response) {
   );
 
   const registration = registrations[0];
-  registration.product_names = productName;
+  const resolvedProductName = productName || (productData[0] && productData[0].name) || "";
+  registration.product_names = resolvedProductName;
   registration.product_association =
     productData.length > 0 ? productData[0].description : null;
   // Attach category name for dynamic header
