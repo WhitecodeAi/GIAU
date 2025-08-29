@@ -49,7 +49,11 @@ interface FormData {
 
   // Step 2 - Documents
   documents: {
+    // Combined image sent to server
     aadharCard: File | null;
+    // Front and Back captured from user
+    aadharCardFront: File | null;
+    aadharCardBack: File | null;
     panCard: File | null;
     proofOfProduction: File | null;
     signature: File | null;
@@ -103,6 +107,8 @@ export default function RegistrationForm() {
     panNumber: "",
     documents: {
       aadharCard: null,
+      aadharCardFront: null,
+      aadharCardBack: null,
       panCard: null,
       proofOfProduction: null,
       signature: null,
@@ -220,7 +226,8 @@ export default function RegistrationForm() {
         return hasBasicInfo;
       case 2:
         return !!(
-          formData.documents.aadharCard &&
+          formData.documents.aadharCardFront &&
+          formData.documents.aadharCardBack &&
           formData.documents.signature &&
           formData.documents.photo
         );
@@ -432,10 +439,18 @@ export default function RegistrationForm() {
         isAdditionalRegistration: isAdditionalRegistration, // Flag for additional registration
       };
 
-      // Use the API function which properly handles auth and file uploads sdsdsdsd
+      // Prepare only expected document fields for server
+      const documentsToSend = {
+        aadharCard: formData.documents.aadharCard,
+        panCard: formData.documents.panCard,
+        proofOfProduction: formData.documents.proofOfProduction,
+        signature: formData.documents.signature,
+        photo: formData.documents.photo,
+      } as const;
+
       const result = await registrationsAPI.create(
         registrationData,
-        formData.documents,
+        documentsToSend,
       );
 
       toast.success("🎉 Registration Completed Successfully!", {
@@ -513,12 +528,10 @@ export default function RegistrationForm() {
           ? `Please fill in: ${missingFields.join(", ")}`
           : "";
       case 2:
-        const missingDocs = [];
-        if (!formData.documents.aadharCard) missingDocs.push("Aadhar Card");
-        // PAN Card and Proof of Production are now optional
-        // if (!formData.documents.panCard) missingDocs.push("PAN Card");
-        // if (!formData.documents.proofOfProduction)
-        //   missingDocs.push("Proof of Production");
+        const missingDocs = [] as string[];
+        if (!formData.documents.aadharCardFront) missingDocs.push("Aadhar Card (Front)");
+        if (!formData.documents.aadharCardBack) missingDocs.push("Aadhar Card (Back)");
+        // PAN Card and Proof of Production are optional
         if (!formData.documents.signature) missingDocs.push("Signature");
         if (!formData.documents.photo) missingDocs.push("Photo");
         return missingDocs.length > 0
@@ -904,10 +917,18 @@ export default function RegistrationForm() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <DocumentUpload
-            label="Aadhar Card"
-            file={formData.documents.aadharCard}
-            onFileChange={(file) => handleFileUpload("aadharCard", file)}
-            onFileRemove={() => handleFileUpload("aadharCard", null)}
+            label="Aadhar Card (Front)"
+            file={formData.documents.aadharCardFront}
+            onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
+            onFileRemove={() => handleFileUpload("aadharCardFront", null)}
+            required={true}
+          />
+
+          <DocumentUpload
+            label="Aadhar Card (Back)"
+            file={formData.documents.aadharCardBack}
+            onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
+            onFileRemove={() => handleFileUpload("aadharCardBack", null)}
             required={true}
           />
 
