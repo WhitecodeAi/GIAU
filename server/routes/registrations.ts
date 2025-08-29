@@ -1794,6 +1794,8 @@ export async function exportProductNOC(req: Request, res: Response) {
           line-height: 1.2;
           font-size: 7.5pt;
           color: #000;
+          max-height: 95vh;
+          overflow: hidden;
         }
 
         .noc-page {
@@ -1997,6 +1999,8 @@ export async function exportProductStatement(req: Request, res: Response) {
           line-height: 1.2;
           font-size: 7.5pt;
           color: #000;
+          max-height: 95vh;
+          overflow: hidden;
         }
 
         .statement-page {
