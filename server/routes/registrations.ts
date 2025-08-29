@@ -2177,7 +2177,7 @@ async function getAssociationStamp(
     console.log(`⚠️ No stamp found for association: ${associationName}`);
     return null;
   } catch (error) {
-    console.error("❌ Error fetching association stamp:", error);
+    console.error("��� Error fetching association stamp:", error);
     return null;
   }
 }
@@ -2334,7 +2334,7 @@ async function generateProductNOCHtml(
   let signatureHtml = `<div class="signature-line"></div>`;
   if (associationStampPath) {
     const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
-    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 60px; object-fit: contain; margin: 12px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 160px; max-height: 36px; object-fit: contain; margin: 8px auto; display: block; border: 1px solid #000; padding: 6px; background: #fff;" />`;
     console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
   } else {
     console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
