@@ -2517,10 +2517,10 @@ export async function exportProductCard(req: Request, res: Response) {
       return res.status(404).json({ error: "Registration not found" });
     }
 
-    // Fetch product association and category from database
+    // Fetch product association and category from database (prefer productId when provided)
   const productData = await dbQuery(
-    `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE p.name = ? LIMIT 1`,
-    [productName],
+    `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE ${productId ? "p.id = ?" : "p.name = ?"} LIMIT 1`,
+    [productId ? productId : productName],
   );
 
   const registration = registrations[0];
