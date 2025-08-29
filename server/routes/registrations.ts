@@ -2401,7 +2401,7 @@ async function generateProductNOCHtml(
   let signatureHtml = `<div class="signature-line"></div>`;
   if (associationStampPath) {
     const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
-    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 120px; max-height: 36px; object-fit: contain; margin: 8px auto; display: block; border: 1px solid #000; padding: 6px; background: #fff;" />`;
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 100px; max-height: 24px; object-fit: contain; margin: 4px auto; display: block; border: 1px solid #000; padding: 4px; background: #fff;" />`;
     console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
   } else {
     console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
