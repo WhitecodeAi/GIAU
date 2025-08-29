@@ -1479,11 +1479,15 @@ async function generateCardHtml(
     registration.product_names?.split(",")[0] ||
     registration.category_names?.split(",")[0] ||
     "Food Product";
+  const categoryTitle = (
+    registration.category_names?.split(",")[0] ||
+    "Food Products"
+  ).toUpperCase();
 
   return `
     <div class="card">
       <div class="card-header">
-        FOOD PRODUCT – PRODUCER'S CARD
+        ${categoryTitle} – PRODUCER'S CARD
       </div>
       
       <div class="card-content">
