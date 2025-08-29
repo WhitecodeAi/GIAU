@@ -1839,9 +1839,9 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 140px;
-          height: 28px;
-          margin: 8px auto;
+          width: 120px;
+          height: 24px;
+          margin: 6px auto;
           display: block;
         }
 
@@ -2023,9 +2023,9 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 140px;
-          height: 28px;
-          margin: 8px auto;
+          width: 120px;
+          height: 24px;
+          margin: 6px auto;
           display: block;
         }
 
