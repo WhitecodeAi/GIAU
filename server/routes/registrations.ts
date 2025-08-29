@@ -1683,8 +1683,8 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .signature-image {
-          max-width: 250px;
-          max-height: 60px;
+          max-width: 180px;
+          max-height: 36px;
           object-fit: contain;
           margin: 10px auto;
           display: block;
@@ -1836,8 +1836,8 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 250px;
-          height: 60px;
+          width: 180px;
+          height: 36px;
           margin: 12px auto;
           display: block;
         }
@@ -2018,8 +2018,8 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 250px;
-          height: 60px;
+          width: 180px;
+          height: 36px;
           margin: 12px auto;
           display: block;
         }
@@ -2048,8 +2048,8 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .statement-signature-image {
-          max-width: 250px;
-          max-height: 60px;
+          max-width: 180px;
+          max-height: 36px;
           object-fit: contain;
           margin: 20px auto;
           display: block;
@@ -2177,7 +2177,7 @@ async function getAssociationStamp(
     console.log(`⚠️ No stamp found for association: ${associationName}`);
     return null;
   } catch (error) {
-    console.error("��� Error fetching association stamp:", error);
+    console.error("❌ Error fetching association stamp:", error);
     return null;
   }
 }
@@ -2212,7 +2212,7 @@ async function generateProductFormGI3AHtml(
 
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
-    : `<div style="height: 60px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
+    : `<div style="height: 36px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
 
   console.log(
     "- Generated signature HTML:",
@@ -2719,7 +2719,7 @@ export async function exportProductCard(req: Request, res: Response) {
 
         .signature-box {
           width: 180px;
-          height: 60px;
+          height: 36px;
           border: 2px solid #bdc3c7;
           background: #f8f9fa;
           display: flex;
