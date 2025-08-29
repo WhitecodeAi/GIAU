@@ -1553,7 +1553,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 8mm;
+          margin: 5mm;
         }
 
         body {
@@ -1683,12 +1683,13 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .signature-image {
-          max-width: 160px;
-          max-height: 32px;
+          max-width: 140px;
+          max-height: 28px;
           object-fit: contain;
           margin: 10px auto;
           display: block;
         }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
       </style>
     </head>
     <body>
@@ -1764,7 +1765,7 @@ export async function exportProductNOC(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 8mm;
+          margin: 5mm;
         }
 
         body {
@@ -1772,7 +1773,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           margin: 0;
           padding: 0;
           line-height: 1.35;
-          font-size: 9pt;
+          font-size: 8.5pt;
           color: #000;
         }
 
@@ -1792,7 +1793,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .noc-title {
-          font-size: 12pt;
+          font-size: 11pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
@@ -1825,7 +1826,7 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 1.6;
+          line-height: 1.4;
         }
 
         .signature-area {
@@ -1836,8 +1837,8 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 160px;
-          height: 32px;
+          width: 140px;
+          height: 28px;
           margin: 8px auto;
           display: block;
         }
@@ -1858,9 +1859,10 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .organization-name {
           font-weight: bold;
-          font-size: 11pt;
+          font-size: 10pt;
           color: #2c3e50;
         }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
       </style>
     </head>
     <body>
@@ -1945,7 +1947,7 @@ export async function exportProductStatement(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 8mm;
+          margin: 5mm;
         }
 
         body {
@@ -1953,7 +1955,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           margin: 0;
           padding: 0;
           line-height: 1.35;
-          font-size: 9pt;
+          font-size: 8.5pt;
           color: #000;
         }
 
@@ -1973,7 +1975,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .statement-title {
-          font-size: 12pt;
+          font-size: 11pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
@@ -2007,7 +2009,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 1.6;
+          line-height: 1.4;
         }
 
         .signature-area {
@@ -2018,8 +2020,8 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 160px;
-          height: 32px;
+          width: 140px;
+          height: 28px;
           margin: 8px auto;
           display: block;
         }
@@ -2035,7 +2037,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           padding: 2px 4px;
           font-weight: bold;
           display: inline-block;
-          min-width: 150px;
+          min-width: 100px;
         }
 
         .organization-name {
@@ -2048,12 +2050,13 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .statement-signature-image {
-          max-width: 160px;
-          max-height: 32px;
+          max-width: 140px;
+          max-height: 28px;
           object-fit: contain;
           margin: 8px auto;
           display: block;
         }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
       </style>
     </head>
     <body>
@@ -2318,7 +2321,7 @@ async function generateProductNOCHtml(
   let organizationName = registration.product_association;
   if (!organizationName) {
     console.log(
-      `⚠️ No association found in registration data for NOC, using static mapping for: ${productName}`,
+      `⚠��� No association found in registration data for NOC, using static mapping for: ${productName}`,
     );
     organizationName = await getProductAssociation(productName);
   } else {
@@ -2334,7 +2337,7 @@ async function generateProductNOCHtml(
   let signatureHtml = `<div class="signature-line"></div>`;
   if (associationStampPath) {
     const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
-    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 160px; max-height: 36px; object-fit: contain; margin: 8px auto; display: block; border: 1px solid #000; padding: 6px; background: #fff;" />`;
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 140px; max-height: 36px; object-fit: contain; margin: 8px auto; display: block; border: 1px solid #000; padding: 6px; background: #fff;" />`;
     console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
   } else {
     console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
@@ -2744,6 +2747,7 @@ export async function exportProductCard(req: Request, res: Response) {
           height: 12px;
           background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
         }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
       </style>
     </head>
     <body>
