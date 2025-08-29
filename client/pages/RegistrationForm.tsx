@@ -49,7 +49,11 @@ interface FormData {
 
   // Step 2 - Documents
   documents: {
+    // Combined image sent to server
     aadharCard: File | null;
+    // Front and Back captured from user
+    aadharCardFront: File | null;
+    aadharCardBack: File | null;
     panCard: File | null;
     proofOfProduction: File | null;
     signature: File | null;
@@ -103,6 +107,8 @@ export default function RegistrationForm() {
     panNumber: "",
     documents: {
       aadharCard: null,
+      aadharCardFront: null,
+      aadharCardBack: null,
       panCard: null,
       proofOfProduction: null,
       signature: null,
@@ -220,7 +226,8 @@ export default function RegistrationForm() {
         return hasBasicInfo;
       case 2:
         return !!(
-          formData.documents.aadharCard &&
+          formData.documents.aadharCardFront &&
+          formData.documents.aadharCardBack &&
           formData.documents.signature &&
           formData.documents.photo
         );
@@ -289,6 +296,88 @@ export default function RegistrationForm() {
       },
     }));
   };
+
+  // Load an image from a File
+  const loadImage = (file: File): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Failed to load image"));
+      };
+      img.src = url;
+    });
+  };
+
+  // Combine two images side-by-side into a single JPEG File
+  const combineAadharImages = async (
+    front: File,
+    back: File,
+  ): Promise<File> => {
+    const [img1, img2] = await Promise.all([loadImage(front), loadImage(back)]);
+    const targetHeight = Math.max(img1.height, img2.height) || 1000;
+    const scale1 = targetHeight / (img1.height || targetHeight);
+    const scale2 = targetHeight / (img2.height || targetHeight);
+    const width1 = Math.max(
+      1,
+      Math.round((img1.width || targetHeight) * scale1),
+    );
+    const width2 = Math.max(
+      1,
+      Math.round((img2.width || targetHeight) * scale2),
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width1 + width2;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas not supported");
+
+    ctx.drawImage(img1, 0, 0, width1, targetHeight);
+    ctx.drawImage(img2, width1, 0, width2, targetHeight);
+
+    const blob: Blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Failed to create image"))),
+        "image/jpeg",
+        0.9,
+      );
+    });
+
+    return new File([blob], "aadhar-combined.jpg", { type: "image/jpeg" });
+  };
+
+  // When both front and back are available, auto-combine into a single file for server
+  useEffect(() => {
+    const front = formData.documents.aadharCardFront;
+    const back = formData.documents.aadharCardBack;
+
+    if (front && back) {
+      (async () => {
+        try {
+          const combined = await combineAadharImages(front, back);
+          setFormData((prev) => ({
+            ...prev,
+            documents: { ...prev.documents, aadharCard: combined },
+          }));
+        } catch (e) {
+          console.error("Failed to combine Aadhar images:", e);
+        }
+      })();
+    } else {
+      if (formData.documents.aadharCard) {
+        setFormData((prev) => ({
+          ...prev,
+          documents: { ...prev.documents, aadharCard: null },
+        }));
+      }
+    }
+  }, [formData.documents.aadharCardFront, formData.documents.aadharCardBack]);
 
   const handleProductToggle = (productId: number) => {
     setFormData((prev) => ({
@@ -432,10 +521,18 @@ export default function RegistrationForm() {
         isAdditionalRegistration: isAdditionalRegistration, // Flag for additional registration
       };
 
-      // Use the API function which properly handles auth and file uploads sdsdsdsd
+      // Prepare only expected document fields for server
+      const documentsToSend = {
+        aadharCard: formData.documents.aadharCard,
+        panCard: formData.documents.panCard,
+        proofOfProduction: formData.documents.proofOfProduction,
+        signature: formData.documents.signature,
+        photo: formData.documents.photo,
+      } as const;
+
       const result = await registrationsAPI.create(
         registrationData,
-        formData.documents,
+        documentsToSend,
       );
 
       toast.success("🎉 Registration Completed Successfully!", {
@@ -513,12 +610,12 @@ export default function RegistrationForm() {
           ? `Please fill in: ${missingFields.join(", ")}`
           : "";
       case 2:
-        const missingDocs = [];
-        if (!formData.documents.aadharCard) missingDocs.push("Aadhar Card");
-        // PAN Card and Proof of Production are now optional
-        // if (!formData.documents.panCard) missingDocs.push("PAN Card");
-        // if (!formData.documents.proofOfProduction)
-        //   missingDocs.push("Proof of Production");
+        const missingDocs = [] as string[];
+        if (!formData.documents.aadharCardFront)
+          missingDocs.push("Aadhar Card (Front)");
+        if (!formData.documents.aadharCardBack)
+          missingDocs.push("Aadhar Card (Back)");
+        // PAN Card and Proof of Production are optional
         if (!formData.documents.signature) missingDocs.push("Signature");
         if (!formData.documents.photo) missingDocs.push("Photo");
         return missingDocs.length > 0
@@ -904,10 +1001,18 @@ export default function RegistrationForm() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <DocumentUpload
-            label="Aadhar Card"
-            file={formData.documents.aadharCard}
-            onFileChange={(file) => handleFileUpload("aadharCard", file)}
-            onFileRemove={() => handleFileUpload("aadharCard", null)}
+            label="Aadhar Card (Front)"
+            file={formData.documents.aadharCardFront}
+            onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
+            onFileRemove={() => handleFileUpload("aadharCardFront", null)}
+            required={true}
+          />
+
+          <DocumentUpload
+            label="Aadhar Card (Back)"
+            file={formData.documents.aadharCardBack}
+            onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
+            onFileRemove={() => handleFileUpload("aadharCardBack", null)}
             required={true}
           />
 
