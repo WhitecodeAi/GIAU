@@ -2279,7 +2279,7 @@ async function generateProductFormGI3AHtml(
 
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="signature-image" />`
-    : `<div style="height: 36px; border-bottom: 1px solid #000; margin-bottom: 10px;"></div>`;
+    : `<div style="height: 20px; border-bottom: 1px solid #000; margin-bottom: 4px;"></div>`;
 
   console.log(
     "- Generated signature HTML:",
