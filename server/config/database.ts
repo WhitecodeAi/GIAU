@@ -1,6 +1,5 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-import { getSQLiteDB, initializeSQLite } from "./sqlite-database";
 
 dotenv.config();
 
@@ -131,13 +130,8 @@ export async function dbQuery(sql: string, params: any[] = []): Promise<any[]> {
   activeQueries++;
 
   try {
-    if (useMySQL) {
-      const [rows] = (await pool.execute(sql, params)) as any;
-      return rows;
-    } else {
-      const db = getSQLiteDB();
-      return await db.query(sql, params);
-    }
+    const [rows] = (await pool.execute(sql, params)) as any;
+    return rows;
   } finally {
     activeQueries--;
   }
@@ -151,17 +145,11 @@ export async function dbRun(
   activeQueries++;
 
   try {
-    if (useMySQL) {
-      const [result] = (await pool.execute(sql, params)) as any;
-      return {
-        insertId: result.insertId || 0,
-        affectedRows: result.affectedRows || 0,
-      };
-    } else {
-      const db = getSQLiteDB();
-      const result = await db.run(sql, params);
-      return { insertId: result.lastID, affectedRows: result.changes };
-    }
+    const [result] = (await pool.execute(sql, params)) as any;
+    return {
+      insertId: result.insertId || 0,
+      affectedRows: result.affectedRows || 0,
+    };
   } finally {
     activeQueries--;
   }
