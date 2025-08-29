@@ -1793,11 +1793,11 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .noc-title {
-          font-size: 11pt;
+          font-size: 10pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
-          letter-spacing: 2px;
+          letter-spacing: 1px;
         }
 
         .noc-content {
