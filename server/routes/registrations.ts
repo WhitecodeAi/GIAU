@@ -1640,14 +1640,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .declaration-title {
           font-weight: bold;
-          margin-bottom: 15px;
+          margin-bottom: 6px;
           text-decoration: underline;
         }
 
         .declaration-item {
-          margin: 10px 0;
-          padding-left: 20px;
-          text-indent: -20px;
+          margin: 4px 0;
+          padding-left: 16px;
+          text-indent: -16px;
         }
 
         .signature-section {
