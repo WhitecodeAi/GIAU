@@ -1667,7 +1667,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           text-align: center;
           border-top: 1px solid #000;
           padding-top: 5px;
-          margin-left: 12px;
+          margin-left: 8px;
         }
 
         .signature-label {
@@ -1834,7 +1834,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 12px;
+          margin-left: 8px;
         }
 
         .signature-line {
@@ -2018,7 +2018,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 12px;
+          margin-left: 8px;
         }
 
         .signature-line {
