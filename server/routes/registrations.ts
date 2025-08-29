@@ -1772,7 +1772,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           margin: 0;
           padding: 0;
           line-height: 1.35;
-          font-size: 10pt;
+          font-size: 9pt;
           color: #000;
         }
 
@@ -1953,7 +1953,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           margin: 0;
           padding: 0;
           line-height: 1.35;
-          font-size: 10pt;
+          font-size: 9pt;
           color: #000;
         }
 
