@@ -1490,7 +1490,7 @@ async function generateCardHtml(
     return (raw || "PRODUCTS").toUpperCase();
   };
   const categoryTitle = normalizeCategoryTitle(
-    registration.category_names?.split(",")[0]
+    registration.category_names?.split(",")[0],
   );
 
   return `

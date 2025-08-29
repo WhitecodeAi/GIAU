@@ -2518,54 +2518,78 @@ export async function exportProductCard(req: Request, res: Response) {
     }
 
     // Fetch product association and category from database (prefer productId when provided)
-  const productData = await dbQuery(
-    `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE ${productId ? "p.id = ?" : "p.name = ?"} LIMIT 1`,
-    [productId ? productId : productName],
-  );
+    const productData = await dbQuery(
+      `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE ${productId ? "p.id = ?" : "p.name = ?"} LIMIT 1`,
+      [productId ? productId : productName],
+    );
 
-  const registration = registrations[0];
-  const resolvedProductName = productName || (productData[0] && (productData[0] as any).name) || "";
-  registration.product_names = resolvedProductName;
-  registration.product_association =
-    productData.length > 0 ? (productData[0] as any).description : null;
-  // Attach category name for dynamic header
-  console.log('🔍 Product lookup:', { productId, productName: resolvedProductName, productDataCount: productData.length });
-  if (productData.length > 0 && (productData[0] as any).category_name) {
-    console.log('✅ Found category from product:', (productData[0] as any).category_name);
-    (registration as any).category_names = (productData[0] as any).category_name as string;
-  } else {
-    // Fallback A: derive category from mapping tables for this registration+product
-    const mapRows = await dbQuery(
-      `SELECT pc.name as category_name
+    const registration = registrations[0];
+    const resolvedProductName =
+      productName || (productData[0] && (productData[0] as any).name) || "";
+    registration.product_names = resolvedProductName;
+    registration.product_association =
+      productData.length > 0 ? (productData[0] as any).description : null;
+    // Attach category name for dynamic header
+    console.log("🔍 Product lookup:", {
+      productId,
+      productName: resolvedProductName,
+      productDataCount: productData.length,
+    });
+    if (productData.length > 0 && (productData[0] as any).category_name) {
+      console.log(
+        "✅ Found category from product:",
+        (productData[0] as any).category_name,
+      );
+      (registration as any).category_names = (productData[0] as any)
+        .category_name as string;
+    } else {
+      // Fallback A: derive category from mapping tables for this registration+product
+      const mapRows = await dbQuery(
+        `SELECT pc.name as category_name
        FROM products p
        JOIN product_categories pc ON p.category_id = pc.id
        LEFT JOIN user_existing_products uep ON uep.product_id = p.id AND uep.registration_id = ?
        LEFT JOIN user_selected_products usp ON usp.product_id = p.id AND usp.registration_id = ?
-       WHERE ${productId ? 'p.id = ?' : 'p.name = ?'} AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
+       WHERE ${productId ? "p.id = ?" : "p.name = ?"} AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
        LIMIT 1`,
-      [registrationId, registrationId, productId ? productId : resolvedProductName],
-    );
-    if (mapRows.length > 0) {
-      console.log('✅ Found category from mapping:', mapRows[0].category_name);
-      (registration as any).category_names = mapRows[0].category_name as string;
-    } else {
-      // Fallback B: derive category from registration's categories (least specific)
-      const catRows = await dbQuery(
-        `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
-        [registrationId],
+        [
+          registrationId,
+          registrationId,
+          productId ? productId : resolvedProductName,
+        ],
       );
-      if (catRows.length > 0) {
-        console.log('✅ Found category from registration:', catRows[0].category_name);
-        (registration as any).category_names = catRows[0].category_name as string;
+      if (mapRows.length > 0) {
+        console.log(
+          "✅ Found category from mapping:",
+          mapRows[0].category_name,
+        );
+        (registration as any).category_names = mapRows[0]
+          .category_name as string;
       } else {
-        console.log('⚠️ No category found, using default');
-        (registration as any).category_names = 'Textile Products'; // Default for this registration
+        // Fallback B: derive category from registration's categories (least specific)
+        const catRows = await dbQuery(
+          `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
+          [registrationId],
+        );
+        if (catRows.length > 0) {
+          console.log(
+            "✅ Found category from registration:",
+            catRows[0].category_name,
+          );
+          (registration as any).category_names = catRows[0]
+            .category_name as string;
+        } else {
+          console.log("⚠️ No category found, using default");
+          (registration as any).category_names = "Textile Products"; // Default for this registration
+        }
       }
     }
-  }
 
-  // Generate HTML for the specific product card
-  const cardHtml = await generateProductCardHtml(registration, resolvedProductName);
+    // Generate HTML for the specific product card
+    const cardHtml = await generateProductCardHtml(
+      registration,
+      resolvedProductName,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2795,7 +2819,7 @@ async function generateProductCardHtml(
     return (raw || "PRODUCTS").toUpperCase();
   };
   const categoryTitle = normalizeCategoryTitle(
-    registration.category_names && registration.category_names.split(",")[0]
+    registration.category_names && registration.category_names.split(",")[0],
   );
 
   return `
