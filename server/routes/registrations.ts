@@ -2532,13 +2532,28 @@ export async function exportProductCard(req: Request, res: Response) {
   if (productData.length > 0 && (productData[0] as any).category_name) {
     (registration as any).category_names = (productData[0] as any).category_name as string;
   } else {
-    // Fallback: derive category from registration's categories
-    const catRows = await dbQuery(
-      `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
-      [registrationId],
+    // Fallback A: derive category from mapping tables for this registration+product
+    const mapRows = await dbQuery(
+      `SELECT pc.name as category_name
+       FROM products p
+       JOIN product_categories pc ON p.category_id = pc.id
+       LEFT JOIN user_existing_products uep ON uep.product_id = p.id AND uep.registration_id = ?
+       LEFT JOIN user_selected_products usp ON usp.product_id = p.id AND usp.registration_id = ?
+       WHERE p.name = ? AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
+       LIMIT 1`,
+      [registrationId, registrationId, resolvedProductName],
     );
-    if (catRows.length > 0) {
-      (registration as any).category_names = catRows[0].category_name as string;
+    if (mapRows.length > 0) {
+      (registration as any).category_names = mapRows[0].category_name as string;
+    } else {
+      // Fallback B: derive category from registration's categories (least specific)
+      const catRows = await dbQuery(
+        `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
+        [registrationId],
+      );
+      if (catRows.length > 0) {
+        (registration as any).category_names = catRows[0].category_name as string;
+      }
     }
   }
 
