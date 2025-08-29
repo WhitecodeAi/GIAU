@@ -1689,7 +1689,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           margin: 10px auto;
           display: block;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.85; } }
       </style>
     </head>
     <body>
@@ -1864,7 +1864,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           font-size: 10pt;
           color: #2c3e50;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.85; } }
       </style>
     </head>
     <body>
@@ -2059,7 +2059,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           margin: 8px auto;
           display: block;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.85; } }
       </style>
     </head>
     <body>
@@ -2081,7 +2081,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 }
 
 async function getProductAssociation(productName: string): Promise<string> {
-  console.log(`🔍 Looking up association for product: "${productName}"`);
+  console.log(`���� Looking up association for product: "${productName}"`);
 
   try {
     // Try to fetch from database first - association name is stored in description field
@@ -2750,7 +2750,7 @@ export async function exportProductCard(req: Request, res: Response) {
           height: 12px;
           background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.9; } }
+@media print { .noc-page, .statement-page, .form-page { zoom: 0.85; } }
       </style>
     </head>
     <body>
