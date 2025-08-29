@@ -1802,8 +1802,9 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .noc-content {
           text-align: justify;
-          line-height: 1.3;
-          margin-bottom: 10px;
+          line-height: 1.25;
+          margin-bottom: 8px;
+          page-break-after: avoid;
         }
 
         .noc-paragraph {
