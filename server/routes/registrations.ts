@@ -2353,7 +2353,7 @@ async function generateProductFormGI3AHtml(
 
         <div class="signature-section">
           <div class="date-place">
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 4px;">
               <strong>Date:</strong> <span class="underline">${registrationDate}</span>
             </div>
             <div>
