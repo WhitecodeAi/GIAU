@@ -2517,19 +2517,23 @@ export async function exportProductCard(req: Request, res: Response) {
       return res.status(404).json({ error: "Registration not found" });
     }
 
-    // Fetch product association from database - association name is stored in description field
-    const productData = await dbQuery(
-      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
-      [productName],
-    );
+    // Fetch product association and category from database
+  const productData = await dbQuery(
+    `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE p.name = ? LIMIT 1`,
+    [productName],
+  );
 
-    const registration = registrations[0];
-    registration.product_names = productName;
-    registration.product_association =
-      productData.length > 0 ? productData[0].description : null;
+  const registration = registrations[0];
+  registration.product_names = productName;
+  registration.product_association =
+    productData.length > 0 ? productData[0].description : null;
+  // Attach category name for dynamic header
+  if (productData.length > 0 && productData[0].category_name) {
+    (registration as any).category_names = productData[0].category_name as string;
+  }
 
-    // Generate HTML for the specific product card
-    const cardHtml = await generateProductCardHtml(registration, productName);
+  // Generate HTML for the specific product card
+  const cardHtml = await generateProductCardHtml(registration, productName);
 
     // Create complete HTML document
     const fullHtml = `
@@ -2749,10 +2753,15 @@ async function generateProductCardHtml(
     "en-GB",
   );
 
+  const categoryTitle = (
+    (registration.category_names && registration.category_names.split(",")[0]) ||
+    "Food Products"
+  ).toUpperCase();
+
   return `
     <div class="card">
       <div class="card-header">
-        FOOD PRODUCT – PRODUCER'S CARD
+        ${categoryTitle} – PRODUCER'S CARD
       </div>
 
       <div class="card-content">
