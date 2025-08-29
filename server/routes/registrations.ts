@@ -2524,17 +2524,26 @@ export async function exportProductCard(req: Request, res: Response) {
   );
 
   const registration = registrations[0];
-  const resolvedProductName = productName || (productData[0] && productData[0].name) || "";
+  const resolvedProductName = productName || (productData[0] && (productData[0] as any).name) || "";
   registration.product_names = resolvedProductName;
   registration.product_association =
-    productData.length > 0 ? productData[0].description : null;
+    productData.length > 0 ? (productData[0] as any).description : null;
   // Attach category name for dynamic header
-  if (productData.length > 0 && productData[0].category_name) {
-    (registration as any).category_names = productData[0].category_name as string;
+  if (productData.length > 0 && (productData[0] as any).category_name) {
+    (registration as any).category_names = (productData[0] as any).category_name as string;
+  } else {
+    // Fallback: derive category from registration's categories
+    const catRows = await dbQuery(
+      `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
+      [registrationId],
+    );
+    if (catRows.length > 0) {
+      (registration as any).category_names = catRows[0].category_name as string;
+    }
   }
 
   // Generate HTML for the specific product card
-  const cardHtml = await generateProductCardHtml(registration, productName);
+  const cardHtml = await generateProductCardHtml(registration, resolvedProductName);
 
     // Create complete HTML document
     const fullHtml = `
@@ -2542,7 +2551,7 @@ export async function exportProductCard(req: Request, res: Response) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Producer Card - ${productName}</title>
+      <title>Producer Card - ${resolvedProductName}</title>
       <style>
         @page {
           size: A4;
