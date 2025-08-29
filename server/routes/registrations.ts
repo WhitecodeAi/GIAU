@@ -1553,7 +1553,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 20mm;
+          margin: 12mm;
         }
 
         body {
@@ -1561,7 +1561,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           margin: 0;
           padding: 0;
           line-height: 1.6;
-          font-size: 12pt;
+          font-size: 11pt;
           color: #000;
         }
 
@@ -1569,25 +1569,25 @@ export async function exportProductGI3A(req: Request, res: Response) {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: auto;
         }
 
         .form-header {
           text-align: center;
-          margin-bottom: 30px;
-          border-bottom: 2px solid #000;
-          padding-bottom: 15px;
+          margin-bottom: 16px;
+          border-bottom: 1px solid #000;
+          padding-bottom: 8px;
         }
 
         .form-title {
-          font-size: 14pt;
+          font-size: 11pt;
           font-weight: bold;
           margin: 5px 0;
           line-height: 1.4;
         }
 
         .form-subtitle {
-          font-size: 12pt;
+          font-size: 11pt;
           margin: 3px 0;
           font-style: italic;
         }
@@ -1613,7 +1613,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .form-field {
           margin: 15px 0;
-          line-height: 1.8;
+          line-height: 1.5;
         }
 
         .field-number {
@@ -1651,7 +1651,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 40px;
+          margin-top: 20px;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
@@ -1667,7 +1667,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           text-align: center;
           border-top: 1px solid #000;
           padding-top: 5px;
-          margin-left: 50px;
+          margin-left: 24px;
         }
 
         .signature-label {
@@ -1684,7 +1684,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .signature-image {
           max-width: 250px;
-          max-height: 80px;
+          max-height: 60px;
           object-fit: contain;
           margin: 10px auto;
           display: block;
@@ -1764,15 +1764,15 @@ export async function exportProductNOC(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 25mm;
+          margin: 12mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.8;
-          font-size: 14pt;
+          line-height: 1.5;
+          font-size: 11pt;
           color: #000;
         }
 
@@ -1780,14 +1780,14 @@ export async function exportProductNOC(req: Request, res: Response) {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: auto;
           position: relative;
         }
 
         .noc-header {
           text-align: center;
-          margin-bottom: 40px;
-          border-bottom: 3px solid #000;
+          margin-bottom: 20px;
+          border-bottom: 1px solid #000;
           padding-bottom: 20px;
         }
 
@@ -1801,13 +1801,13 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .noc-content {
           text-align: justify;
-          line-height: 2.2;
-          margin-bottom: 40px;
+          line-height: 1.6;
+          margin-bottom: 20px;
         }
 
         .noc-paragraph {
           margin-bottom: 25px;
-          text-indent: 30px;
+          text-indent: 20px;
         }
 
         .highlight {
@@ -1816,7 +1816,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 60px;
+          margin-top: 24px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -1831,13 +1831,13 @@ export async function exportProductNOC(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 50px;
+          margin-left: 24px;
         }
 
         .signature-line {
-          border-bottom: 2px solid #000;
+          border-bottom: 1px solid #000;
           width: 250px;
-          height: 80px;
+          height: 60px;
           margin: 30px auto;
           display: block;
         }
@@ -1945,15 +1945,15 @@ export async function exportProductStatement(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 25mm;
+          margin: 12mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.8;
-          font-size: 14pt;
+          line-height: 1.5;
+          font-size: 11pt;
           color: #000;
         }
 
@@ -1961,14 +1961,14 @@ export async function exportProductStatement(req: Request, res: Response) {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: auto;
           position: relative;
         }
 
         .statement-header {
           text-align: center;
-          margin-bottom: 40px;
-          border-bottom: 3px solid #000;
+          margin-bottom: 20px;
+          border-bottom: 1px solid #000;
           padding-bottom: 20px;
         }
 
@@ -1982,13 +1982,13 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .statement-content {
           text-align: justify;
-          line-height: 2.0;
-          margin-bottom: 40px;
+          line-height: 1.5;
+          margin-bottom: 20px;
         }
 
         .statement-paragraph {
           margin-bottom: 20px;
-          text-indent: 30px;
+          text-indent: 20px;
         }
 
         .highlight {
@@ -1998,7 +1998,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 60px;
+          margin-top: 24px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -2013,13 +2013,13 @@ export async function exportProductStatement(req: Request, res: Response) {
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 50px;
+          margin-left: 24px;
         }
 
         .signature-line {
-          border-bottom: 2px solid #000;
+          border-bottom: 1px solid #000;
           width: 250px;
-          height: 80px;
+          height: 60px;
           margin: 30px auto;
           display: block;
         }
@@ -2049,7 +2049,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .statement-signature-image {
           max-width: 250px;
-          max-height: 80px;
+          max-height: 60px;
           object-fit: contain;
           margin: 20px auto;
           display: block;
@@ -2334,7 +2334,7 @@ async function generateProductNOCHtml(
   let signatureHtml = `<div class="signature-line"></div>`;
   if (associationStampPath) {
     const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
-    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 80px; object-fit: contain; margin: 30px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 60px; object-fit: contain; margin: 30px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
     console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
   } else {
     console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
