@@ -1853,10 +1853,10 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .underline-field {
           border-bottom: 1px solid #000;
-          padding: 2px 4px;
+          padding: 2px 3px;
           font-weight: bold;
           display: inline-block;
-          min-width: 120px;
+          min-width: 90px;
         }
 
         .organization-name {
