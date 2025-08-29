@@ -1593,14 +1593,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .form-number {
-          font-size: 16pt;
+          font-size: 12pt;
           font-weight: bold;
           margin: 10px 0;
           text-decoration: underline;
         }
 
         .application-title {
-          font-size: 13pt;
+          font-size: 11pt;
           font-weight: bold;
           margin: 10px 0;
         }
@@ -1629,7 +1629,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           font-weight: bold;
           border-bottom: 1px solid #000;
           padding: 2px 5px;
-          min-width: 200px;
+          min-width: 120px;
           display: inline-block;
         }
 
@@ -1667,7 +1667,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
           text-align: center;
           border-top: 1px solid #000;
           padding-top: 5px;
-          margin-left: 24px;
+          margin-left: 12px;
         }
 
         .signature-label {
@@ -1677,14 +1677,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .underline {
           border-bottom: 1px solid #000;
-          padding: 2px 5px;
-          min-width: 150px;
+          padding: 2px 4px;
+          min-width: 100px;
           display: inline-block;
         }
 
         .signature-image {
-          max-width: 180px;
-          max-height: 36px;
+          max-width: 160px;
+          max-height: 32px;
           object-fit: contain;
           margin: 10px auto;
           display: block;
@@ -1792,7 +1792,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .noc-title {
-          font-size: 20pt;
+          font-size: 12pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
@@ -1825,20 +1825,20 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 2.5;
+          line-height: 1.6;
         }
 
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 24px;
+          margin-left: 12px;
         }
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 180px;
-          height: 36px;
-          margin: 12px auto;
+          width: 160px;
+          height: 32px;
+          margin: 8px auto;
           display: block;
         }
 
@@ -1850,15 +1850,15 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .underline-field {
           border-bottom: 1px solid #000;
-          padding: 2px 8px;
+          padding: 2px 4px;
           font-weight: bold;
           display: inline-block;
-          min-width: 200px;
+          min-width: 120px;
         }
 
         .organization-name {
           font-weight: bold;
-          font-size: 16pt;
+          font-size: 11pt;
           color: #2c3e50;
         }
       </style>
@@ -1973,7 +1973,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .statement-title {
-          font-size: 18pt;
+          font-size: 12pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
@@ -2007,20 +2007,20 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 2.5;
+          line-height: 1.6;
         }
 
         .signature-area {
           flex: 1;
           text-align: center;
-          margin-left: 24px;
+          margin-left: 12px;
         }
 
         .signature-line {
           border-bottom: 1px solid #000;
-          width: 180px;
-          height: 36px;
-          margin: 12px auto;
+          width: 160px;
+          height: 32px;
+          margin: 8px auto;
           display: block;
         }
 
@@ -2032,7 +2032,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .underline-field {
           border-bottom: 1px solid #000;
-          padding: 2px 8px;
+          padding: 2px 4px;
           font-weight: bold;
           display: inline-block;
           min-width: 150px;
@@ -2048,10 +2048,10 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .statement-signature-image {
-          max-width: 180px;
-          max-height: 36px;
+          max-width: 160px;
+          max-height: 32px;
           object-fit: contain;
-          margin: 20px auto;
+          margin: 8px auto;
           display: block;
         }
       </style>
