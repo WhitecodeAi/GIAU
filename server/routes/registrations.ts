@@ -1808,8 +1808,8 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .noc-paragraph {
-          margin-bottom: 10px;
-          text-indent: 20px;
+          margin-bottom: 6px;
+          text-indent: 6px;
         }
 
         .highlight {
