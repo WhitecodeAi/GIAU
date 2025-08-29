@@ -2539,9 +2539,9 @@ export async function exportProductCard(req: Request, res: Response) {
        JOIN product_categories pc ON p.category_id = pc.id
        LEFT JOIN user_existing_products uep ON uep.product_id = p.id AND uep.registration_id = ?
        LEFT JOIN user_selected_products usp ON usp.product_id = p.id AND usp.registration_id = ?
-       WHERE p.name = ? AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
+       WHERE ${productId ? 'p.id = ?' : 'p.name = ?'} AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
        LIMIT 1`,
-      [registrationId, registrationId, resolvedProductName],
+      [registrationId, registrationId, productId ? productId : resolvedProductName],
     );
     if (mapRows.length > 0) {
       (registration as any).category_names = mapRows[0].category_name as string;
