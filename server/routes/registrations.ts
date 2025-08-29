@@ -1981,7 +1981,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
-          letter-spacing: 2px;
+          letter-spacing: 1px;
         }
 
         .statement-content {
