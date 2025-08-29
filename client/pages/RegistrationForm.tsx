@@ -315,13 +315,22 @@ export default function RegistrationForm() {
   };
 
   // Combine two images side-by-side into a single JPEG File
-  const combineAadharImages = async (front: File, back: File): Promise<File> => {
+  const combineAadharImages = async (
+    front: File,
+    back: File,
+  ): Promise<File> => {
     const [img1, img2] = await Promise.all([loadImage(front), loadImage(back)]);
     const targetHeight = Math.max(img1.height, img2.height) || 1000;
     const scale1 = targetHeight / (img1.height || targetHeight);
     const scale2 = targetHeight / (img2.height || targetHeight);
-    const width1 = Math.max(1, Math.round((img1.width || targetHeight) * scale1));
-    const width2 = Math.max(1, Math.round((img2.width || targetHeight) * scale2));
+    const width1 = Math.max(
+      1,
+      Math.round((img1.width || targetHeight) * scale1),
+    );
+    const width2 = Math.max(
+      1,
+      Math.round((img2.width || targetHeight) * scale2),
+    );
 
     const canvas = document.createElement("canvas");
     canvas.width = width1 + width2;
@@ -602,8 +611,10 @@ export default function RegistrationForm() {
           : "";
       case 2:
         const missingDocs = [] as string[];
-        if (!formData.documents.aadharCardFront) missingDocs.push("Aadhar Card (Front)");
-        if (!formData.documents.aadharCardBack) missingDocs.push("Aadhar Card (Back)");
+        if (!formData.documents.aadharCardFront)
+          missingDocs.push("Aadhar Card (Front)");
+        if (!formData.documents.aadharCardBack)
+          missingDocs.push("Aadhar Card (Back)");
         // PAN Card and Proof of Production are optional
         if (!formData.documents.signature) missingDocs.push("Signature");
         if (!formData.documents.photo) missingDocs.push("Photo");
