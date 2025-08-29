@@ -2486,9 +2486,9 @@ export async function exportProductCard(req: Request, res: Response) {
   try {
     const { registrationId, productId, productName } = req.body;
 
-    if (!registrationId || !productName) {
+    if (!registrationId || (!productId && !productName)) {
       return res.status(400).json({
-        error: "Registration ID and product name are required",
+        error: "Registration ID and productId or productName is required",
       });
     }
 
@@ -2517,19 +2517,79 @@ export async function exportProductCard(req: Request, res: Response) {
       return res.status(404).json({ error: "Registration not found" });
     }
 
-    // Fetch product association from database - association name is stored in description field
+    // Fetch product association and category from database (prefer productId when provided)
     const productData = await dbQuery(
-      `SELECT p.* FROM products p WHERE p.name = ? LIMIT 1`,
-      [productName],
+      `SELECT p.*, pc.name as category_name FROM products p LEFT JOIN product_categories pc ON p.category_id = pc.id WHERE ${productId ? "p.id = ?" : "p.name = ?"} LIMIT 1`,
+      [productId ? productId : productName],
     );
 
     const registration = registrations[0];
-    registration.product_names = productName;
+    const resolvedProductName =
+      productName || (productData[0] && (productData[0] as any).name) || "";
+    registration.product_names = resolvedProductName;
     registration.product_association =
-      productData.length > 0 ? productData[0].description : null;
+      productData.length > 0 ? (productData[0] as any).description : null;
+    // Attach category name for dynamic header
+    console.log("🔍 Product lookup:", {
+      productId,
+      productName: resolvedProductName,
+      productDataCount: productData.length,
+    });
+    if (productData.length > 0 && (productData[0] as any).category_name) {
+      console.log(
+        "✅ Found category from product:",
+        (productData[0] as any).category_name,
+      );
+      (registration as any).category_names = (productData[0] as any)
+        .category_name as string;
+    } else {
+      // Fallback A: derive category from mapping tables for this registration+product
+      const mapRows = await dbQuery(
+        `SELECT pc.name as category_name
+       FROM products p
+       JOIN product_categories pc ON p.category_id = pc.id
+       LEFT JOIN user_existing_products uep ON uep.product_id = p.id AND uep.registration_id = ?
+       LEFT JOIN user_selected_products usp ON usp.product_id = p.id AND usp.registration_id = ?
+       WHERE ${productId ? "p.id = ?" : "p.name = ?"} AND (uep.id IS NOT NULL OR usp.id IS NOT NULL)
+       LIMIT 1`,
+        [
+          registrationId,
+          registrationId,
+          productId ? productId : resolvedProductName,
+        ],
+      );
+      if (mapRows.length > 0) {
+        console.log(
+          "✅ Found category from mapping:",
+          mapRows[0].category_name,
+        );
+        (registration as any).category_names = mapRows[0]
+          .category_name as string;
+      } else {
+        // Fallback B: derive category from registration's categories (least specific)
+        const catRows = await dbQuery(
+          `SELECT pc.name as category_name FROM user_registration_categories urc JOIN product_categories pc ON urc.category_id = pc.id WHERE urc.registration_id = ? LIMIT 1`,
+          [registrationId],
+        );
+        if (catRows.length > 0) {
+          console.log(
+            "✅ Found category from registration:",
+            catRows[0].category_name,
+          );
+          (registration as any).category_names = catRows[0]
+            .category_name as string;
+        } else {
+          console.log("⚠️ No category found, using default");
+          (registration as any).category_names = "Textile Products"; // Default for this registration
+        }
+      }
+    }
 
     // Generate HTML for the specific product card
-    const cardHtml = await generateProductCardHtml(registration, productName);
+    const cardHtml = await generateProductCardHtml(
+      registration,
+      resolvedProductName,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2537,7 +2597,7 @@ export async function exportProductCard(req: Request, res: Response) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Producer Card - ${productName}</title>
+      <title>Producer Card - ${resolvedProductName}</title>
       <style>
         @page {
           size: A4;
@@ -2749,10 +2809,23 @@ async function generateProductCardHtml(
     "en-GB",
   );
 
+  const normalizeCategoryTitle = (raw?: string) => {
+    const name = (raw || "").toLowerCase();
+    if (name.includes("textile")) return "TEXTILE PRODUCTS";
+    if (name.includes("beverage")) return "BEVERAGE PRODUCTS";
+    if (name.includes("musical")) return "MUSICAL INSTRUMENT PRODUCTS";
+    if (name.includes("agriculture")) return "AGRICULTURE PRODUCTS";
+    if (name.includes("food")) return "FOOD PRODUCTS";
+    return (raw || "PRODUCTS").toUpperCase();
+  };
+  const categoryTitle = normalizeCategoryTitle(
+    registration.category_names && registration.category_names.split(",")[0],
+  );
+
   return `
     <div class="card">
       <div class="card-header">
-        FOOD PRODUCT – PRODUCER'S CARD
+        ${categoryTitle} – PRODUCER'S CARD
       </div>
 
       <div class="card-content">

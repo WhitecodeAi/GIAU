@@ -1480,10 +1480,23 @@ async function generateCardHtml(
     registration.category_names?.split(",")[0] ||
     "Food Product";
 
+  const normalizeCategoryTitle = (raw?: string) => {
+    const name = (raw || "").toLowerCase();
+    if (name.includes("textile")) return "TEXTILE PRODUCTS";
+    if (name.includes("beverage")) return "BEVERAGE PRODUCTS";
+    if (name.includes("musical")) return "MUSICAL INSTRUMENT PRODUCTS";
+    if (name.includes("agriculture")) return "AGRICULTURE PRODUCTS";
+    if (name.includes("food")) return "FOOD PRODUCTS";
+    return (raw || "PRODUCTS").toUpperCase();
+  };
+  const categoryTitle = normalizeCategoryTitle(
+    registration.category_names?.split(",")[0],
+  );
+
   return `
     <div class="card">
       <div class="card-header">
-        FOOD PRODUCT – PRODUCER'S CARD
+        ${categoryTitle} – PRODUCER'S CARD
       </div>
       
       <div class="card-content">

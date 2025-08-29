@@ -1,6 +1,5 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-import { getSQLiteDB, initializeSQLite } from "./sqlite-database";
 
 dotenv.config();
 
@@ -77,11 +76,13 @@ export async function testConnection() {
       const connection = await pool.getConnection();
       connection.release();
       useMySQL = true;
+      // Ensure required tables exist in MySQL
+      await ensureMySQLSchema();
       return true;
     } catch (error) {
       console.log(
         `❌ MySQL connection attempt ${attempt}/3 failed:`,
-        error.message,
+        (error as any).message,
       );
       if (attempt < 3) {
         await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
@@ -89,15 +90,9 @@ export async function testConnection() {
     }
   }
 
-  // Fall back to SQLite only after MySQL fails
-  useMySQL = false;
-  try {
-    await initializeSQLite();
-    return true;
-  } catch (sqliteError) {
-    console.error("❌ SQLite initialization also failed:", sqliteError);
-    return false;
-  }
+  // No SQLite fallback: enforce MySQL-only mode
+  // If MySQL connection fails after retries, report failure
+  return false;
 }
 
 // Query throttling to prevent connection exhaustion
@@ -110,19 +105,33 @@ async function waitForQuerySlot(): Promise<void> {
   }
 }
 
+async function ensureMySQLSchema() {
+  if (!useMySQL) return;
+  try {
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS user_registration_categories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        registration_id INT NOT NULL,
+        category_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (registration_id, category_id),
+        FOREIGN KEY (registration_id) REFERENCES user_registrations(id),
+        FOREIGN KEY (category_id) REFERENCES product_categories(id)
+      ) ENGINE=InnoDB
+    `);
+  } catch (e) {
+    console.error("Failed ensuring MySQL schema:", e);
+  }
+}
+
 // Database query wrapper with throttling
 export async function dbQuery(sql: string, params: any[] = []): Promise<any[]> {
   await waitForQuerySlot();
   activeQueries++;
 
   try {
-    if (useMySQL) {
-      const [rows] = (await pool.execute(sql, params)) as any;
-      return rows;
-    } else {
-      const db = getSQLiteDB();
-      return await db.query(sql, params);
-    }
+    const [rows] = (await pool.execute(sql, params)) as any;
+    return rows;
   } finally {
     activeQueries--;
   }
@@ -136,17 +145,11 @@ export async function dbRun(
   activeQueries++;
 
   try {
-    if (useMySQL) {
-      const [result] = (await pool.execute(sql, params)) as any;
-      return {
-        insertId: result.insertId || 0,
-        affectedRows: result.affectedRows || 0,
-      };
-    } else {
-      const db = getSQLiteDB();
-      const result = await db.run(sql, params);
-      return { insertId: result.lastID, affectedRows: result.changes };
-    }
+    const [result] = (await pool.execute(sql, params)) as any;
+    return {
+      insertId: result.insertId || 0,
+      affectedRows: result.affectedRows || 0,
+    };
   } finally {
     activeQueries--;
   }
