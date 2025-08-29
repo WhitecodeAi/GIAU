@@ -1612,8 +1612,8 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .form-field {
-          margin: 6px 0;
-          line-height: 1.2;
+          margin: 3px 0;
+          line-height: 1.15;
         }
 
         .field-number {
