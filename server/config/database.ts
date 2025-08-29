@@ -77,11 +77,13 @@ export async function testConnection() {
       const connection = await pool.getConnection();
       connection.release();
       useMySQL = true;
+      // Ensure required tables exist in MySQL
+      await ensureMySQLSchema();
       return true;
     } catch (error) {
       console.log(
         `❌ MySQL connection attempt ${attempt}/3 failed:`,
-        error.message,
+        (error as any).message,
       );
       if (attempt < 3) {
         await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
@@ -107,6 +109,25 @@ const MAX_CONCURRENT_QUERIES = 15;
 async function waitForQuerySlot(): Promise<void> {
   while (activeQueries >= MAX_CONCURRENT_QUERIES) {
     await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+async function ensureMySQLSchema() {
+  if (!useMySQL) return;
+  try {
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS user_registration_categories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        registration_id INT NOT NULL,
+        category_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (registration_id, category_id),
+        FOREIGN KEY (registration_id) REFERENCES user_registrations(id),
+        FOREIGN KEY (category_id) REFERENCES product_categories(id)
+      ) ENGINE=InnoDB
+    `);
+  } catch (e) {
+    console.error("Failed ensuring MySQL schema:", e);
   }
 }
 
