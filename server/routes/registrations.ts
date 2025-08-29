@@ -1818,11 +1818,12 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 10px;
+          margin-top: 8px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           page-break-inside: avoid;
+          page-break-before: avoid;
         }
 
         .date-place {
@@ -2001,11 +2002,12 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 10px;
+          margin-top: 8px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           page-break-inside: avoid;
+          page-break-before: avoid;
         }
 
         .date-place {
