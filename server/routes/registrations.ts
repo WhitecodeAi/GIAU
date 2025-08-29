@@ -2486,9 +2486,9 @@ export async function exportProductCard(req: Request, res: Response) {
   try {
     const { registrationId, productId, productName } = req.body;
 
-    if (!registrationId || !productName) {
+    if (!registrationId || (!productId && !productName)) {
       return res.status(400).json({
-        error: "Registration ID and product name are required",
+        error: "Registration ID and productId or productName is required",
       });
     }
 
