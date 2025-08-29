@@ -2529,7 +2529,9 @@ export async function exportProductCard(req: Request, res: Response) {
   registration.product_association =
     productData.length > 0 ? (productData[0] as any).description : null;
   // Attach category name for dynamic header
+  console.log('🔍 Product lookup:', { productId, productName: resolvedProductName, productDataCount: productData.length });
   if (productData.length > 0 && (productData[0] as any).category_name) {
+    console.log('✅ Found category from product:', (productData[0] as any).category_name);
     (registration as any).category_names = (productData[0] as any).category_name as string;
   } else {
     // Fallback A: derive category from mapping tables for this registration+product
@@ -2544,6 +2546,7 @@ export async function exportProductCard(req: Request, res: Response) {
       [registrationId, registrationId, productId ? productId : resolvedProductName],
     );
     if (mapRows.length > 0) {
+      console.log('✅ Found category from mapping:', mapRows[0].category_name);
       (registration as any).category_names = mapRows[0].category_name as string;
     } else {
       // Fallback B: derive category from registration's categories (least specific)
@@ -2552,7 +2555,11 @@ export async function exportProductCard(req: Request, res: Response) {
         [registrationId],
       );
       if (catRows.length > 0) {
+        console.log('✅ Found category from registration:', catRows[0].category_name);
         (registration as any).category_names = catRows[0].category_name as string;
+      } else {
+        console.log('⚠️ No category found, using default');
+        (registration as any).category_names = 'Textile Products'; // Default for this registration
       }
     }
   }
