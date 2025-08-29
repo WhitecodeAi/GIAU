@@ -1574,7 +1574,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .form-header {
           text-align: center;
-          margin-bottom: 16px;
+          margin-bottom: 8px;
           border-bottom: 1px solid #000;
           padding-bottom: 8px;
         }
@@ -1612,7 +1612,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .form-field {
-          margin: 15px 0;
+          margin: 6px 0;
           line-height: 1.35;
         }
 
@@ -1634,7 +1634,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .declaration-section {
-          margin-top: 30px;
+          margin-top: 12px;
           page-break-inside: avoid;
         }
 
@@ -1651,7 +1651,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 20px;
+          margin-top: 10px;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
@@ -1786,9 +1786,9 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .noc-header {
           text-align: center;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
           border-bottom: 1px solid #000;
-          padding-bottom: 20px;
+          padding-bottom: 8px;
         }
 
         .noc-title {
@@ -1802,11 +1802,11 @@ export async function exportProductNOC(req: Request, res: Response) {
         .noc-content {
           text-align: justify;
           line-height: 1.3;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
         }
 
         .noc-paragraph {
-          margin-bottom: 25px;
+          margin-bottom: 10px;
           text-indent: 20px;
         }
 
@@ -1816,7 +1816,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 24px;
+          margin-top: 10px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -1838,7 +1838,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           border-bottom: 1px solid #000;
           width: 250px;
           height: 60px;
-          margin: 30px auto;
+          margin: 12px auto;
           display: block;
         }
 
@@ -1967,9 +1967,9 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .statement-header {
           text-align: center;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
           border-bottom: 1px solid #000;
-          padding-bottom: 20px;
+          padding-bottom: 8px;
         }
 
         .statement-title {
@@ -1983,11 +1983,11 @@ export async function exportProductStatement(req: Request, res: Response) {
         .statement-content {
           text-align: justify;
           line-height: 1.35;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
         }
 
         .statement-paragraph {
-          margin-bottom: 20px;
+          margin-bottom: 10px;
           text-indent: 20px;
         }
 
@@ -1998,7 +1998,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 24px;
+          margin-top: 10px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -2020,7 +2020,7 @@ export async function exportProductStatement(req: Request, res: Response) {
           border-bottom: 1px solid #000;
           width: 250px;
           height: 60px;
-          margin: 30px auto;
+          margin: 12px auto;
           display: block;
         }
 
@@ -2286,7 +2286,7 @@ async function generateProductFormGI3AHtml(
 
         <div class="signature-section">
           <div class="date-place">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">
               <strong>Date:</strong> <span class="underline">${registrationDate}</span>
             </div>
             <div>
@@ -2334,7 +2334,7 @@ async function generateProductNOCHtml(
   let signatureHtml = `<div class="signature-line"></div>`;
   if (associationStampPath) {
     const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
-    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 60px; object-fit: contain; margin: 30px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
+    signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" style="max-width: 250px; max-height: 60px; object-fit: contain; margin: 12px auto; display: block; border: 2px solid #000; padding: 10px; background: #fff;" />`;
     console.log(`✅ Using association stamp in NOC: ${stampUrl}`);
   } else {
     console.log(`⚠️ No association stamp found for NOC: ${organizationName}`);
