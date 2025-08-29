@@ -1689,7 +1689,26 @@ export async function exportProductGI3A(req: Request, res: Response) {
           margin: 10px auto;
           display: block;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.75; transform: scale(0.9); transform-origin: top left; } }
+@media print {
+  .noc-page, .statement-page, .form-page {
+    zoom: 0.75;
+    transform: scale(0.9);
+    transform-origin: top left;
+    page-break-inside: avoid;
+    overflow: hidden;
+    max-height: 95vh;
+  }
+  * {
+    page-break-inside: avoid !important;
+  }
+  .noc-content, .statement-content, .form-content {
+    page-break-after: avoid !important;
+  }
+  .signature-section {
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
       </style>
     </head>
     <body>
@@ -1864,7 +1883,26 @@ export async function exportProductNOC(req: Request, res: Response) {
           font-size: 8pt;
           color: #2c3e50;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.75; transform: scale(0.9); transform-origin: top left; } }
+@media print {
+  .noc-page, .statement-page, .form-page {
+    zoom: 0.75;
+    transform: scale(0.9);
+    transform-origin: top left;
+    page-break-inside: avoid;
+    overflow: hidden;
+    max-height: 95vh;
+  }
+  * {
+    page-break-inside: avoid !important;
+  }
+  .noc-content, .statement-content, .form-content {
+    page-break-after: avoid !important;
+  }
+  .signature-section {
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
       </style>
     </head>
     <body>
@@ -2059,7 +2097,26 @@ export async function exportProductStatement(req: Request, res: Response) {
           margin: 8px auto;
           display: block;
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.75; transform: scale(0.9); transform-origin: top left; } }
+@media print {
+  .noc-page, .statement-page, .form-page {
+    zoom: 0.75;
+    transform: scale(0.9);
+    transform-origin: top left;
+    page-break-inside: avoid;
+    overflow: hidden;
+    max-height: 95vh;
+  }
+  * {
+    page-break-inside: avoid !important;
+  }
+  .noc-content, .statement-content, .form-content {
+    page-break-after: avoid !important;
+  }
+  .signature-section {
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
       </style>
     </head>
     <body>
@@ -2142,7 +2199,7 @@ async function getProductAssociation(productName: string): Promise<string> {
     console.log(`⚠️ No match found, using default association`);
     return "Bodo Traditional Producers Association";
   } catch (error) {
-    console.error("❌ Error fetching product association:", error);
+    console.error("�� Error fetching product association:", error);
     return "Bodo Traditional Producers Association";
   }
 }
@@ -2750,7 +2807,26 @@ export async function exportProductCard(req: Request, res: Response) {
           height: 12px;
           background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
         }
-@media print { .noc-page, .statement-page, .form-page { zoom: 0.75; transform: scale(0.9); transform-origin: top left; } }
+@media print {
+  .noc-page, .statement-page, .form-page {
+    zoom: 0.75;
+    transform: scale(0.9);
+    transform-origin: top left;
+    page-break-inside: avoid;
+    overflow: hidden;
+    max-height: 95vh;
+  }
+  * {
+    page-break-inside: avoid !important;
+  }
+  .noc-content, .statement-content, .form-content {
+    page-break-after: avoid !important;
+  }
+  .signature-section {
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
       </style>
     </head>
     <body>
