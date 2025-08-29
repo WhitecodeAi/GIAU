@@ -1553,15 +1553,15 @@ export async function exportProductGI3A(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 12mm;
+          margin: 8mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.6;
-          font-size: 11pt;
+          line-height: 1.3;
+          font-size: 10pt;
           color: #000;
         }
 
@@ -1580,14 +1580,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .form-title {
-          font-size: 11pt;
+          font-size: 10pt;
           font-weight: bold;
           margin: 5px 0;
           line-height: 1.4;
         }
 
         .form-subtitle {
-          font-size: 11pt;
+          font-size: 10pt;
           margin: 3px 0;
           font-style: italic;
         }
@@ -1606,14 +1606,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .rule-reference {
-          font-size: 11pt;
+          font-size: 10pt;
           margin: 5px 0;
           font-style: italic;
         }
 
         .form-field {
           margin: 15px 0;
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         .field-number {
@@ -1672,7 +1672,7 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
         .signature-label {
           margin-top: 10px;
-          font-size: 11pt;
+          font-size: 10pt;
         }
 
         .underline {
@@ -1764,15 +1764,15 @@ export async function exportProductNOC(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 12mm;
+          margin: 8mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.5;
-          font-size: 11pt;
+          line-height: 1.35;
+          font-size: 10pt;
           color: #000;
         }
 
@@ -1801,7 +1801,7 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .noc-content {
           text-align: justify;
-          line-height: 1.6;
+          line-height: 1.3;
           margin-bottom: 20px;
         }
 
@@ -1845,7 +1845,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         .signature-label {
           font-weight: bold;
           margin-top: 15px;
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         .underline-field {
@@ -1945,15 +1945,15 @@ export async function exportProductStatement(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 12mm;
+          margin: 8mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.5;
-          font-size: 11pt;
+          line-height: 1.35;
+          font-size: 10pt;
           color: #000;
         }
 
@@ -1982,7 +1982,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .statement-content {
           text-align: justify;
-          line-height: 1.5;
+          line-height: 1.35;
           margin-bottom: 20px;
         }
 
@@ -2027,7 +2027,7 @@ export async function exportProductStatement(req: Request, res: Response) {
         .signature-label {
           font-weight: bold;
           margin-top: 15px;
-          line-height: 1.5;
+          line-height: 1.35;
         }
 
         .underline-field {
