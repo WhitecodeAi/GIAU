@@ -215,6 +215,19 @@ export async function initializeSQLite() {
       )
     `);
 
+    // Ensure category junction table exists (used across many queries)
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS user_registration_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        registration_id INTEGER NOT NULL,
+        category_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (registration_id, category_id),
+        FOREIGN KEY (registration_id) REFERENCES user_registrations(id),
+        FOREIGN KEY (category_id) REFERENCES product_categories(id)
+      )
+    `);
+
     // Insert default data
     await insertDefaultSQLiteData(db);
   } catch (error) {
