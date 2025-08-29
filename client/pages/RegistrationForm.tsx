@@ -297,6 +297,79 @@ export default function RegistrationForm() {
     }));
   };
 
+  // Load an image from a File
+  const loadImage = (file: File): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Failed to load image"));
+      };
+      img.src = url;
+    });
+  };
+
+  // Combine two images side-by-side into a single JPEG File
+  const combineAadharImages = async (front: File, back: File): Promise<File> => {
+    const [img1, img2] = await Promise.all([loadImage(front), loadImage(back)]);
+    const targetHeight = Math.max(img1.height, img2.height) || 1000;
+    const scale1 = targetHeight / (img1.height || targetHeight);
+    const scale2 = targetHeight / (img2.height || targetHeight);
+    const width1 = Math.max(1, Math.round((img1.width || targetHeight) * scale1));
+    const width2 = Math.max(1, Math.round((img2.width || targetHeight) * scale2));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width1 + width2;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas not supported");
+
+    ctx.drawImage(img1, 0, 0, width1, targetHeight);
+    ctx.drawImage(img2, width1, 0, width2, targetHeight);
+
+    const blob: Blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Failed to create image"))),
+        "image/jpeg",
+        0.9,
+      );
+    });
+
+    return new File([blob], "aadhar-combined.jpg", { type: "image/jpeg" });
+  };
+
+  // When both front and back are available, auto-combine into a single file for server
+  useEffect(() => {
+    const front = formData.documents.aadharCardFront;
+    const back = formData.documents.aadharCardBack;
+
+    if (front && back) {
+      (async () => {
+        try {
+          const combined = await combineAadharImages(front, back);
+          setFormData((prev) => ({
+            ...prev,
+            documents: { ...prev.documents, aadharCard: combined },
+          }));
+        } catch (e) {
+          console.error("Failed to combine Aadhar images:", e);
+        }
+      })();
+    } else {
+      if (formData.documents.aadharCard) {
+        setFormData((prev) => ({
+          ...prev,
+          documents: { ...prev.documents, aadharCard: null },
+        }));
+      }
+    }
+  }, [formData.documents.aadharCardFront, formData.documents.aadharCardBack]);
+
   const handleProductToggle = (productId: number) => {
     setFormData((prev) => ({
       ...prev,
