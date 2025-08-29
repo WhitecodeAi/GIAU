@@ -1828,7 +1828,7 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 1.4;
+          line-height: 1.2;
         }
 
         .signature-area {
@@ -2012,7 +2012,7 @@ export async function exportProductStatement(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 1.4;
+          line-height: 1.2;
         }
 
         .signature-area {
