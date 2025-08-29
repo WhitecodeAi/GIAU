@@ -2753,10 +2753,18 @@ async function generateProductCardHtml(
     "en-GB",
   );
 
-  const categoryTitle = (
-    (registration.category_names && registration.category_names.split(",")[0]) ||
-    "Food Products"
-  ).toUpperCase();
+  const normalizeCategoryTitle = (raw?: string) => {
+    const name = (raw || "").toLowerCase();
+    if (name.includes("textile")) return "TEXTILE PRODUCTS";
+    if (name.includes("beverage")) return "BEVERAGE PRODUCTS";
+    if (name.includes("musical")) return "MUSICAL INSTRUMENT PRODUCTS";
+    if (name.includes("agriculture")) return "AGRICULTURE PRODUCTS";
+    if (name.includes("food")) return "FOOD PRODUCTS";
+    return (raw || "PRODUCTS").toUpperCase();
+  };
+  const categoryTitle = normalizeCategoryTitle(
+    registration.category_names && registration.category_names.split(",")[0]
+  );
 
   return `
     <div class="card">
