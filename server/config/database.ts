@@ -91,15 +91,9 @@ export async function testConnection() {
     }
   }
 
-  // Fall back to SQLite only after MySQL fails
-  useMySQL = false;
-  try {
-    await initializeSQLite();
-    return true;
-  } catch (sqliteError) {
-    console.error("❌ SQLite initialization also failed:", sqliteError);
-    return false;
-  }
+  // No SQLite fallback: enforce MySQL-only mode
+  // If MySQL connection fails after retries, report failure
+  return false;
 }
 
 // Query throttling to prevent connection exhaustion
