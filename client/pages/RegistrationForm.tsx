@@ -494,10 +494,11 @@ export default function RegistrationForm() {
           productId: productId,
           productName: product?.name || `Product ${productId}`,
           annualProduction: details.annualProduction || "",
-          unit: details.unit || "kg", // Use unit from form data
+          unit: details.unit || "kg",
           areaOfProduction: details.areaOfProduction || "",
           yearsOfProduction: details.yearsOfProduction || "",
           annualTurnover: details.annualTurnover || "",
+          turnoverUnit: details.turnoverUnit || "",
           additionalNotes: "",
         };
       });
