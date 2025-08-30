@@ -425,6 +425,7 @@ export async function createRegistration(req: AuthRequest, res: Response) {
           areaOfProduction: (details as any).areaOfProduction || "",
           yearsOfProduction: (details as any).yearsOfProduction || "",
           annualTurnover: (details as any).annualTurnover || "",
+          turnoverUnit: (details as any).turnoverUnit || null,
           additionalNotes: "",
         });
       }
@@ -486,7 +487,7 @@ export async function createRegistration(req: AuthRequest, res: Response) {
               detail.areaOfProduction || null,
               detail.yearsOfProduction || null,
               detail.annualTurnover || null,
-              detail.turnoverUnit || "lakh",
+              detail.turnoverUnit || null,
               detail.additionalNotes || null,
             ],
           );
