@@ -354,7 +354,7 @@ export default function AllRegistrations() {
                                     Annual Turnover:
                                   </span>{" "}
                                   <span className="text-gray-900">
-                                    ₹{detail.annualTurnover} lakhs
+                                    ₹{detail.annualTurnover} {detail.turnoverUnit || "lakh"}
                                   </span>
                                 </div>
                               )}
