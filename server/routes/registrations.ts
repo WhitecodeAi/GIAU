@@ -138,11 +138,18 @@ export async function createRegistration(req: AuthRequest, res: Response) {
       console.error("Error parsing existingProductDetails:", error);
     }
 
-    // Resolve turnover unit without forcing a default; if none provided, use the first production detail's unit
-    const resolvedTurnoverUnit: string | null =
-      turnoverUnit ?? (Array.isArray(productionDetails) && productionDetails.length > 0
-        ? (productionDetails[0]?.turnoverUnit ?? null)
-        : null);
+    // Resolve turnover unit without forcing a default; prefer explicit field, then first production/existing detail
+    const resolvedTurnoverUnit: string | null = (() => {
+      if (turnoverUnit) return turnoverUnit;
+      if (Array.isArray(productionDetails) && productionDetails.length > 0) {
+        return productionDetails[0]?.turnoverUnit ?? null;
+      }
+      if (existingProductDetails && typeof existingProductDetails === "object") {
+        const first = Object.values(existingProductDetails)[0] as any;
+        return (first as any)?.turnoverUnit ?? null;
+      }
+      return null;
+    })();
 
     // Validate required fields (PAN Card and Proof of Production are now optional)
     if (
