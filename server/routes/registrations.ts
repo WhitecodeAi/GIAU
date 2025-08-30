@@ -138,6 +138,12 @@ export async function createRegistration(req: AuthRequest, res: Response) {
       console.error("Error parsing existingProductDetails:", error);
     }
 
+    // Resolve turnover unit without forcing a default; if none provided, use the first production detail's unit
+    const resolvedTurnoverUnit: string | null =
+      turnoverUnit ?? (Array.isArray(productionDetails) && productionDetails.length > 0
+        ? (productionDetails[0]?.turnoverUnit ?? null)
+        : null);
+
     // Validate required fields (PAN Card and Proof of Production are now optional)
     if (
       !name ||
@@ -247,7 +253,7 @@ export async function createRegistration(req: AuthRequest, res: Response) {
         areaOfProduction || null,
         annualProduction || null,
         annualTurnover,
-        turnoverUnit || "lakh",
+        resolvedTurnoverUnit,
         yearsOfProduction || null,
       ],
     );
@@ -1022,6 +1028,12 @@ export async function createAdditionalRegistration(
       console.error("Error parsing productionDetails:", error);
     }
 
+    // Resolve turnover unit without forcing a default for additional registrations
+    const resolvedTurnoverUnit: string | null =
+      turnoverUnit ?? (Array.isArray(productionDetails) && productionDetails.length > 0
+        ? (productionDetails[0]?.turnoverUnit ?? null)
+        : null);
+
     // Get the base registration to reuse file paths and personal data
     const baseRegistration = await dbQuery(
       "SELECT * FROM user_registrations WHERE id = ? AND user_id = ?",
@@ -1061,7 +1073,7 @@ export async function createAdditionalRegistration(
         areaOfProduction || null,
         annualProduction || null,
         annualTurnover,
-        turnoverUnit || "lakh",
+        resolvedTurnoverUnit,
         yearsOfProduction || null,
         // Reuse existing file paths
         baseReg.aadhar_card_path,
