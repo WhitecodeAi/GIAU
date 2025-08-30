@@ -144,7 +144,10 @@ export async function createRegistration(req: AuthRequest, res: Response) {
       if (Array.isArray(productionDetails) && productionDetails.length > 0) {
         return productionDetails[0]?.turnoverUnit ?? null;
       }
-      if (existingProductDetails && typeof existingProductDetails === "object") {
+      if (
+        existingProductDetails &&
+        typeof existingProductDetails === "object"
+      ) {
         const first = Object.values(existingProductDetails)[0] as any;
         return (first as any)?.turnoverUnit ?? null;
       }
@@ -1037,7 +1040,8 @@ export async function createAdditionalRegistration(
 
     // Resolve turnover unit without forcing a default for additional registrations
     const resolvedTurnoverUnit: string | null =
-      turnoverUnit ?? (Array.isArray(productionDetails) && productionDetails.length > 0
+      turnoverUnit ??
+      (Array.isArray(productionDetails) && productionDetails.length > 0
         ? (productionDetails[0]?.turnoverUnit ?? null)
         : null);
 
