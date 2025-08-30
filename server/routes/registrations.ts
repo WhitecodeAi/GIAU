@@ -138,18 +138,21 @@ export async function createRegistration(req: AuthRequest, res: Response) {
       console.error("Error parsing existingProductDetails:", error);
     }
 
-    // Resolve turnover unit without forcing a default; prefer explicit field, then first production/existing detail
+    // Resolve turnover unit without forcing a default; prefer explicit field, else scan all details for first provided unit
     const resolvedTurnoverUnit: string | null = (() => {
       if (turnoverUnit) return turnoverUnit;
       if (Array.isArray(productionDetails) && productionDetails.length > 0) {
-        return productionDetails[0]?.turnoverUnit ?? null;
+        const found = productionDetails.find((d: any) => d && d.turnoverUnit);
+        if (found && found.turnoverUnit) return found.turnoverUnit as string;
       }
       if (
         existingProductDetails &&
         typeof existingProductDetails === "object"
       ) {
-        const first = Object.values(existingProductDetails)[0] as any;
-        return (first as any)?.turnoverUnit ?? null;
+        for (const val of Object.values(existingProductDetails)) {
+          const unit = (val as any)?.turnoverUnit;
+          if (unit) return unit as string;
+        }
       }
       return null;
     })();
