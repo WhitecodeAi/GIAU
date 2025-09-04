@@ -33,7 +33,7 @@ export default function SimpleFileUpload() {
   const handleSubmit = async () => {
     const token = getAuthToken();
     if (!token) {
-      toast.error("Please log in first");
+      toast.error("Please log in again");
       return;
     }
 
