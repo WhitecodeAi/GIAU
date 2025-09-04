@@ -108,6 +108,11 @@ export default function CompressionTest() {
       formData.append("proofOfProduction", file);
 
       const token = getAuthToken();
+      if (!token) {
+        setError("Please log in again");
+        setUploading(false);
+        return;
+      }
       const response = await fetch("/api/registrations", {
         method: "POST",
         headers: {
@@ -160,6 +165,10 @@ export default function CompressionTest() {
   const getStorageStats = async () => {
     try {
       const token = getAuthToken();
+      if (!token) {
+        setError("Please log in again");
+        return;
+      }
       const response = await fetch(`/api/files/${registrationId}/stats`, {
         headers: {
           Authorization: `Bearer ${token}`,
