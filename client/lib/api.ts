@@ -2,12 +2,20 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 // Get auth token from localStorage
-function getAuthToken(): string | null {
+export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
   if (user) {
-    const userData = JSON.parse(user);
-    return userData.token;
+    try {
+      const userData = JSON.parse(user);
+      if (userData && typeof userData.token === "string") {
+        return userData.token;
+      }
+    } catch {}
   }
+  const legacyAuthToken = localStorage.getItem("authToken");
+  if (legacyAuthToken) return legacyAuthToken;
+  const looseToken = localStorage.getItem("token");
+  if (looseToken) return looseToken;
   return null;
 }
 
