@@ -4,19 +4,13 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 // Get auth token from localStorage
 export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
-  if (user) {
-    try {
-      const userData = JSON.parse(user);
-      if (userData && typeof userData.token === "string") {
-        return userData.token;
-      }
-    } catch {}
+  if (!user) return null;
+  try {
+    const userData = JSON.parse(user);
+    return typeof userData.token === "string" ? userData.token : null;
+  } catch {
+    return null;
   }
-  const legacyAuthToken = localStorage.getItem("authToken");
-  if (legacyAuthToken) return legacyAuthToken;
-  const looseToken = localStorage.getItem("token");
-  if (looseToken) return looseToken;
-  return null;
 }
 
 // Create headers with auth token
@@ -54,6 +48,9 @@ async function apiRequest<T>(
   const response = await fetch(url, config);
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Please log in again");
+    }
     const errorData = await response
       .json()
       .catch(() => ({ error: "Network error" }));
@@ -231,7 +228,7 @@ export const registrationsAPI = {
     // Make request with proper auth headers for FormData
     const token = getAuthToken();
     if (!token) {
-      throw new Error("Authentication required");
+      throw new Error("Please log in again");
     }
 
     const response = await fetch(`${API_BASE_URL}/registrations`, {
@@ -244,6 +241,9 @@ export const registrationsAPI = {
     });
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Please log in again");
+      }
       const errorData = await response
         .json()
         .catch(() => ({ error: "Network error" }));
