@@ -91,7 +91,6 @@ export default function SimpleFileUpload() {
       const result = await response.json();
       toast.success("Files uploaded successfully!");
 
-
       // Reset files
       setFiles({
         aadharCard: null,

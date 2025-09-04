@@ -43,7 +43,6 @@ export default function TestUpload() {
       // Add the test file as aadharCard
       formData.append("aadharCard", file, file.name);
 
-
       const response = await fetch("/api/registrations", {
         method: "POST",
         headers: {

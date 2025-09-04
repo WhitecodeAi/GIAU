@@ -126,7 +126,6 @@ export default function CompressionTest() {
       }
 
       const data = await response.json();
-    
 
       setResult({
         originalSize: file.size,
