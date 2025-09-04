@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getAuthToken } from "@/lib/api";
 
 export default function TestUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -17,11 +18,10 @@ export default function TestUpload() {
       return;
     }
 
-    const user = localStorage.getItem("user");
-    const token = user ? JSON.parse(user).token : null;
+    const token = getAuthToken();
 
     if (!token) {
-      toast.error("Please log in first");
+      toast.error("Please log in again");
       return;
     }
 
@@ -42,7 +42,6 @@ export default function TestUpload() {
 
       // Add the test file as aadharCard
       formData.append("aadharCard", file, file.name);
-
 
       const response = await fetch("/api/registrations", {
         method: "POST",
@@ -96,7 +95,7 @@ export default function TestUpload() {
 
         {file && (
           <div className="text-sm text-green-600">
-            ✓ Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+            �� Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
           </div>
         )}
 
