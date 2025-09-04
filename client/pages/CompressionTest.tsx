@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Image, Download, Info, BarChart3 } from "lucide-react";
+import { getAuthToken } from "@/lib/api";
 
 interface CompressionResult {
   originalSize: number;
@@ -106,7 +107,7 @@ export default function CompressionTest() {
       // Add the test file
       formData.append("proofOfProduction", file);
 
-      const token = localStorage.getItem("authToken");
+      const token = getAuthToken();
       const response = await fetch("/api/registrations", {
         method: "POST",
         headers: {
@@ -158,7 +159,7 @@ export default function CompressionTest() {
 
   const getStorageStats = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = getAuthToken();
       const response = await fetch(`/api/files/${registrationId}/stats`, {
         headers: {
           Authorization: `Bearer ${token}`,
