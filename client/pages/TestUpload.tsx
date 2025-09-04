@@ -21,7 +21,7 @@ export default function TestUpload() {
     const token = getAuthToken();
 
     if (!token) {
-      toast.error("Please log in first");
+      toast.error("Please log in again");
       return;
     }
 
@@ -96,7 +96,7 @@ export default function TestUpload() {
 
         {file && (
           <div className="text-sm text-green-600">
-            ✓ Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+            �� Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
           </div>
         )}
 
