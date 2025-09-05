@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import MobileNav from "@/components/MobileNav";
 import { DocumentUpload } from "@/components/DocumentUpload";
-import { productsAPI, registrationsAPI, handleAPIError } from "@/lib/api";
+import { productsAPI, registrationsAPI, handleAPIError, authAPI } from "@/lib/api";
 import { VerificationRequest, VerificationResponse } from "@shared/api";
 import { toast } from "sonner";
 const GG =
@@ -126,7 +126,16 @@ export default function RegistrationForm() {
       setUser(JSON.parse(userData));
     } else {
       navigate("/");
+      return;
     }
+
+    // Proactively verify token; if invalid, force re-login
+    authAPI.verifyToken().catch(() => {
+      toast.error("Session expired. Please login again.");
+      localStorage.removeItem("user");
+      navigate("/");
+    });
+
     fetchCategories();
   }, [navigate]);
 
