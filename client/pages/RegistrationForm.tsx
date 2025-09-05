@@ -21,7 +21,12 @@ import {
 } from "@/components/ui/dialog";
 import MobileNav from "@/components/MobileNav";
 import { DocumentUpload } from "@/components/DocumentUpload";
-import { productsAPI, registrationsAPI, handleAPIError, authAPI } from "@/lib/api";
+import {
+  productsAPI,
+  registrationsAPI,
+  handleAPIError,
+  authAPI,
+} from "@/lib/api";
 import { VerificationRequest, VerificationResponse } from "@shared/api";
 import { toast } from "sonner";
 const GG =

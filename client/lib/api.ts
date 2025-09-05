@@ -506,7 +506,11 @@ export function handleAPIError(error: any): string {
   if (/Failed to fetch/i.test(msg)) {
     return "Network error. Please check your internet connection and try again.";
   }
-  if (/Invalid token|Access token required|Unauthorized|Forbidden|Session expired/i.test(msg)) {
+  if (
+    /Invalid token|Access token required|Unauthorized|Forbidden|Session expired/i.test(
+      msg,
+    )
+  ) {
     return "Session expired. Please login again.";
   }
   return msg || "An unexpected error occurred";
