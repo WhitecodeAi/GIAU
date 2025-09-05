@@ -4,15 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-
-function getAuthToken(): string | null {
-  const user = localStorage.getItem("user");
-  if (user) {
-    const userData = JSON.parse(user);
-    return userData.token;
-  }
-  return null;
-}
+import { getAuthToken } from "@/lib/api";
 
 export default function SimpleFileUpload() {
   const [files, setFiles] = useState<{
@@ -41,7 +33,7 @@ export default function SimpleFileUpload() {
   const handleSubmit = async () => {
     const token = getAuthToken();
     if (!token) {
-      toast.error("Please log in first");
+      toast.error("Please log in again");
       return;
     }
 
@@ -98,7 +90,6 @@ export default function SimpleFileUpload() {
 
       const result = await response.json();
       toast.success("Files uploaded successfully!");
-
 
       // Reset files
       setFiles({
