@@ -2,13 +2,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 // Get auth token from localStorage
-function getAuthToken(): string | null {
+export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
-  if (user) {
+  if (!user) return null;
+  try {
     const userData = JSON.parse(user);
-    return userData.token;
+    return typeof userData.token === "string" ? userData.token : null;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 // Create headers with auth token
@@ -66,12 +68,17 @@ async function apiRequest<T>(
   }
 
   if (!response.ok) {
-    let message = "Network error";
-    try {
-      const data = await response.json();
-      message = (data as any)?.error || message;
-    } catch {}
-    throw new Error(message);
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Please log in again");
+    }
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: "Network error" }));
+    throw new Error(
+      errorData.error || `HTTP error! status: ${response.status}`,
+    );
+
   }
 
   return response.json();
@@ -243,7 +250,7 @@ export const registrationsAPI = {
     // Make request with proper auth headers for FormData
     const token = getAuthToken();
     if (!token) {
-      throw new Error("Authentication required");
+      throw new Error("Please log in again");
     }
 
     const postOnce = async () => {
@@ -267,6 +274,7 @@ export const registrationsAPI = {
         }
         throw new Error(msg);
       }
+
 
       if (!res.ok) {
         let msg = "Network error";
