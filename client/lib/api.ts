@@ -43,15 +43,35 @@ async function apiRequest<T>(
     },
   };
 
-  const response = await fetch(url, config);
+  let response: Response;
+  try {
+    response = await fetch(url, config);
+  } catch (_err) {
+    // Network-level failure (e.g., offline, DNS)
+    throw new Error("Failed to fetch");
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    let message = "Unauthorized";
+    try {
+      const data = await response.json();
+      message = (data as any)?.error || message;
+    } catch {}
+
+    if (/invalid token|access token required/i.test(message)) {
+      logout();
+      throw new Error("Session expired. Please login again.");
+    }
+    throw new Error(message);
+  }
 
   if (!response.ok) {
-    const errorData = await response
-      .json()
-      .catch(() => ({ error: "Network error" }));
-    throw new Error(
-      errorData.error || `HTTP error! status: ${response.status}`,
-    );
+    let message = "Network error";
+    try {
+      const data = await response.json();
+      message = (data as any)?.error || message;
+    } catch {}
+    throw new Error(message);
   }
 
   return response.json();
@@ -226,29 +246,54 @@ export const registrationsAPI = {
       throw new Error("Authentication required");
     }
 
-    const response = await fetch(`${API_BASE_URL}/registrations`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Don't set Content-Type - browser will set it for FormData with boundary
-      },
-      body: formData,
-    });
+    const postOnce = async () => {
+      const res = await fetch(`${API_BASE_URL}/registrations`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ error: "Network error" }));
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`,
-      );
+      if (res.status === 401 || res.status === 403) {
+        let msg = "Unauthorized";
+        try {
+          const data = await res.json();
+          msg = (data as any)?.error || msg;
+        } catch {}
+        if (/invalid token|access token required/i.test(msg)) {
+          logout();
+          throw new Error("Session expired. Please login again.");
+        }
+        throw new Error(msg);
+      }
+
+      if (!res.ok) {
+        let msg = "Network error";
+        try {
+          const data = await res.json();
+          msg = (data as any)?.error || msg;
+        } catch {}
+        throw new Error(msg);
+      }
+
+      return (await res.json()) as {
+        message: string;
+        registrationId: number;
+        documentPaths?: { [key: string]: string };
+      };
+    };
+
+    try {
+      return await postOnce();
+    } catch (err: any) {
+      const msg = (err && err.message) || "";
+      if (/Failed to fetch|NetworkError/i.test(msg)) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return await postOnce();
+      }
+      throw err;
     }
-
-    return response.json() as Promise<{
-      message: string;
-      registrationId: number;
-      documentPaths?: { [key: string]: string };
-    }>;
   },
 
   getUserRegistrations: async () => {
@@ -457,10 +502,14 @@ export const dashboardAPI = {
 
 // Helper function to handle API errors
 export function handleAPIError(error: any): string {
-  if (error instanceof Error) {
-    return error.message;
+  const msg = error instanceof Error ? error.message : String(error ?? "");
+  if (/Failed to fetch/i.test(msg)) {
+    return "Network error. Please check your internet connection and try again.";
   }
-  return "An unexpected error occurred";
+  if (/Invalid token|Access token required|Unauthorized|Forbidden|Session expired/i.test(msg)) {
+    return "Session expired. Please login again.";
+  }
+  return msg || "An unexpected error occurred";
 }
 
 // Helper function to check if user is authenticated
