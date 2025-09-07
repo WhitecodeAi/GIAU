@@ -342,13 +342,17 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error ||
-            `HTTP ${response.status}: ${response.statusText}`;
+          const contentType = response.headers.get("Content-Type") || "";
+          if (contentType.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `HTTP ${response.status}`;
+          } else {
+            const text = await response.text();
+            errorMessage = text || `HTTP ${response.status}`;
+          }
         } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          console.error("Failed to read error response", parseError);
+          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
@@ -414,13 +418,17 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error ||
-            `HTTP ${response.status}: ${response.statusText}`;
+          const contentType = response.headers.get("Content-Type") || "";
+          if (contentType.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `HTTP ${response.status}`;
+          } else {
+            const text = await response.text();
+            errorMessage = text || `HTTP ${response.status}`;
+          }
         } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          console.error("Failed to read error response", parseError);
+          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
@@ -488,13 +496,17 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const errorData = await response.json();
-          errorMessage =
-            errorData.error ||
-            `HTTP ${response.status}: ${response.statusText}`;
+          const contentType = response.headers.get("Content-Type") || "";
+          if (contentType.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `HTTP ${response.status}`;
+          } else {
+            const text = await response.text();
+            errorMessage = text || `HTTP ${response.status}`;
+          }
         } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          console.error("Failed to read error response", parseError);
+          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
