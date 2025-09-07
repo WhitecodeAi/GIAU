@@ -2422,6 +2422,7 @@ async function generateProductNOCHtml(
 async function generateProductStatementHtml(
   registration: any,
   productName: string,
+  productId: number | null = null,
 ): Promise<string> {
   const statementDate = new Date().toLocaleDateString("en-GB");
 
@@ -2429,7 +2430,7 @@ async function generateProductStatementHtml(
   let organizationName = registration.product_association;
   if (!organizationName) {
     console.log(
-      `��️ No association found in registration data for Statement, using static mapping for: ${productName}`,
+      `⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`,
     );
     organizationName = await getProductAssociation(productName);
   } else {
@@ -2444,13 +2445,95 @@ async function generateProductStatementHtml(
   const currentYear = new Date().getFullYear();
   const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
 
-  const estimatedProduction =
-    registration.age > 40 ? "500-1000 kg" : "250-500 kg";
-  const turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
-  const turnoverWords =
-    registration.age > 40
-      ? "Two Lakh Fifty Thousand Only"
-      : "One Lakh Fifty Thousand Only";
+  // Resolve production and turnover dynamically
+  let estimatedProduction = "Not specified";
+  let turnoverAmount = "";
+  let turnoverWords = "";
+
+  try {
+    const rows = await dbQuery(
+      `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production
+       FROM user_production_details
+       WHERE registration_id = ? AND ${productId ? "product_id = ?" : "product_name = ?"}
+       ORDER BY id DESC LIMIT 1`,
+      [registration.id, productId ? productId : productName],
+    );
+
+    const detail = rows[0];
+
+    const toRupees = (amount: number, unit?: string | null): number => {
+      const u = (unit || "").toLowerCase();
+      if (["lakh", "lakhs"].includes(u)) return Math.round(amount * 100000);
+      if (["crore", "crores", "cr"].includes(u)) return Math.round(amount * 10000000);
+      if (["thousand", "thousands", "k"].includes(u)) return Math.round(amount * 1000);
+      return Math.round(amount);
+    };
+
+    const formatINR = (val: number): string => {
+      try {
+        return new Intl.NumberFormat("en-IN").format(Math.round(val));
+      } catch {
+        return Math.round(val).toString();
+      }
+    };
+
+    const numberToWordsIndian = (num: number): string => {
+      if (num === 0) return "Zero";
+      const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const toWordsBelowThousand = (n: number): string => {
+        let str = "";
+        if (Math.floor(n / 100) > 0) {
+          str += ones[Math.floor(n / 100)] + " Hundred ";
+          n = n % 100;
+        }
+        if (n > 0) {
+          if (n < 20) str += ones[n] + " ";
+          else str += tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "") + " ";
+        }
+        return str.trim();
+      };
+      const crore = Math.floor(num / 10000000); num %= 10000000;
+      const lakh = Math.floor(num / 100000); num %= 100000;
+      const thousand = Math.floor(num / 1000); num %= 1000;
+      const rest = num;
+      let words = "";
+      if (crore) words += toWordsBelowThousand(crore) + " Crore ";
+      if (lakh) words += toWordsBelowThousand(lakh) + " Lakh ";
+      if (thousand) words += toWordsBelowThousand(thousand) + " Thousand ";
+      if (rest) words += toWordsBelowThousand(rest);
+      return words.trim();
+    };
+
+    if (detail && (detail.annual_production || detail.unit)) {
+      estimatedProduction = `${detail.annual_production || ""} ${detail.unit || ""}`.trim();
+    } else if (registration.annual_production) {
+      estimatedProduction = `${registration.annual_production}`;
+    } else {
+      estimatedProduction = registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+    }
+
+    let amountNum: number | null = null;
+    let amountUnit: string | null = null;
+    if (detail && detail.annual_turnover) {
+      amountNum = parseFloat(detail.annual_turnover as any);
+      amountUnit = detail.turnover_unit || null;
+    } else if (registration.annual_turnover) {
+      amountNum = parseFloat(registration.annual_turnover as any);
+      amountUnit = registration.turnover_unit || null;
+    }
+
+    if (amountNum !== null && !isNaN(amountNum)) {
+      const rupees = toRupees(amountNum, amountUnit || undefined);
+      turnoverAmount = `₹${formatINR(rupees)}`;
+      turnoverWords = `${numberToWordsIndian(rupees)} Only`;
+    } else {
+      turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
+      turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
+    }
+  } catch (err) {
+    console.error("Error resolving production/turnover for Statement:", err);
+  }
 
   // Get signature image HTML if available
   console.log("🔍 Statement Generation Debug:");
@@ -2462,10 +2545,7 @@ async function generateProductStatementHtml(
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
     : `<div class="signature-line"></div>`;
 
-  console.log(
-    "- Generated signature HTML:",
-    signatureHtml.substring(0, 100) + "...",
-  );
+  console.log("- Generated signature HTML:", signatureHtml.substring(0, 100) + "...");
 
   return `
     <div class="statement-page">
