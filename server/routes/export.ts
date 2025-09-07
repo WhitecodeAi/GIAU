@@ -51,7 +51,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.name) as selected_products,
+        GROUP_CONCAT(DISTINCT ep.name) as existing_products,
         u.username,
         u.email as user_email
       FROM user_registrations ur
@@ -60,6 +61,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
       LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
       LEFT JOIN products p ON usp.product_id = p.id
+      LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
+      LEFT JOIN products ep ON uep.product_id = ep.id
       WHERE DATE(ur.created_at) BETWEEN ? AND ?
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
@@ -86,7 +89,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       "Voter ID",
       "PAN Number",
       "Categories",
-      "Products",
+      "Selected Products",
+      "Existing Products",
       "Username",
       "User Email",
       "Registration Date",
@@ -104,7 +108,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       reg.voter_id || "",
       reg.pan_number || "",
       `"${reg.category_names || ""}"`,
-      `"${reg.product_names || ""}"`,
+      `"${reg.selected_products || ""}"`,
+      `"${reg.existing_products || ""}"`,
       reg.username || "",
       reg.user_email || "",
       new Date(reg.created_at).toLocaleDateString("en-GB"),
@@ -164,12 +169,15 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as selected_products,
+        GROUP_CONCAT(DISTINCT ep.name) as existing_products
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
       LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
       LEFT JOIN products p ON usp.product_id = p.id
+      LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
+      LEFT JOIN products ep ON uep.product_id = ep.id
       WHERE ur.user_id = ?
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
@@ -196,7 +204,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       "Voter ID",
       "PAN Number",
       "Categories",
-      "Products",
+      "Selected Products",
+      "Existing Products",
       "Registration Date",
     ];
 
@@ -212,7 +221,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       reg.voter_id || "",
       reg.pan_number || "",
       `"${reg.category_names || ""}"`,
-      `"${reg.product_names || ""}"`,
+      `"${reg.selected_products || ""}"`,
+      `"${reg.existing_products || ""}"`,
       new Date(reg.created_at).toLocaleDateString("en-GB"),
     ]);
 
