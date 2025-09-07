@@ -2485,9 +2485,12 @@ async function generateProductStatementHtml(
     const toRupees = (amount: number, unit?: string | null): number => {
       const u = (unit || "").toLowerCase();
       if (["lakh", "lakhs"].includes(u)) return Math.round(amount * 100000);
-      if (["crore", "crores", "cr"].includes(u)) return Math.round(amount * 10000000);
-      if (["thousand", "thousands", "k"].includes(u)) return Math.round(amount * 1000);
-      if (["hundred", "hundreds", "h"].includes(u)) return Math.round(amount * 100);
+      if (["crore", "crores", "cr"].includes(u))
+        return Math.round(amount * 10000000);
+      if (["thousand", "thousands", "k"].includes(u))
+        return Math.round(amount * 1000);
+      if (["hundred", "hundreds", "h"].includes(u))
+        return Math.round(amount * 100);
       return Math.round(amount);
     };
 
@@ -2501,8 +2504,40 @@ async function generateProductStatementHtml(
 
     const numberToWordsIndian = (num: number): string => {
       if (num === 0) return "Zero";
-      const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-      const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const ones = [
+        "",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen",
+      ];
+      const tens = [
+        "",
+        "",
+        "Twenty",
+        "Thirty",
+        "Forty",
+        "Fifty",
+        "Sixty",
+        "Seventy",
+        "Eighty",
+        "Ninety",
+      ];
       const toWordsBelowThousand = (n: number): string => {
         let str = "";
         if (Math.floor(n / 100) > 0) {
@@ -2511,13 +2546,20 @@ async function generateProductStatementHtml(
         }
         if (n > 0) {
           if (n < 20) str += ones[n] + " ";
-          else str += tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "") + " ";
+          else
+            str +=
+              tens[Math.floor(n / 10)] +
+              (n % 10 ? " " + ones[n % 10] : "") +
+              " ";
         }
         return str.trim();
       };
-      const crore = Math.floor(num / 10000000); num %= 10000000;
-      const lakh = Math.floor(num / 100000); num %= 100000;
-      const thousand = Math.floor(num / 1000); num %= 1000;
+      const crore = Math.floor(num / 10000000);
+      num %= 10000000;
+      const lakh = Math.floor(num / 100000);
+      num %= 100000;
+      const thousand = Math.floor(num / 1000);
+      num %= 1000;
       const rest = num;
       let words = "";
       if (crore) words += toWordsBelowThousand(crore) + " Crore ";
@@ -2528,11 +2570,13 @@ async function generateProductStatementHtml(
     };
 
     if (detail && (detail.annual_production || detail.unit)) {
-      estimatedProduction = `${detail.annual_production || ""} ${detail.unit || ""}`.trim();
+      estimatedProduction =
+        `${detail.annual_production || ""} ${detail.unit || ""}`.trim();
     } else if (registration.annual_production) {
       estimatedProduction = `${registration.annual_production}`;
     } else {
-      estimatedProduction = registration.age > 40 ? "500-1000 kg" : "250-500 kg";
+      estimatedProduction =
+        registration.age > 40 ? "500-1000 kg" : "250-500 kg";
     }
 
     let amountNum: number | null = null;
@@ -2551,7 +2595,10 @@ async function generateProductStatementHtml(
       turnoverWords = `${numberToWordsIndian(rupees)} Only`;
     } else {
       turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
-      turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
+      turnoverWords =
+        registration.age > 40
+          ? "Two Lakh Fifty Thousand Only"
+          : "One Lakh Fifty Thousand Only";
     }
     console.log("✅ Resolved Statement values:", {
       estimatedProduction,
@@ -2572,7 +2619,10 @@ async function generateProductStatementHtml(
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
     : `<div class="signature-line"></div>`;
 
-  console.log("- Generated signature HTML:", signatureHtml.substring(0, 100) + "...");
+  console.log(
+    "- Generated signature HTML:",
+    signatureHtml.substring(0, 100) + "...",
+  );
 
   return `
     <div class="statement-page">
