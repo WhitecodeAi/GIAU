@@ -2553,6 +2553,11 @@ async function generateProductStatementHtml(
       turnoverAmount = registration.age > 40 ? "₹2,50,000" : "₹1,50,000";
       turnoverWords = registration.age > 40 ? "Two Lakh Fifty Thousand Only" : "One Lakh Fifty Thousand Only";
     }
+    console.log("✅ Resolved Statement values:", {
+      estimatedProduction,
+      turnoverAmount,
+      turnoverWords,
+    });
   } catch (err) {
     console.error("Error resolving production/turnover for Statement:", err);
   }
