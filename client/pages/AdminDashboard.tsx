@@ -130,7 +130,9 @@ export default function AdminDashboard() {
       const initializeData = async () => {
         const isConnected = await testConnectivity();
         if (!isConnected) {
-          console.warn("Connectivity check failed, proceeding to fetch data anyway");
+          console.warn(
+            "Connectivity check failed, proceeding to fetch data anyway",
+          );
         }
 
         await Promise.all([
@@ -342,11 +344,18 @@ export default function AdminDashboard() {
         let errorMessage = `HTTP ${response.status}`;
         try {
           if (!response.bodyUsed) {
-            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const errResp =
+              typeof response.clone === "function"
+                ? response.clone()
+                : response;
             const contentType = errResp.headers.get("Content-Type") || "";
             if (contentType.includes("application/json")) {
               const errorData = await errResp.json();
-              if (errorData && typeof errorData === "object" && "error" in errorData) {
+              if (
+                errorData &&
+                typeof errorData === "object" &&
+                "error" in errorData
+              ) {
                 errorMessage = (errorData as any).error || errorMessage;
               }
             } else {
@@ -422,11 +431,18 @@ export default function AdminDashboard() {
         let errorMessage = `HTTP ${response.status}`;
         try {
           if (!response.bodyUsed) {
-            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const errResp =
+              typeof response.clone === "function"
+                ? response.clone()
+                : response;
             const contentType = errResp.headers.get("Content-Type") || "";
             if (contentType.includes("application/json")) {
               const errorData = await errResp.json();
-              if (errorData && typeof errorData === "object" && "error" in errorData) {
+              if (
+                errorData &&
+                typeof errorData === "object" &&
+                "error" in errorData
+              ) {
                 errorMessage = (errorData as any).error || errorMessage;
               }
             } else {
@@ -504,11 +520,18 @@ export default function AdminDashboard() {
         let errorMessage = `HTTP ${response.status}`;
         try {
           if (!response.bodyUsed) {
-            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const errResp =
+              typeof response.clone === "function"
+                ? response.clone()
+                : response;
             const contentType = errResp.headers.get("Content-Type") || "";
             if (contentType.includes("application/json")) {
               const errorData = await errResp.json();
-              if (errorData && typeof errorData === "object" && "error" in errorData) {
+              if (
+                errorData &&
+                typeof errorData === "object" &&
+                "error" in errorData
+              ) {
                 errorMessage = (errorData as any).error || errorMessage;
               }
             } else {
