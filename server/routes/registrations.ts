@@ -2472,6 +2472,16 @@ async function generateProductStatementHtml(
 
     const detail = rows && rows[0];
 
+    console.log("🔎 Statement data lookup:", {
+      productId,
+      productName,
+      rowsFound: rows ? rows.length : 0,
+      detail,
+      regAnnualProduction: registration.annual_production,
+      regAnnualTurnover: registration.annual_turnover,
+      regTurnoverUnit: registration.turnover_unit,
+    });
+
     const toRupees = (amount: number, unit?: string | null): number => {
       const u = (unit || "").toLowerCase();
       if (["lakh", "lakhs"].includes(u)) return Math.round(amount * 100000);
