@@ -1969,6 +1969,7 @@ export async function exportProductStatement(req: Request, res: Response) {
     const statementHtml = await generateProductStatementHtml(
       registration,
       productName,
+      productId ?? null,
     );
 
     // Create complete HTML document
@@ -2428,7 +2429,7 @@ async function generateProductStatementHtml(
   let organizationName = registration.product_association;
   if (!organizationName) {
     console.log(
-      `⚠️ No association found in registration data for Statement, using static mapping for: ${productName}`,
+      `��️ No association found in registration data for Statement, using static mapping for: ${productName}`,
     );
     organizationName = await getProductAssociation(productName);
   } else {
