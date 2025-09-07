@@ -184,8 +184,15 @@ export class CompressedFileStorage {
   }
 
   public getFileUrl(relativePath: string): string {
-    // Convert path from registration_X/file to /uploads/registration_X/file
+    // Convert stored path registration_X/filename to API route for serving (works on Netlify & local)
     const cleanPath = relativePath.replace(/\\/g, "/");
+    const match = cleanPath.match(/^registration_(\d+)\/(.+)$/);
+    if (match) {
+      const registrationId = match[1];
+      const filename = match[2];
+      return `/api/files/${registrationId}/${encodeURIComponent(filename)}?view=true`;
+    }
+    // Fallback to uploads for unexpected formats
     return `/uploads/${cleanPath}`;
   }
 
