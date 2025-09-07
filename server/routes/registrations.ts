@@ -1542,7 +1542,10 @@ export async function exportProductGI3A(req: Request, res: Response) {
         ur.voter_id,
         ur.created_at,
         ur.photo_path,
-        ur.signature_path
+        ur.signature_path,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit
       FROM user_registrations ur
       WHERE ur.id = ?
     `,
@@ -1757,7 +1760,10 @@ export async function exportProductNOC(req: Request, res: Response) {
         ur.voter_id,
         ur.created_at,
         ur.photo_path,
-        ur.signature_path
+        ur.signature_path,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit
       FROM user_registrations ur
       WHERE ur.id = ?
     `,
@@ -1929,7 +1935,10 @@ export async function exportProductStatement(req: Request, res: Response) {
         ur.voter_id,
         ur.created_at,
         ur.photo_path,
-        ur.signature_path
+        ur.signature_path,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit
       FROM user_registrations ur
       WHERE ur.id = ?
     `,
@@ -2533,7 +2542,10 @@ export async function exportProductCard(req: Request, res: Response) {
         ur.voter_id,
         ur.created_at,
         ur.photo_path,
-        ur.signature_path
+        ur.signature_path,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit
       FROM user_registrations ur
       WHERE ur.id = ?
     `,
