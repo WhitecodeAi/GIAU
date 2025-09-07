@@ -2451,7 +2451,7 @@ async function generateProductStatementHtml(
   let turnoverWords = "";
 
   try {
-    const rows = await dbQuery(
+    let rows = await dbQuery(
       `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production
        FROM user_production_details
        WHERE registration_id = ? AND ${productId ? "product_id = ?" : "product_name = ?"}
@@ -2459,13 +2459,25 @@ async function generateProductStatementHtml(
       [registration.id, productId ? productId : productName],
     );
 
-    const detail = rows[0];
+    if (!rows || rows.length === 0) {
+      // Fallback: any latest production detail for this registration
+      rows = await dbQuery(
+        `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production
+         FROM user_production_details
+         WHERE registration_id = ?
+         ORDER BY id DESC LIMIT 1`,
+        [registration.id],
+      );
+    }
+
+    const detail = rows && rows[0];
 
     const toRupees = (amount: number, unit?: string | null): number => {
       const u = (unit || "").toLowerCase();
       if (["lakh", "lakhs"].includes(u)) return Math.round(amount * 100000);
       if (["crore", "crores", "cr"].includes(u)) return Math.round(amount * 10000000);
       if (["thousand", "thousands", "k"].includes(u)) return Math.round(amount * 1000);
+      if (["hundred", "hundreds", "h"].includes(u)) return Math.round(amount * 100);
       return Math.round(amount);
     };
 
