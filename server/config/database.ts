@@ -5,9 +5,9 @@ dotenv.config();
 
 const dbConfig = {
   host: process.env.DB_HOST || "193.203.184.233",
-  user: process.env.DB_USER || "u207346834_gi",
-  password: process.env.DB_PASSWORD || "GiDB25@!",
-  database: process.env.DB_NAME || "u207346834_gi",
+  user: process.env.DB_USER || "u207346834_gistag",
+  password: process.env.DB_PASSWORD || "Tbkcollege25@!",
+  database: process.env.DB_NAME || "u207346834_gistag",
   waitForConnections: true,
   connectionLimit: 20, // Increased from 10
   queueLimit: 0,
