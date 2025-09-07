@@ -339,20 +339,23 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        let errorMessage = "Export failed";
+        let errorMessage = `HTTP ${response.status}`;
         try {
-          const errResp = response.clone();
-          const contentType = errResp.headers.get("Content-Type") || "";
-          if (contentType.includes("application/json")) {
-            const errorData = await errResp.json();
-            errorMessage = errorData.error || `HTTP ${response.status}`;
-          } else {
-            const text = await errResp.text();
-            errorMessage = text || `HTTP ${response.status}`;
+          if (!response.bodyUsed) {
+            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const contentType = errResp.headers.get("Content-Type") || "";
+            if (contentType.includes("application/json")) {
+              const errorData = await errResp.json();
+              if (errorData && typeof errorData === "object" && "error" in errorData) {
+                errorMessage = (errorData as any).error || errorMessage;
+              }
+            } else {
+              const text = await errResp.text();
+              if (text) errorMessage = text;
+            }
           }
         } catch (parseError) {
           console.error("Failed to read error response", parseError);
-          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
@@ -416,20 +419,23 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        let errorMessage = "Export failed";
+        let errorMessage = `HTTP ${response.status}`;
         try {
-          const errResp = response.clone();
-          const contentType = errResp.headers.get("Content-Type") || "";
-          if (contentType.includes("application/json")) {
-            const errorData = await errResp.json();
-            errorMessage = errorData.error || `HTTP ${response.status}`;
-          } else {
-            const text = await errResp.text();
-            errorMessage = text || `HTTP ${response.status}`;
+          if (!response.bodyUsed) {
+            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const contentType = errResp.headers.get("Content-Type") || "";
+            if (contentType.includes("application/json")) {
+              const errorData = await errResp.json();
+              if (errorData && typeof errorData === "object" && "error" in errorData) {
+                errorMessage = (errorData as any).error || errorMessage;
+              }
+            } else {
+              const text = await errResp.text();
+              if (text) errorMessage = text;
+            }
           }
         } catch (parseError) {
           console.error("Failed to read error response", parseError);
-          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
@@ -495,20 +501,23 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        let errorMessage = "Export failed";
+        let errorMessage = `HTTP ${response.status}`;
         try {
-          const errResp = response.clone();
-          const contentType = errResp.headers.get("Content-Type") || "";
-          if (contentType.includes("application/json")) {
-            const errorData = await errResp.json();
-            errorMessage = errorData.error || `HTTP ${response.status}`;
-          } else {
-            const text = await errResp.text();
-            errorMessage = text || `HTTP ${response.status}`;
+          if (!response.bodyUsed) {
+            const errResp = typeof response.clone === "function" ? response.clone() : response;
+            const contentType = errResp.headers.get("Content-Type") || "";
+            if (contentType.includes("application/json")) {
+              const errorData = await errResp.json();
+              if (errorData && typeof errorData === "object" && "error" in errorData) {
+                errorMessage = (errorData as any).error || errorMessage;
+              }
+            } else {
+              const text = await errResp.text();
+              if (text) errorMessage = text;
+            }
           }
         } catch (parseError) {
           console.error("Failed to read error response", parseError);
-          errorMessage = `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
       }
