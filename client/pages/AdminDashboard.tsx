@@ -130,8 +130,7 @@ export default function AdminDashboard() {
       const initializeData = async () => {
         const isConnected = await testConnectivity();
         if (!isConnected) {
-          console.warn("Skipping data fetch due to connectivity issues");
-          return;
+          console.warn("Connectivity check failed, proceeding to fetch data anyway");
         }
 
         await Promise.all([
@@ -342,12 +341,13 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const contentType = response.headers.get("Content-Type") || "";
+          const errResp = response.clone();
+          const contentType = errResp.headers.get("Content-Type") || "";
           if (contentType.includes("application/json")) {
-            const errorData = await response.json();
+            const errorData = await errResp.json();
             errorMessage = errorData.error || `HTTP ${response.status}`;
           } else {
-            const text = await response.text();
+            const text = await errResp.text();
             errorMessage = text || `HTTP ${response.status}`;
           }
         } catch (parseError) {
@@ -418,12 +418,13 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const contentType = response.headers.get("Content-Type") || "";
+          const errResp = response.clone();
+          const contentType = errResp.headers.get("Content-Type") || "";
           if (contentType.includes("application/json")) {
-            const errorData = await response.json();
+            const errorData = await errResp.json();
             errorMessage = errorData.error || `HTTP ${response.status}`;
           } else {
-            const text = await response.text();
+            const text = await errResp.text();
             errorMessage = text || `HTTP ${response.status}`;
           }
         } catch (parseError) {
@@ -496,12 +497,13 @@ export default function AdminDashboard() {
       } else {
         let errorMessage = "Export failed";
         try {
-          const contentType = response.headers.get("Content-Type") || "";
+          const errResp = response.clone();
+          const contentType = errResp.headers.get("Content-Type") || "";
           if (contentType.includes("application/json")) {
-            const errorData = await response.json();
+            const errorData = await errResp.json();
             errorMessage = errorData.error || `HTTP ${response.status}`;
           } else {
-            const text = await response.text();
+            const text = await errResp.text();
             errorMessage = text || `HTTP ${response.status}`;
           }
         } catch (parseError) {
