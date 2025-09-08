@@ -1799,7 +1799,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           "NOC_EXPORT_MISSING_PRODUCT_ID: Unable to resolve product id for GI Application No",
         );
     }
-    const appNumber = giId.toString().padStart(4, "0");
+    const appNumber = giId.toString();
 
     const nocHtml = await generateProductNOCHtml(
       registration,
