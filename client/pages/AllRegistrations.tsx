@@ -83,6 +83,9 @@ export default function AllRegistrations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRegistration, setSelectedRegistration] =
     useState<Registration | null>(null);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [exporting, setExporting] = useState(false);
 
   console.log(
     "selectedRegistration",
@@ -116,6 +119,50 @@ export default function AllRegistrations() {
 
   const handlePageChange = (page: number) => {
     loadRegistrations(page);
+  };
+
+  const handleExportByDateRange = async () => {
+    if (!startDate || !endDate) {
+      toast.error("Please select both start and end dates");
+      return;
+    }
+    try {
+      setExporting(true);
+      const res = await fetch("/api/users/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startDate, endDate }),
+      });
+      if (!res.ok) {
+        let message = `HTTP ${res.status}`;
+        try {
+          const ct = res.headers.get("Content-Type") || "";
+          if (ct.includes("application/json")) {
+            const j = await res.json();
+            if (j?.error) message = j.error;
+          } else {
+            const t = await res.text();
+            if (t) message = t;
+          }
+        } catch {}
+        throw new Error(message);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.style.display = "none";
+      a.download = `users_export_${startDate}_to_${endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error("Export error:", e);
+      toast.error(e instanceof Error ? e.message : "Failed to export");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const filteredRegistrations = registrations.filter(
@@ -525,16 +572,50 @@ export default function AllRegistrations() {
 
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search by name, mobile number, category, or username..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <div className="text-sm text-gray-700 font-medium mb-1">
+                    Start Date
+                  </div>
                   <Input
-                    placeholder="Search by name, mobile number, category, or username..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
                   />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-700 font-medium mb-1">
+                    End Date
+                  </div>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-end">
+                  <Button
+                    onClick={handleExportByDateRange}
+                    disabled={exporting}
+                    className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto"
+                  >
+                    {exporting ? "Exporting..." : "Export CSV by Date Range"}
+                  </Button>
                 </div>
               </div>
             </div>
