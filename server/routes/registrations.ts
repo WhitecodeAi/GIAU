@@ -2219,6 +2219,48 @@ async function getAssociationStamp(
   }
 }
 
+// Helper to get both stamp and registration short form (registration_number) from associations
+async function getAssociationDetails(
+  associationName: string,
+): Promise<{
+  stamp_image_path: string | null;
+  registration_number: string | null;
+}> {
+  console.log(
+    `🔍 Looking up association details (stamp, short form) for: "${associationName}"`,
+  );
+  try {
+    // Exact match first
+    let rows = await dbQuery(
+      `SELECT stamp_image_path, registration_number FROM associations WHERE name = ? LIMIT 1`,
+      [associationName],
+    );
+
+    if (rows.length === 0) {
+      // Fuzzy match on normalized name
+      const normalizedInput = associationName.replace(/[-\s]+/g, " ").trim();
+      rows = await dbQuery(
+        `SELECT stamp_image_path, registration_number FROM associations WHERE REPLACE(REPLACE(name, '-', ' '), '  ', ' ') = ? LIMIT 1`,
+        [normalizedInput],
+      );
+    }
+
+    if (rows.length > 0) {
+      const { stamp_image_path, registration_number } = rows[0] as any;
+      return {
+        stamp_image_path: stamp_image_path || null,
+        registration_number:
+          (registration_number && String(registration_number).trim()) || null,
+      };
+    }
+
+    return { stamp_image_path: null, registration_number: null };
+  } catch (error) {
+    console.error("❌ Error fetching association details:", error);
+    return { stamp_image_path: null, registration_number: null };
+  }
+}
+
 // Helper functions for product-specific exports
 async function generateProductFormGI3AHtml(
   registration: any,
@@ -2957,7 +2999,10 @@ export async function exportProductCard(req: Request, res: Response) {
     res.send(fullHtml);
   } catch (error) {
     console.error("Export Product Card error:", error);
-    res.status(500).json({ error: "Failed to export producer card" });
+    if (error instanceof Error && error.message.startsWith("CARD_EXPORT_")) {
+      return res.status(400).send(error.message);
+    }
+    return res.status(500).json({ error: "Failed to export producer card" });
   }
 }
 
@@ -2965,9 +3010,6 @@ async function generateProductCardHtml(
   registration: any,
   productName: string,
 ): Promise<string> {
-  // Generate membership number (BTF prefix + ID)
-  const membershipNo = `BTF - ${registration.id.toString().padStart(2, "0")}`;
-
   // Get photo URL if available
   let photoHtml = `<div class="profile-photo">Profile Photo</div>`;
   if (registration.photo_path) {
@@ -2991,10 +3033,20 @@ async function generateProductCardHtml(
     );
   }
 
-  // Get association stamp instead of user signature
-  const associationStampPath = await getAssociationStamp(associationName);
-  if (associationStampPath) {
-    const stampUrl = simpleFileStorage.getFileUrl(associationStampPath);
+  // Fetch association details (stamp + short form)
+  const assoc = await getAssociationDetails(associationName);
+
+  // Enforce: no fallback. registration_number must exist in associations
+  if (!assoc.registration_number) {
+    throw new Error(
+      `CARD_EXPORT_MISSING_SHORTFORM: Association registration_number not found for "${associationName}"`,
+    );
+  }
+  const membershipNo = `${assoc.registration_number} - ${registration.id.toString().padStart(2, "0")}`;
+
+  // Use association stamp if present
+  if (assoc.stamp_image_path) {
+    const stampUrl = simpleFileStorage.getFileUrl(assoc.stamp_image_path);
     signatureHtml = `<img src="${stampUrl}" alt="Association Stamp" class="signature-stamp" />`;
     console.log(`✅ Using association stamp: ${stampUrl}`);
   } else {
