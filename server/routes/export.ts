@@ -84,7 +84,10 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
     // Build per-registration production summaries and first product detail from user_production_details
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
-    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
+    const firstPD: Record<
+      number,
+      { quantity: string; unit: string; turnover: string }
+    > = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
@@ -113,7 +116,9 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
 
     const parseQtyUnit = (val: any) => {
       if (!val) return { q: "", u: "" };
-      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      const m = String(val)
+        .trim()
+        .match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
       return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
     };
 
@@ -143,7 +148,11 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       const fallback = parseQtyUnit(reg.annual_production);
       const qty = (first?.quantity || fallback.q || "").toString();
       const unit = (first?.unit || fallback.u || "").toString();
-      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      const turnover = (
+        first?.turnover ||
+        reg.annual_turnover ||
+        ""
+      ).toString();
       return [
         new Date(reg.created_at).toLocaleDateString("en-GB"),
         reg.username || "",
@@ -249,7 +258,10 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     // Build per-registration production summaries and first product detail
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
-    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
+    const firstPD: Record<
+      number,
+      { quantity: string; unit: string; turnover: string }
+    > = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
@@ -278,7 +290,9 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const parseQtyUnit = (val: any) => {
       if (!val) return { q: "", u: "" };
-      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      const m = String(val)
+        .trim()
+        .match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
       return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
     };
 
@@ -308,7 +322,11 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       const fallback = parseQtyUnit(reg.annual_production);
       const qty = (first?.quantity || fallback.q || "").toString();
       const unit = (first?.unit || fallback.u || "").toString();
-      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      const turnover = (
+        first?.turnover ||
+        reg.annual_turnover ||
+        ""
+      ).toString();
       return [
         new Date(reg.created_at).toLocaleDateString("en-GB"),
         user.username || "",
@@ -414,7 +432,10 @@ export async function exportUsersByProducts(req: Request, res: Response) {
     // Build per-registration production summaries and first product detail
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
-    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
+    const firstPD: Record<
+      number,
+      { quantity: string; unit: string; turnover: string }
+    > = {};
     if (regIds.length > 0) {
       const ph = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
@@ -443,7 +464,9 @@ export async function exportUsersByProducts(req: Request, res: Response) {
 
     const parseQtyUnit = (val: any) => {
       if (!val) return { q: "", u: "" };
-      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      const m = String(val)
+        .trim()
+        .match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
       return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
     };
 
@@ -473,7 +496,11 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       const fallback = parseQtyUnit(reg.annual_production);
       const qty = (first?.quantity || fallback.q || "").toString();
       const unit = (first?.unit || fallback.u || "").toString();
-      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      const turnover = (
+        first?.turnover ||
+        reg.annual_turnover ||
+        ""
+      ).toString();
       return [
         new Date(reg.created_at).toLocaleDateString("en-GB"),
         reg.username || "",
