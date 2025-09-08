@@ -120,7 +120,7 @@ export default function UserRegistrations() {
       const userData = localStorage.getItem("user");
       const token = userData ? JSON.parse(userData).token : null;
       const response = await fetch(
-        `/api/users/${userId}/registrations?page=${currentPage}&limit=10`,
+        `/api/users/${userId}/registrations?page=${currentPage}&limit=100000`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -606,7 +606,7 @@ export default function UserRegistrations() {
               )}
 
               {/* Pagination */}
-              {pagination.totalPages > 1 && (
+              {false && (
                 <div className="flex justify-center gap-2 mt-6">
                   <Button
                     onClick={() => handlePageChange(currentPage - 1)}

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { dashboardAPI, registrationsAPI, logout } from "@/lib/api";
 
 export default function DashboardFixed() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     totalUsers: 0,
@@ -36,31 +38,31 @@ export default function DashboardFixed() {
   };
 
   const handleNewRegistration = () => {
-    window.location.href = "/registration";
+    navigate("/registration");
   };
 
   const handleViewRegistrations = () => {
-    window.location.href = "/registrations";
+    navigate("/registrations");
   };
 
   const handleViewByUser = () => {
-    window.location.href = "/admin/users";
+    navigate("/admin/users");
   };
 
   const handleGenerateReports = () => {
-    window.location.href = "/reports";
+    navigate("/reports");
   };
 
   const handleCompressionTest = () => {
-    window.location.href = "/compression-test";
+    navigate("/compression-test");
   };
 
   const handleTestUpload = () => {
-    window.location.href = "/test-upload";
+    navigate("/test-upload");
   };
 
   const handleSimpleTest = () => {
-    window.location.href = "/test-simple";
+    navigate("/test-simple");
   };
 
   if (loading) {
