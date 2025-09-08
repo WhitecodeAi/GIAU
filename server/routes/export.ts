@@ -33,7 +33,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         .json({ error: "Start date and end date are required" });
     }
 
-    // Fetch user registrations data within date range
+    // Fetch user registrations data within date range (including production fields)
     const registrations = await dbQuery(
       `
       SELECT
@@ -47,6 +47,11 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         ur.aadhar_number,
         ur.voter_id,
         ur.pan_number,
+        ur.area_of_production,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit,
+        ur.years_of_production,
         ur.created_at,
         ur.photo_path,
         ur.signature_path,
@@ -76,6 +81,27 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         .json({ error: "No registrations found in the specified date range" });
     }
 
+    // Build per-registration production summaries from user_production_details
+    const regIds = registrations.map((r: any) => r.id);
+    const productionSummaries: Record<number, string> = {};
+    if (regIds.length > 0) {
+      const placeholders = regIds.map(() => "?").join(",");
+      const rows = await dbQuery(
+        `SELECT registration_id, product_name, annual_production, unit
+         FROM user_production_details
+         WHERE registration_id IN (${placeholders})`,
+        regIds,
+      );
+      const grouped: Record<number, string[]> = {};
+      for (const row of rows as any[]) {
+        const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
+        (grouped[row.registration_id] ||= []).push(line);
+      }
+      for (const idStr of Object.keys(grouped)) {
+        productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
+      }
+    }
+
     // Create CSV content
     const csvHeaders = [
       "ID",
@@ -93,10 +119,16 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       "Existing Products",
       "Username",
       "User Email",
+      "Area of Production",
+      "Annual Production",
+      "Annual Turnover",
+      "Turnover Unit",
+      "Years of Production",
+      "Production Summary",
       "Registration Date",
     ];
 
-    const csvRows = registrations.map((reg) => [
+    const csvRows = registrations.map((reg: any) => [
       reg.id,
       `"${reg.name}"`,
       `"${reg.address}"`,
@@ -112,6 +144,12 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       `"${reg.existing_products || ""}"`,
       reg.username || "",
       reg.user_email || "",
+      `"${reg.area_of_production || ""}"`,
+      `"${reg.annual_production || ""}"`,
+      reg.annual_turnover || "",
+      reg.turnover_unit || "",
+      reg.years_of_production || "",
+      `"${productionSummaries[reg.id] || ""}"`,
       new Date(reg.created_at).toLocaleDateString("en-GB"),
     ]);
 
@@ -151,7 +189,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const user = userResult[0];
 
-    // Fetch all registrations for this user
+    // Fetch all registrations for this user (including production fields)
     const registrations = await dbQuery(
       `
       SELECT
@@ -165,6 +203,11 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         ur.aadhar_number,
         ur.voter_id,
         ur.pan_number,
+        ur.area_of_production,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit,
+        ur.years_of_production,
         ur.created_at,
         ur.photo_path,
         ur.signature_path,
@@ -191,6 +234,27 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         .json({ error: "No registrations found for this user" });
     }
 
+    // Build per-registration production summaries
+    const regIds = registrations.map((r: any) => r.id);
+    const productionSummaries: Record<number, string> = {};
+    if (regIds.length > 0) {
+      const placeholders = regIds.map(() => "?").join(",");
+      const rows = await dbQuery(
+        `SELECT registration_id, product_name, annual_production, unit
+         FROM user_production_details
+         WHERE registration_id IN (${placeholders})`,
+        regIds,
+      );
+      const grouped: Record<number, string[]> = {};
+      for (const row of rows as any[]) {
+        const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
+        (grouped[row.registration_id] ||= []).push(line);
+      }
+      for (const idStr of Object.keys(grouped)) {
+        productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
+      }
+    }
+
     // Create CSV content
     const csvHeaders = [
       "ID",
@@ -206,10 +270,16 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       "Categories",
       "Selected Products",
       "Existing Products",
+      "Area of Production",
+      "Annual Production",
+      "Annual Turnover",
+      "Turnover Unit",
+      "Years of Production",
+      "Production Summary",
       "Registration Date",
     ];
 
-    const csvRows = registrations.map((reg) => [
+    const csvRows = registrations.map((reg: any) => [
       reg.id,
       `"${reg.name}"`,
       `"${reg.address}"`,
@@ -223,6 +293,12 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       `"${reg.category_names || ""}"`,
       `"${reg.selected_products || ""}"`,
       `"${reg.existing_products || ""}"`,
+      `"${reg.area_of_production || ""}"`,
+      `"${reg.annual_production || ""}"`,
+      reg.annual_turnover || "",
+      reg.turnover_unit || "",
+      reg.years_of_production || "",
+      `"${productionSummaries[reg.id] || ""}"`,
       new Date(reg.created_at).toLocaleDateString("en-GB"),
     ]);
 
@@ -261,7 +337,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       return res.status(404).json({ error: "No products found" });
     }
 
-    // Fetch users who are producing these products
+    // Fetch users who are producing these products (including production fields)
     const registrations = await dbQuery(
       `
       SELECT DISTINCT
@@ -275,6 +351,11 @@ export async function exportUsersByProducts(req: Request, res: Response) {
         ur.aadhar_number,
         ur.voter_id,
         ur.pan_number,
+        ur.area_of_production,
+        ur.annual_production,
+        ur.annual_turnover,
+        ur.turnover_unit,
+        ur.years_of_production,
         ur.created_at,
         u.username,
         u.email as user_email,
@@ -302,6 +383,27 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       });
     }
 
+    // Build per-registration production summaries
+    const regIds = registrations.map((r: any) => r.id);
+    const productionSummaries: Record<number, string> = {};
+    if (regIds.length > 0) {
+      const ph = regIds.map(() => "?").join(",");
+      const rows = await dbQuery(
+        `SELECT registration_id, product_name, annual_production, unit
+         FROM user_production_details
+         WHERE registration_id IN (${ph})`,
+        regIds,
+      );
+      const grouped: Record<number, string[]> = {};
+      for (const row of rows as any[]) {
+        const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
+        (grouped[row.registration_id] ||= []).push(line);
+      }
+      for (const idStr of Object.keys(grouped)) {
+        productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
+      }
+    }
+
     // Create CSV content
     const csvHeaders = [
       "ID",
@@ -319,10 +421,16 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       "Existing Products",
       "Username",
       "User Email",
+      "Area of Production",
+      "Annual Production",
+      "Annual Turnover",
+      "Turnover Unit",
+      "Years of Production",
+      "Production Summary",
       "Registration Date",
     ];
 
-    const csvRows = registrations.map((reg) => [
+    const csvRows = registrations.map((reg: any) => [
       reg.id,
       `"${reg.name}"`,
       `"${reg.address}"`,
@@ -338,6 +446,12 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       `"${reg.existing_products || ""}"`,
       reg.username || "",
       reg.user_email || "",
+      `"${reg.area_of_production || ""}"`,
+      `"${reg.annual_production || ""}"`,
+      reg.annual_turnover || "",
+      reg.turnover_unit || "",
+      reg.years_of_production || "",
+      `"${productionSummaries[reg.id] || ""}"`,
       new Date(reg.created_at).toLocaleDateString("en-GB"),
     ]);
 
