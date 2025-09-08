@@ -1799,8 +1799,7 @@ export async function exportProductNOC(req: Request, res: Response) {
           "NOC_EXPORT_MISSING_PRODUCT_ID: Unable to resolve product id for GI Application No",
         );
     }
-    const year = new Date().getFullYear();
-    const appNumber = `GI-BODO-${year}-${giId.toString().padStart(4, "0")}`;
+    const appNumber = giId.toString().padStart(4, "0");
 
     const nocHtml = await generateProductNOCHtml(
       registration,
