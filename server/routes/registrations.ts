@@ -2993,7 +2993,10 @@ export async function exportProductCard(req: Request, res: Response) {
     res.send(fullHtml);
   } catch (error) {
     console.error("Export Product Card error:", error);
-    res.status(500).json({ error: "Failed to export producer card" });
+    if (error instanceof Error && error.message.startsWith("CARD_EXPORT_")) {
+      return res.status(400).send(error.message);
+    }
+    return res.status(500).json({ error: "Failed to export producer card" });
   }
 }
 
@@ -3027,9 +3030,11 @@ async function generateProductCardHtml(
   // Fetch association details (stamp + short form)
   const assoc = await getAssociationDetails(associationName);
 
-  // Build membership number: use association's registration_number as short form; ID remains the same
-  const shortForm = assoc.registration_number || "BTF";
-  const membershipNo = `${shortForm} - ${registration.id.toString().padStart(2, "0")}`;
+  // Enforce: no fallback. registration_number must exist in associations
+  if (!assoc.registration_number) {
+    throw new Error(`CARD_EXPORT_MISSING_SHORTFORM: Association registration_number not found for "${associationName}"`);
+  }
+  const membershipNo = `${assoc.registration_number} - ${registration.id.toString().padStart(2, "0")}`;
 
   // Use association stamp if present
   if (assoc.stamp_image_path) {
