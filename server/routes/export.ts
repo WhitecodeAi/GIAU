@@ -368,7 +368,10 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     ].join("\n");
 
     // Set headers for CSV download
-    const dateLabel = startDate && endDate ? `${startDate}_to_${endDate}` : new Date().toISOString().split("T")[0];
+    const dateLabel =
+      startDate && endDate
+        ? `${startDate}_to_${endDate}`
+        : new Date().toISOString().split("T")[0];
     const filename = `registrations_by_${user.username}_${dateLabel}.csv`;
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);

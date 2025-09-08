@@ -469,7 +469,11 @@ export default function UserRegistrations() {
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              onClick={() => navigate(currentUser?.role === "admin" ? "/admin" : "/dashboard")}
+              onClick={() =>
+                navigate(
+                  currentUser?.role === "admin" ? "/admin" : "/dashboard",
+                )
+              }
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -569,15 +573,31 @@ export default function UserRegistrations() {
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <div className="text-sm text-gray-700 font-medium mb-1">Start Date</div>
-                    <Input type="date" value={startDate} onChange={(e)=>setStartDate(e.target.value)} />
+                    <div className="text-sm text-gray-700 font-medium mb-1">
+                      Start Date
+                    </div>
+                    <Input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-700 font-medium mb-1">End Date</div>
-                    <Input type="date" value={endDate} onChange={(e)=>setEndDate(e.target.value)} />
+                    <div className="text-sm text-gray-700 font-medium mb-1">
+                      End Date
+                    </div>
+                    <Input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
                   </div>
                   <div className="md:col-span-2 flex items-end">
-                    <Button onClick={handleExportByDateRange} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
+                    <Button
+                      onClick={handleExportByDateRange}
+                      disabled={exporting}
+                      className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto"
+                    >
                       {exporting ? "Exporting..." : "Export CSV by Date Range"}
                     </Button>
                   </div>
