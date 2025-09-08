@@ -192,7 +192,11 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
 
 export async function exportRegistrationsByUser(req: Request, res: Response) {
   try {
-    const { userId } = req.body;
+    const { userId, startDate, endDate } = req.body as {
+      userId?: number;
+      startDate?: string;
+      endDate?: string;
+    };
 
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -210,9 +214,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const user = userResult[0];
 
-    // Fetch all registrations for this user (including production fields)
-    const registrations = await dbQuery(
-      `
+    // Fetch registrations for this user (optionally filter by date range)
+    const baseQuery = `
       SELECT
         ur.id,
         ur.name,
@@ -234,7 +237,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
         GROUP_CONCAT(DISTINCT p.name SEPARATOR '\n') as selected_products,
-        GROUP_CONCAT(DISTINCT ep.name) as existing_products
+        GROUP_CONCAT(DISTINCT ep.name SEPARATOR '\n') as existing_products
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -243,11 +246,22 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
       LEFT JOIN products ep ON uep.product_id = ep.id
       WHERE ur.user_id = ?
+      {{DATE_FILTER}}
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
-    `,
-      [userId],
-    );
+    `;
+
+    const params: any[] = [userId];
+    let query = baseQuery.replace("{{DATE_FILTER}}", "");
+    if (startDate && endDate) {
+      query = baseQuery.replace(
+        "{{DATE_FILTER}}",
+        " AND DATE(ur.created_at) BETWEEN ? AND ?",
+      );
+      params.push(startDate, endDate);
+    }
+
+    const registrations = await dbQuery(query, params);
 
     if (registrations.length === 0) {
       return res
@@ -354,7 +368,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     ].join("\n");
 
     // Set headers for CSV download
-    const filename = `registrations_by_${user.username}_${new Date().toISOString().split("T")[0]}.csv`;
+    const dateLabel = startDate && endDate ? `${startDate}_to_${endDate}` : new Date().toISOString().split("T")[0];
+    const filename = `registrations_by_${user.username}_${dateLabel}.csv`;
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(csvContent);
