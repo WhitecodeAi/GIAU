@@ -69,7 +69,7 @@ export default function UsersManagement() {
       const userData = localStorage.getItem("user");
       const token = userData ? JSON.parse(userData).token : null;
       const response = await fetch(
-        `/api/users?page=${currentPage}&limit=10${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""}`,
+        `/api/users?page=${currentPage}&limit=100000${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -366,7 +366,7 @@ export default function UsersManagement() {
             )}
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
+            {false && (
               <div className="flex justify-center gap-2 mt-6">
                 <Button
                   onClick={() => handlePageChange(currentPage - 1)}
