@@ -81,77 +81,89 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         .json({ error: "No registrations found in the specified date range" });
     }
 
-    // Build per-registration production summaries from user_production_details
+    // Build per-registration production summaries and first product detail from user_production_details
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
+    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
          FROM user_production_details
-         WHERE registration_id IN (${placeholders})`,
+         WHERE registration_id IN (${placeholders})
+         ORDER BY registration_id, id`,
         regIds,
       );
       const grouped: Record<number, string[]> = {};
       for (const row of rows as any[]) {
         const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
         (grouped[row.registration_id] ||= []).push(line);
+        if (!firstPD[row.registration_id]) {
+          firstPD[row.registration_id] = {
+            quantity: row.annual_production || "",
+            unit: row.unit || "",
+            turnover: row.annual_turnover || "",
+          };
+        }
       }
       for (const idStr of Object.keys(grouped)) {
         productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
       }
     }
 
-    // Create CSV content
+    const parseQtyUnit = (val: any) => {
+      if (!val) return { q: "", u: "" };
+      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
+    };
+
+    // Create CSV content to match provided sample
     const csvHeaders = [
-      "ID",
-      "Name",
-      "Address",
+      "Reg. Date",
+      "User name",
+      "Reg. ID No",
+      "Name of AU Applicant",
       "Age",
       "Gender",
-      "Phone",
-      "Email",
-      "Aadhar Number",
-      "Voter ID",
-      "PAN Number",
+      "email id",
+      "Phone number",
+      "Aadhar Card",
+      "Pan Card",
+      "Voter Id Card",
       "Categories",
-      "Selected Products",
       "Existing Products",
-      "Username",
-      "User Email",
-      "Area of Production",
-      "Annual Production",
+      "Annual Production Quantity",
+      "Annual production type",
       "Annual Turnover",
-      "Turnover Unit",
-      "Years of Production",
-      "Production Summary",
-      "Registration Date",
+      "Future Products",
     ];
 
-    const csvRows = registrations.map((reg: any) => [
-      reg.id,
-      `"${reg.name}"`,
-      `"${reg.address}"`,
-      reg.age,
-      reg.gender,
-      reg.phone,
-      reg.email || "",
-      reg.aadhar_number || "",
-      reg.voter_id || "",
-      reg.pan_number || "",
-      `"${reg.category_names || ""}"`,
-      `"${reg.selected_products || ""}"`,
-      `"${reg.existing_products || ""}"`,
-      reg.username || "",
-      reg.user_email || "",
-      `"${reg.area_of_production || ""}"`,
-      `"${reg.annual_production || ""}"`,
-      reg.annual_turnover || "",
-      reg.turnover_unit || "",
-      reg.years_of_production || "",
-      `"${productionSummaries[reg.id] || ""}"`,
-      new Date(reg.created_at).toLocaleDateString("en-GB"),
-    ]);
+    const csvRows = registrations.map((reg: any) => {
+      const first = firstPD[reg.id];
+      const fallback = parseQtyUnit(reg.annual_production);
+      const qty = (first?.quantity || fallback.q || "").toString();
+      const unit = (first?.unit || fallback.u || "").toString();
+      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      return [
+        new Date(reg.created_at).toLocaleDateString("en-GB"),
+        reg.username || "",
+        reg.id,
+        `"${reg.name}"`,
+        reg.age,
+        reg.gender,
+        reg.email || "",
+        reg.phone,
+        reg.aadhar_number || "",
+        reg.pan_number || "",
+        reg.voter_id || "",
+        `"${reg.category_names || ""}"`,
+        `"${reg.existing_products || ""}"`,
+        qty,
+        unit,
+        turnover,
+        "",
+      ];
+    });
 
     const csvContent = [
       csvHeaders.join(","),
@@ -234,73 +246,89 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         .json({ error: "No registrations found for this user" });
     }
 
-    // Build per-registration production summaries
+    // Build per-registration production summaries and first product detail
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
+    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
          FROM user_production_details
-         WHERE registration_id IN (${placeholders})`,
+         WHERE registration_id IN (${placeholders})
+         ORDER BY registration_id, id`,
         regIds,
       );
       const grouped: Record<number, string[]> = {};
       for (const row of rows as any[]) {
         const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
         (grouped[row.registration_id] ||= []).push(line);
+        if (!firstPD[row.registration_id]) {
+          firstPD[row.registration_id] = {
+            quantity: row.annual_production || "",
+            unit: row.unit || "",
+            turnover: row.annual_turnover || "",
+          };
+        }
       }
       for (const idStr of Object.keys(grouped)) {
         productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
       }
     }
 
-    // Create CSV content
+    const parseQtyUnit = (val: any) => {
+      if (!val) return { q: "", u: "" };
+      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
+    };
+
+    // Create CSV content to match provided sample
     const csvHeaders = [
-      "ID",
-      "Name",
-      "Address",
+      "Reg. Date",
+      "User name",
+      "Reg. ID No",
+      "Name of AU Applicant",
       "Age",
       "Gender",
-      "Phone",
-      "Email",
-      "Aadhar Number",
-      "Voter ID",
-      "PAN Number",
+      "email id",
+      "Phone number",
+      "Aadhar Card",
+      "Pan Card",
+      "Voter Id Card",
       "Categories",
-      "Selected Products",
       "Existing Products",
-      "Area of Production",
-      "Annual Production",
+      "Annual Production Quantity",
+      "Annual production type",
       "Annual Turnover",
-      "Turnover Unit",
-      "Years of Production",
-      "Production Summary",
-      "Registration Date",
+      "Future Products",
     ];
 
-    const csvRows = registrations.map((reg: any) => [
-      reg.id,
-      `"${reg.name}"`,
-      `"${reg.address}"`,
-      reg.age,
-      reg.gender,
-      reg.phone,
-      reg.email || "",
-      reg.aadhar_number || "",
-      reg.voter_id || "",
-      reg.pan_number || "",
-      `"${reg.category_names || ""}"`,
-      `"${reg.selected_products || ""}"`,
-      `"${reg.existing_products || ""}"`,
-      `"${reg.area_of_production || ""}"`,
-      `"${reg.annual_production || ""}"`,
-      reg.annual_turnover || "",
-      reg.turnover_unit || "",
-      reg.years_of_production || "",
-      `"${productionSummaries[reg.id] || ""}"`,
-      new Date(reg.created_at).toLocaleDateString("en-GB"),
-    ]);
+    const csvRows = registrations.map((reg: any) => {
+      const first = firstPD[reg.id];
+      const fallback = parseQtyUnit(reg.annual_production);
+      const qty = (first?.quantity || fallback.q || "").toString();
+      const unit = (first?.unit || fallback.u || "").toString();
+      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      return [
+        new Date(reg.created_at).toLocaleDateString("en-GB"),
+        user.username || "",
+        reg.id,
+        `"${reg.name}"`,
+        reg.age,
+        reg.gender,
+        reg.email || "",
+        reg.phone,
+        reg.aadhar_number || "",
+        reg.pan_number || "",
+        reg.voter_id || "",
+        `"${reg.category_names || ""}"`,
+        `"${reg.existing_products || ""}"`,
+        qty,
+        unit,
+        turnover,
+        "",
+      ];
+    });
 
     const csvContent = [
       csvHeaders.join(","),
@@ -383,77 +411,89 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       });
     }
 
-    // Build per-registration production summaries
+    // Build per-registration production summaries and first product detail
     const regIds = registrations.map((r: any) => r.id);
     const productionSummaries: Record<number, string> = {};
+    const firstPD: Record<number, { quantity: string; unit: string; turnover: string }> = {};
     if (regIds.length > 0) {
       const ph = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
          FROM user_production_details
-         WHERE registration_id IN (${ph})`,
+         WHERE registration_id IN (${ph})
+         ORDER BY registration_id, id`,
         regIds,
       );
       const grouped: Record<number, string[]> = {};
       for (const row of rows as any[]) {
         const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
         (grouped[row.registration_id] ||= []).push(line);
+        if (!firstPD[row.registration_id]) {
+          firstPD[row.registration_id] = {
+            quantity: row.annual_production || "",
+            unit: row.unit || "",
+            turnover: row.annual_turnover || "",
+          };
+        }
       }
       for (const idStr of Object.keys(grouped)) {
         productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
       }
     }
 
-    // Create CSV content
+    const parseQtyUnit = (val: any) => {
+      if (!val) return { q: "", u: "" };
+      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
+    };
+
+    // Create CSV content to match provided sample
     const csvHeaders = [
-      "ID",
-      "Name",
-      "Address",
+      "Reg. Date",
+      "User name",
+      "Reg. ID No",
+      "Name of AU Applicant",
       "Age",
       "Gender",
-      "Phone",
-      "Email",
-      "Aadhar Number",
-      "Voter ID",
-      "PAN Number",
+      "email id",
+      "Phone number",
+      "Aadhar Card",
+      "Pan Card",
+      "Voter Id Card",
       "Categories",
-      "Selected Products",
       "Existing Products",
-      "Username",
-      "User Email",
-      "Area of Production",
-      "Annual Production",
+      "Annual Production Quantity",
+      "Annual production type",
       "Annual Turnover",
-      "Turnover Unit",
-      "Years of Production",
-      "Production Summary",
-      "Registration Date",
+      "Future Products",
     ];
 
-    const csvRows = registrations.map((reg: any) => [
-      reg.id,
-      `"${reg.name}"`,
-      `"${reg.address}"`,
-      reg.age,
-      reg.gender,
-      reg.phone,
-      reg.email || "",
-      reg.aadhar_number || "",
-      reg.voter_id || "",
-      reg.pan_number || "",
-      `"${reg.category_names || ""}"`,
-      `"${reg.selected_products || ""}"`,
-      `"${reg.existing_products || ""}"`,
-      reg.username || "",
-      reg.user_email || "",
-      `"${reg.area_of_production || ""}"`,
-      `"${reg.annual_production || ""}"`,
-      reg.annual_turnover || "",
-      reg.turnover_unit || "",
-      reg.years_of_production || "",
-      `"${productionSummaries[reg.id] || ""}"`,
-      new Date(reg.created_at).toLocaleDateString("en-GB"),
-    ]);
+    const csvRows = registrations.map((reg: any) => {
+      const first = firstPD[reg.id];
+      const fallback = parseQtyUnit(reg.annual_production);
+      const qty = (first?.quantity || fallback.q || "").toString();
+      const unit = (first?.unit || fallback.u || "").toString();
+      const turnover = (first?.turnover || reg.annual_turnover || "").toString();
+      return [
+        new Date(reg.created_at).toLocaleDateString("en-GB"),
+        reg.username || "",
+        reg.id,
+        `"${reg.name}"`,
+        reg.age,
+        reg.gender,
+        reg.email || "",
+        reg.phone,
+        reg.aadhar_number || "",
+        reg.pan_number || "",
+        reg.voter_id || "",
+        `"${reg.category_names || ""}"`,
+        `"${reg.existing_products || ""}"`,
+        qty,
+        unit,
+        turnover,
+        "",
+      ];
+    });
 
     const csvContent = [
       csvHeaders.join(","),
