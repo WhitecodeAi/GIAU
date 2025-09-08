@@ -157,18 +157,14 @@ export default function UserRegistrations() {
     setCurrentPage(page);
   };
 
-  const handleExportByDateRange = async () => {
+  const handleExportAll = async () => {
     if (!userId) return;
-    if (!startDate || !endDate) {
-      alert("Please select both start and end dates");
-      return;
-    }
     try {
       setExporting(true);
       const res = await fetch("/api/registrations/export-by-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: parseInt(userId), startDate, endDate }),
+        body: JSON.stringify({ userId: parseInt(userId) }),
       });
       if (!res.ok) {
         let message = `HTTP ${res.status}`;
@@ -190,7 +186,7 @@ export default function UserRegistrations() {
       a.href = url;
       a.style.display = "none";
       const uname = userData?.username || "user";
-      a.download = `registrations_by_${uname}_${startDate}_to_${endDate}.csv`;
+      a.download = `registrations_by_${uname}_all.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -571,36 +567,14 @@ export default function UserRegistrations() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-700 font-medium mb-1">
-                      Start Date
-                    </div>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-700 font-medium mb-1">
-                      End Date
-                    </div>
-                    <Input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="md:col-span-2 flex items-end">
-                    <Button
-                      onClick={handleExportByDateRange}
-                      disabled={exporting}
-                      className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto"
-                    >
-                      {exporting ? "Exporting..." : "Export CSV by Date Range"}
-                    </Button>
-                  </div>
+                <div className="flex items-end justify-end">
+                  <Button
+                    onClick={handleExportAll}
+                    disabled={exporting}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {exporting ? "Exporting..." : "Export All CSV"}
+                  </Button>
                 </div>
               </div>
             </CardContent>
