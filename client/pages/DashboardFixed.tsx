@@ -46,6 +46,10 @@ export default function DashboardFixed() {
     window.location.href = "/registrations";
   };
 
+  const handleViewByUser = () => {
+    window.location.href = "/admin/users";
+  };
+
   const handleGenerateReports = () => {
     window.location.href = "/reports";
   };
@@ -197,6 +201,12 @@ export default function DashboardFixed() {
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 View All Registrations
+              </button>
+              <button
+                onClick={handleViewByUser}
+                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                View Registrations by User
               </button>
               {/* <button
                 onClick={handleCompressionTest}
