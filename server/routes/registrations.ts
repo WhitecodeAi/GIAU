@@ -2222,8 +2222,13 @@ async function getAssociationStamp(
 // Helper to get both stamp and registration short form (registration_number) from associations
 async function getAssociationDetails(
   associationName: string,
-): Promise<{ stamp_image_path: string | null; registration_number: string | null }> {
-  console.log(`🔍 Looking up association details (stamp, short form) for: "${associationName}"`);
+): Promise<{
+  stamp_image_path: string | null;
+  registration_number: string | null;
+}> {
+  console.log(
+    `🔍 Looking up association details (stamp, short form) for: "${associationName}"`,
+  );
   try {
     // Exact match first
     let rows = await dbQuery(
@@ -2244,7 +2249,8 @@ async function getAssociationDetails(
       const { stamp_image_path, registration_number } = rows[0] as any;
       return {
         stamp_image_path: stamp_image_path || null,
-        registration_number: (registration_number && String(registration_number).trim()) || null,
+        registration_number:
+          (registration_number && String(registration_number).trim()) || null,
       };
     }
 
@@ -3032,7 +3038,9 @@ async function generateProductCardHtml(
 
   // Enforce: no fallback. registration_number must exist in associations
   if (!assoc.registration_number) {
-    throw new Error(`CARD_EXPORT_MISSING_SHORTFORM: Association registration_number not found for "${associationName}"`);
+    throw new Error(
+      `CARD_EXPORT_MISSING_SHORTFORM: Association registration_number not found for "${associationName}"`,
+    );
   }
   const membershipNo = `${assoc.registration_number} - ${registration.id.toString().padStart(2, "0")}`;
 
