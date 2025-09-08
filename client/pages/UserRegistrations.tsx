@@ -420,11 +420,11 @@ export default function UserRegistrations() {
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              onClick={() => navigate("/admin/users")}
+              onClick={() => navigate(currentUser?.role === "admin" ? "/admin" : "/dashboard")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Users
+              Back to Dashboard
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
