@@ -17,13 +17,10 @@ export default function DashboardFixed() {
 
   const fetchDashboardData = async () => {
     try {
-      
       const [statsData, activityData] = await Promise.all([
         dashboardAPI.getStatistics(),
         dashboardAPI.getRecentActivity(),
       ]);
-
-    
 
       setStats(statsData);
       setRecentActivity(activityData);
@@ -241,7 +238,9 @@ export default function DashboardFixed() {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Data Collectors</span>
+                <span className="text-sm text-gray-600">
+                  Total Data Collectors
+                </span>
                 <span className="text-sm text-blue-600 font-medium">
                   {stats.totalUsers}
                 </span>
