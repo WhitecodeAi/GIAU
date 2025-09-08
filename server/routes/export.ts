@@ -161,7 +161,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         qty,
         unit,
         turnover,
-        "",
+        `"${reg.selected_products || ""}"`,
       ];
     });
 
@@ -326,7 +326,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         qty,
         unit,
         turnover,
-        "",
+        `"${reg.selected_products || ""}"`,
       ];
     });
 
@@ -491,7 +491,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
         qty,
         unit,
         turnover,
-        "",
+        `"${reg.selected_products || ""}"`,
       ];
     });
 
