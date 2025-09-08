@@ -56,8 +56,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as selected_products,
-        GROUP_CONCAT(DISTINCT ep.name) as existing_products,
+        GROUP_CONCAT(DISTINCT p.name SEPARATOR '\n') as selected_products,
+        GROUP_CONCAT(DISTINCT ep.name SEPARATOR '\n') as existing_products,
         u.username,
         u.email as user_email
       FROM user_registrations ur
@@ -233,7 +233,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as selected_products,
+        GROUP_CONCAT(DISTINCT p.name SEPARATOR '\n') as selected_products,
         GROUP_CONCAT(DISTINCT ep.name) as existing_products
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
@@ -406,7 +406,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
         u.username,
         u.email as user_email,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as selected_products,
+        GROUP_CONCAT(DISTINCT p.name SEPARATOR '\n') as selected_products,
         GROUP_CONCAT(DISTINCT ep.name) as existing_products
       FROM user_registrations ur
       LEFT JOIN users u ON ur.user_id = u.id
