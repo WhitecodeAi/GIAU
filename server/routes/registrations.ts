@@ -1795,12 +1795,18 @@ export async function exportProductNOC(req: Request, res: Response) {
     if (!giId || Number.isNaN(giId)) {
       return res
         .status(400)
-        .send("NOC_EXPORT_MISSING_PRODUCT_ID: Unable to resolve product id for GI Application No");
+        .send(
+          "NOC_EXPORT_MISSING_PRODUCT_ID: Unable to resolve product id for GI Application No",
+        );
     }
     const year = new Date().getFullYear();
     const appNumber = `GI-BODO-${year}-${giId.toString().padStart(4, "0")}`;
 
-    const nocHtml = await generateProductNOCHtml(registration, productName, appNumber);
+    const nocHtml = await generateProductNOCHtml(
+      registration,
+      productName,
+      appNumber,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2235,9 +2241,7 @@ async function getAssociationStamp(
 }
 
 // Helper to get both stamp and registration short form (registration_number) from associations
-async function getAssociationDetails(
-  associationName: string,
-): Promise<{
+async function getAssociationDetails(associationName: string): Promise<{
   stamp_image_path: string | null;
   registration_number: string | null;
 }> {
