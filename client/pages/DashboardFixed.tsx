@@ -46,7 +46,16 @@ export default function DashboardFixed() {
   };
 
   const handleViewByUser = () => {
-    navigate("/admin/users");
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return navigate("/admin/users");
+      const u = JSON.parse(raw);
+      if (u?.role === "admin") return navigate("/admin/users");
+      if (u?.id) return navigate(`/admin/users/${u.id}/registrations`);
+      navigate("/admin/users");
+    } catch {
+      navigate("/admin/users");
+    }
   };
 
   const handleGenerateReports = () => {

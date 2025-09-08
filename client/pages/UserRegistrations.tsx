@@ -81,7 +81,11 @@ export default function UserRegistrations() {
     const userDataStored = localStorage.getItem("user");
     if (userDataStored) {
       const parsedUser = JSON.parse(userDataStored);
-      if (parsedUser.role !== "admin") {
+      // Allow admins, or the same user viewing their own registrations
+      if (
+        parsedUser.role !== "admin" &&
+        String(parsedUser.id) !== String(userId)
+      ) {
         navigate("/");
         return;
       }

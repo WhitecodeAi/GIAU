@@ -53,7 +53,7 @@ export default function UsersManagement() {
     if (userData) {
       const parsedUser = JSON.parse(userData);
       if (parsedUser.role !== "admin") {
-        navigate("/");
+        navigate(`/admin/users/${parsedUser.id}/registrations`);
         return;
       }
       setUser(parsedUser);
