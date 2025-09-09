@@ -29,13 +29,13 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
   return headers;
 }
 
-// Generic API request function
+// Generic API request function with timeout and safe fallback to relative /api
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   includeContentType = true,
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const primaryUrl = `${API_BASE_URL}${endpoint}`;
 
   const config: RequestInit = {
     ...options,
@@ -45,12 +45,41 @@ async function apiRequest<T>(
     },
   };
 
+  // Add a timeout so fetch doesn't hang forever
+  const fetchWithTimeout = async (
+    url: string,
+    init: RequestInit,
+    ms = 15000,
+  ) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
+  const tryRequest = async (url: string): Promise<Response> => {
+    try {
+      return await fetchWithTimeout(url, config);
+    } catch (err) {
+      // Network-level failure (e.g., offline, DNS, CORS, mixed content)
+      throw new Error("Failed to fetch");
+    }
+  };
+
   let response: Response;
+
   try {
-    response = await fetch(url, config);
-  } catch (_err) {
-    // Network-level failure (e.g., offline, DNS)
-    throw new Error("Failed to fetch");
+    response = await tryRequest(primaryUrl);
+  } catch (e) {
+    // If VITE_API_URL was set incorrectly, fall back to same-origin /api
+    if (API_BASE_URL !== "/api") {
+      response = await tryRequest(`/api${endpoint}`);
+    } else {
+      throw e;
+    }
   }
 
   if (response.status === 401 || response.status === 403) {
@@ -68,7 +97,6 @@ async function apiRequest<T>(
   }
 
   if (!response.ok) {
-
     if (response.status === 401 || response.status === 403) {
       throw new Error("Please log in again");
     }
@@ -78,7 +106,6 @@ async function apiRequest<T>(
     throw new Error(
       errorData.error || `HTTP error! status: ${response.status}`,
     );
-
   }
 
   return response.json();
@@ -274,7 +301,6 @@ export const registrationsAPI = {
         }
         throw new Error(msg);
       }
-
 
       if (!res.ok) {
         let msg = "Network error";
