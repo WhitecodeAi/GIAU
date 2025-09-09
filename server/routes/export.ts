@@ -85,6 +85,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
     const regIds = registrations.map((r: any) => r.id);
     const selectedMap: Record<number, string[]> = {};
     const existingMap: Record<number, string[]> = {};
+    const selectedCatMap: Record<number, Record<string, string>> = {};
+    const existingCatMap: Record<number, Record<string, string>> = {};
     const detailMap: Record<
       number,
       Record<string, { quantity: string; unit: string; turnover: string }>
@@ -107,10 +109,11 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         };
       }
       const spRows = await dbQuery(
-        `SELECT ur.id as registration_id, p.name as product_name
+        `SELECT ur.id as registration_id, p.name as product_name, pc.name as category_name
          FROM user_registrations ur
          LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
          LEFT JOIN products p ON usp.product_id = p.id
+         LEFT JOIN product_categories pc ON p.category_id = pc.id
          WHERE ur.id IN (${placeholders})
          ORDER BY ur.id, p.name`,
         regIds,
@@ -118,13 +121,16 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       for (const row of spRows as any[]) {
         if (row.product_name) {
           (selectedMap[row.registration_id] ||= []).push(row.product_name);
+          (selectedCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
       const epRows = await dbQuery(
-        `SELECT ur.id as registration_id, ep.name as product_name
+        `SELECT ur.id as registration_id, ep.name as product_name, pc.name as category_name
          FROM user_registrations ur
          LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
          LEFT JOIN products ep ON uep.product_id = ep.id
+         LEFT JOIN product_categories pc ON ep.category_id = pc.id
          WHERE ur.id IN (${placeholders})
          ORDER BY ur.id, ep.name`,
         regIds,
@@ -132,6 +138,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       for (const row of epRows as any[]) {
         if (row.product_name) {
           (existingMap[row.registration_id] ||= []).push(row.product_name);
+          (existingCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
     }
@@ -192,7 +200,6 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         reg.aadhar_number || "",
         reg.pan_number || "",
         reg.voter_id || "",
-        `"${reg.category_names || ""}"`,
       ];
       const fbParsed = parseQtyUnit(reg.annual_production);
 
@@ -206,7 +213,19 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          csvRows.push([...baseCommon, `"${prod}"`, qty, unit, turnover, ""]);
+          const cat =
+            (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
+            reg.category_names ||
+            "";
+          csvRows.push([
+            ...baseCommon,
+            `"${cat}"`,
+            `"${prod}"`,
+            qty,
+            unit,
+            turnover,
+            "",
+          ]);
         }
       }
 
@@ -220,8 +239,13 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const cat =
+            (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
+            reg.category_names ||
+            "";
           csvRows.push([
             ...baseCommon,
+            `"${cat}"`,
             "",
             qty,
             unit,
@@ -234,6 +258,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       if (existing.length === 0 && selected.length === 0) {
         csvRows.push([
           ...baseCommon,
+          `"${reg.category_names || ""}"`,
           "",
           (fbParsed.q || "").toString(),
           (fbParsed.u || "").toString(),
@@ -328,6 +353,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     const regIds = registrations.map((r: any) => r.id);
     const selectedMap: Record<number, string[]> = {};
     const existingMap: Record<number, string[]> = {};
+    const selectedCatMap: Record<number, Record<string, string>> = {};
+    const existingCatMap: Record<number, Record<string, string>> = {};
     const detailMap: Record<
       number,
       Record<string, { quantity: string; unit: string; turnover: string }>
@@ -352,10 +379,11 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       }
 
       const spRows = await dbQuery(
-        `SELECT ur.id as registration_id, p.name as product_name
+        `SELECT ur.id as registration_id, p.name as product_name, pc.name as category_name
          FROM user_registrations ur
          LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
          LEFT JOIN products p ON usp.product_id = p.id
+         LEFT JOIN product_categories pc ON p.category_id = pc.id
          WHERE ur.id IN (${placeholders})
          ORDER BY ur.id, p.name`,
         regIds,
@@ -363,14 +391,17 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       for (const row of spRows as any[]) {
         if (row.product_name) {
           (selectedMap[row.registration_id] ||= []).push(row.product_name);
+          (selectedCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
 
       const epRows = await dbQuery(
-        `SELECT ur.id as registration_id, ep.name as product_name
+        `SELECT ur.id as registration_id, ep.name as product_name, pc.name as category_name
          FROM user_registrations ur
          LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
          LEFT JOIN products ep ON uep.product_id = ep.id
+         LEFT JOIN product_categories pc ON ep.category_id = pc.id
          WHERE ur.id IN (${placeholders})
          ORDER BY ur.id, ep.name`,
         regIds,
@@ -378,6 +409,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       for (const row of epRows as any[]) {
         if (row.product_name) {
           (existingMap[row.registration_id] ||= []).push(row.product_name);
+          (existingCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
     }
@@ -439,7 +472,6 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         reg.aadhar_number || "",
         reg.pan_number || "",
         reg.voter_id || "",
-        `"${reg.category_names || ""}"`,
       ];
 
       const fbParsed = parseQtyUnit(reg.annual_production);
@@ -455,7 +487,19 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          csvRows.push([...baseCommon, `"${prod}"`, qty, unit, turnover, ""]);
+          const cat =
+            (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
+            reg.category_names ||
+            "";
+          csvRows.push([
+            ...baseCommon,
+            `"${cat}"`,
+            `"${prod}"`,
+            qty,
+            unit,
+            turnover,
+            "",
+          ]);
         }
       }
 
@@ -470,8 +514,13 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const cat =
+            (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
+            reg.category_names ||
+            "";
           csvRows.push([
             ...baseCommon,
+            `"${cat}"`,
             "",
             qty,
             unit,
@@ -484,6 +533,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       if (existing.length === 0 && selected.length === 0) {
         csvRows.push([
           ...baseCommon,
+          `"${reg.category_names || ""}"`,
           "",
           (fbParsed.q || "").toString(),
           (fbParsed.u || "").toString(),
