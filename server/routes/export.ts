@@ -81,44 +81,64 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         .json({ error: "No registrations found in the specified date range" });
     }
 
-    // Build per-registration production summaries and first product detail from user_production_details
+    // Build maps for selected, existing products and per-product details
     const regIds = registrations.map((r: any) => r.id);
-    const productionSummaries: Record<number, string> = {};
-    const firstPD: Record<
+    const selectedMap: Record<number, string[]> = {};
+    const existingMap: Record<number, string[]> = {};
+    const detailMap: Record<
       number,
-      { quantity: string; unit: string; turnover: string }
+      Record<string, { quantity: string; unit: string; turnover: string }>
     > = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
-      const rows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
+      const pdRows = await dbQuery(
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover
          FROM user_production_details
          WHERE registration_id IN (${placeholders})
          ORDER BY registration_id, id`,
         regIds,
       );
-      const grouped: Record<number, string[]> = {};
-      for (const row of rows as any[]) {
-        const line = `${row.product_name}: ${row.annual_production}${row.unit ? " " + row.unit : ""}`;
-        (grouped[row.registration_id] ||= []).push(line);
-        if (!firstPD[row.registration_id]) {
-          firstPD[row.registration_id] = {
-            quantity: row.annual_production || "",
-            unit: row.unit || "",
-            turnover: row.annual_turnover || "",
-          };
+      for (const row of pdRows as any[]) {
+        const byProd = (detailMap[row.registration_id] ||= {});
+        byProd[row.product_name] = {
+          quantity: (row.annual_production || "").toString(),
+          unit: (row.unit || "").toString(),
+          turnover: (row.annual_turnover || "").toString(),
+        };
+      }
+      const spRows = await dbQuery(
+        `SELECT ur.id as registration_id, p.name as product_name
+         FROM user_registrations ur
+         LEFT JOIN user_selected_products usp ON ur.id = usp.registration_id
+         LEFT JOIN products p ON usp.product_id = p.id
+         WHERE ur.id IN (${placeholders})
+         ORDER BY ur.id, p.name`,
+        regIds,
+      );
+      for (const row of spRows as any[]) {
+        if (row.product_name) {
+          (selectedMap[row.registration_id] ||= []).push(row.product_name);
         }
       }
-      for (const idStr of Object.keys(grouped)) {
-        productionSummaries[Number(idStr)] = grouped[Number(idStr)].join("; ");
+      const epRows = await dbQuery(
+        `SELECT ur.id as registration_id, ep.name as product_name
+         FROM user_registrations ur
+         LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
+         LEFT JOIN products ep ON uep.product_id = ep.id
+         WHERE ur.id IN (${placeholders})
+         ORDER BY ur.id, ep.name`,
+        regIds,
+      );
+      for (const row of epRows as any[]) {
+        if (row.product_name) {
+          (existingMap[row.registration_id] ||= []).push(row.product_name);
+        }
       }
     }
 
     const parseQtyUnit = (val: any) => {
       if (!val) return { q: "", u: "" };
-      const m = String(val)
-        .trim()
-        .match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
       return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
     };
 
@@ -143,17 +163,22 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       "Future Products",
     ];
 
-    const csvRows = registrations.map((reg: any) => {
-      const first = firstPD[reg.id];
-      const fallback = parseQtyUnit(reg.annual_production);
-      const qty = (first?.quantity || fallback.q || "").toString();
-      const unit = (first?.unit || fallback.u || "").toString();
-      const turnover = (
-        first?.turnover ||
-        reg.annual_turnover ||
-        ""
-      ).toString();
-      return [
+    const csvRows: string[][] = [];
+    for (const reg of registrations as any[]) {
+      const selected =
+        selectedMap[reg.id] && selectedMap[reg.id].length > 0
+          ? selectedMap[reg.id]
+          : reg.selected_products
+            ? String(reg.selected_products).split(/\n|,\s*/)
+            : [];
+      const existing =
+        existingMap[reg.id] && existingMap[reg.id].length > 0
+          ? existingMap[reg.id]
+          : reg.existing_products
+            ? String(reg.existing_products).split(/\n|,\s*/)
+            : [];
+      const detailsForReg = detailMap[reg.id] || {};
+      const baseCommon = [
         new Date(reg.created_at).toLocaleDateString("en-GB"),
         reg.username || "",
         reg.id,
@@ -166,13 +191,62 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         reg.pan_number || "",
         reg.voter_id || "",
         `"${reg.category_names || ""}"`,
-        `"${reg.existing_products || ""}"`,
-        qty,
-        unit,
-        turnover,
-        `"${reg.selected_products || ""}"`,
       ];
-    });
+      const fbParsed = parseQtyUnit(reg.annual_production);
+
+      if (existing.length > 0) {
+        for (const prod of existing) {
+          const d = detailsForReg[prod] || {
+            quantity: "",
+            unit: "",
+            turnover: (reg.annual_turnover || "").toString(),
+          };
+          const qty = (d.quantity || fbParsed.q || "").toString();
+          const unit = (d.unit || fbParsed.u || "").toString();
+          const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          csvRows.push([
+            ...baseCommon,
+            `"${prod}"`,
+            qty,
+            unit,
+            turnover,
+            "",
+          ]);
+        }
+      }
+
+      if (selected.length > 0) {
+        for (const productName of selected) {
+          const d = detailsForReg[productName] || {
+            quantity: "",
+            unit: "",
+            turnover: (reg.annual_turnover || "").toString(),
+          };
+          const qty = (d.quantity || fbParsed.q || "").toString();
+          const unit = (d.unit || fbParsed.u || "").toString();
+          const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          csvRows.push([
+            ...baseCommon,
+            "",
+            qty,
+            unit,
+            turnover,
+            `"${productName}"`,
+          ]);
+        }
+      }
+
+      if (existing.length === 0 && selected.length === 0) {
+        csvRows.push([
+          ...baseCommon,
+          "",
+          (fbParsed.q || "").toString(),
+          (fbParsed.u || "").toString(),
+          (reg.annual_turnover || "").toString(),
+          "",
+        ]);
+      }
+    }
 
     const csvContent = [
       csvHeaders.join(","),
