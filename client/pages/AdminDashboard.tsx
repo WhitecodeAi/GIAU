@@ -219,15 +219,9 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       console.log("Fetching products...");
-      const response = await fetch("/api/products");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await productsAPI.getProducts();
       console.log("Products data:", data);
-      setProducts(data.products || []);
+      setProducts((data as any).products || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
       // Set empty products array to prevent UI issues
