@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { apiRequest } from "@/lib/api";
 
 interface UserWithStats {
   id: number;
