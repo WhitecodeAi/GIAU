@@ -5,19 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  LogOut, 
-  ArrowLeft, 
-  Search, 
-  Calendar, 
-  Eye, 
+import {
+  LogOut,
+  ArrowLeft,
+  Search,
+  Calendar,
+  Eye,
   Download,
   User,
   Phone,
   Mail,
   FileText,
   Building2,
-  Filter
+  Filter,
 } from "lucide-react";
 import { registrationsAPI, logout } from "@/lib/api";
 
@@ -134,7 +134,9 @@ export default function MyRegistrations() {
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
       const m = cd.match(/filename=\"?([^\";]+)\"?/);
-      const filename = m?.[1] || `registrations_by_${me?.username || "user"}_${new Date().toISOString().slice(0,10)}.csv`;
+      const filename =
+        m?.[1] ||
+        `registrations_by_${me?.username || "user"}_${new Date().toISOString().slice(0, 10)}.csv`;
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -163,13 +165,13 @@ export default function MyRegistrations() {
         "Reg. Date",
         "User name",
         "Reg. ID No",
-        "Name of AU Applicant", 
+        "Name of AU Applicant",
         "Age",
         "Gender",
         "email id",
         "Phone number",
         "Aadhar Card",
-        "Pan Card", 
+        "Pan Card",
         "Voter Id Card",
         "Categories",
         "Existing Products",
@@ -188,9 +190,10 @@ export default function MyRegistrations() {
 
       for (const r of filtered) {
         const regDate = new Date(r.created_at).toLocaleDateString("en-GB");
-        const categories = r.categories && r.categories.length
-          ? r.categories.map((c: any) => c.name).join(", ")
-          : r.category_names || r.category_name || "";
+        const categories =
+          r.categories && r.categories.length
+            ? r.categories.map((c: any) => c.name).join(", ")
+            : r.category_names || r.category_name || "";
 
         const selectedProducts = r.selected_products
           ? String(r.selected_products)
@@ -299,7 +302,10 @@ export default function MyRegistrations() {
                   <FileText className="w-6 h-6 text-primary" />
                   Registration Details - #{selected.id}
                 </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary border-primary/20"
+                >
                   <User className="w-3 h-3 mr-1" />
                   {user?.username}
                 </Badge>
@@ -311,22 +317,32 @@ export default function MyRegistrations() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <User className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Personal Information
+                    </h3>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <User className="w-4 h-4 text-gray-500" />
                       <div>
-                        <span className="text-sm font-medium text-gray-600">Full Name</span>
-                        <p className="font-semibold text-gray-900">{selected.name}</p>
+                        <span className="text-sm font-medium text-gray-600">
+                          Full Name
+                        </span>
+                        <p className="font-semibold text-gray-900">
+                          {selected.name}
+                        </p>
                       </div>
                     </div>
                     {selected.phone && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <Phone className="w-4 h-4 text-gray-500" />
                         <div>
-                          <span className="text-sm font-medium text-gray-600">Mobile Number</span>
-                          <p className="font-semibold text-gray-900">{selected.phone}</p>
+                          <span className="text-sm font-medium text-gray-600">
+                            Mobile Number
+                          </span>
+                          <p className="font-semibold text-gray-900">
+                            {selected.phone}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -334,8 +350,12 @@ export default function MyRegistrations() {
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <Mail className="w-4 h-4 text-gray-500" />
                         <div>
-                          <span className="text-sm font-medium text-gray-600">Email Address</span>
-                          <p className="font-semibold text-gray-900">{selected.email}</p>
+                          <span className="text-sm font-medium text-gray-600">
+                            Email Address
+                          </span>
+                          <p className="font-semibold text-gray-900">
+                            {selected.email}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -343,8 +363,12 @@ export default function MyRegistrations() {
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <FileText className="w-4 h-4 text-gray-500" />
                         <div>
-                          <span className="text-sm font-medium text-gray-600">Aadhar Number</span>
-                          <p className="font-semibold text-gray-900">{selected.aadhar_number}</p>
+                          <span className="text-sm font-medium text-gray-600">
+                            Aadhar Number
+                          </span>
+                          <p className="font-semibold text-gray-900">
+                            {selected.aadhar_number}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -352,8 +376,12 @@ export default function MyRegistrations() {
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <FileText className="w-4 h-4 text-gray-500" />
                         <div>
-                          <span className="text-sm font-medium text-gray-600">Voter ID</span>
-                          <p className="font-semibold text-gray-900">{selected.voter_id}</p>
+                          <span className="text-sm font-medium text-gray-600">
+                            Voter ID
+                          </span>
+                          <p className="font-semibold text-gray-900">
+                            {selected.voter_id}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -361,8 +389,12 @@ export default function MyRegistrations() {
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <FileText className="w-4 h-4 text-gray-500" />
                         <div>
-                          <span className="text-sm font-medium text-gray-600">PAN Number</span>
-                          <p className="font-semibold text-gray-900">{selected.pan_number}</p>
+                          <span className="text-sm font-medium text-gray-600">
+                            PAN Number
+                          </span>
+                          <p className="font-semibold text-gray-900">
+                            {selected.pan_number}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -373,11 +405,15 @@ export default function MyRegistrations() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Building2 className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold text-gray-900">Product Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Product Information
+                    </h3>
                   </div>
                   <div className="space-y-4">
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-600">Categories</span>
+                      <span className="text-sm font-medium text-gray-600">
+                        Categories
+                      </span>
                       {selected.categories && selected.categories.length > 0 ? (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {selected.categories.map((c) => (
@@ -392,7 +428,11 @@ export default function MyRegistrations() {
                         </div>
                       ) : selected.category_names || selected.category_name ? (
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {(selected.category_names || selected.category_name || "")
+                          {(
+                            selected.category_names ||
+                            selected.category_name ||
+                            ""
+                          )
                             .split(",")
                             .map((c, i) => (
                               <Badge
@@ -405,26 +445,40 @@ export default function MyRegistrations() {
                             ))}
                         </div>
                       ) : (
-                        <p className="text-gray-600 mt-1">No categories selected</p>
+                        <p className="text-gray-600 mt-1">
+                          No categories selected
+                        </p>
                       )}
                     </div>
                     {selected.existing_products && (
                       <div className="p-3 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-600">Existing Products</span>
-                        <p className="font-semibold text-gray-900 mt-1">{selected.existing_products}</p>
+                        <span className="text-sm font-medium text-gray-600">
+                          Existing Products
+                        </span>
+                        <p className="font-semibold text-gray-900 mt-1">
+                          {selected.existing_products}
+                        </p>
                       </div>
                     )}
                     {selected.selected_products && (
                       <div className="p-3 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-600">Selected Products</span>
-                        <p className="font-semibold text-gray-900 mt-1">{selected.selected_products}</p>
+                        <span className="text-sm font-medium text-gray-600">
+                          Selected Products
+                        </span>
+                        <p className="font-semibold text-gray-900 mt-1">
+                          {selected.selected_products}
+                        </p>
                       </div>
                     )}
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Calendar className="w-4 h-4 text-gray-500" />
                       <div>
-                        <span className="text-sm font-medium text-gray-600">Registration Date</span>
-                        <p className="font-semibold text-gray-900">{formatDate(selected.created_at)}</p>
+                        <span className="text-sm font-medium text-gray-600">
+                          Registration Date
+                        </span>
+                        <p className="font-semibold text-gray-900">
+                          {formatDate(selected.created_at)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -437,19 +491,24 @@ export default function MyRegistrations() {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-gray-900">Uploaded Documents</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Uploaded Documents
+                  </h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {selected.documentUrls?.aadharCard && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-gray-700 text-sm">Aadhar Card</h4>
+                      <h4 className="font-medium text-gray-700 text-sm">
+                        Aadhar Card
+                      </h4>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <img
                           src={selected.documentUrls.aadharCard}
                           alt="Aadhar Card"
                           className="w-full h-48 object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            (e.target as HTMLImageElement).src =
+                              "/placeholder.svg";
                           }}
                         />
                       </div>
@@ -457,14 +516,17 @@ export default function MyRegistrations() {
                   )}
                   {selected.documentUrls?.panCard && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-gray-700 text-sm">PAN Card</h4>
+                      <h4 className="font-medium text-gray-700 text-sm">
+                        PAN Card
+                      </h4>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <img
                           src={selected.documentUrls.panCard}
                           alt="PAN Card"
                           className="w-full h-48 object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            (e.target as HTMLImageElement).src =
+                              "/placeholder.svg";
                           }}
                         />
                       </div>
@@ -472,14 +534,17 @@ export default function MyRegistrations() {
                   )}
                   {selected.documentUrls?.proofOfProduction && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-gray-700 text-sm">Proof of Production</h4>
+                      <h4 className="font-medium text-gray-700 text-sm">
+                        Proof of Production
+                      </h4>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <img
                           src={selected.documentUrls.proofOfProduction}
                           alt="Proof of Production"
                           className="w-full h-48 object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            (e.target as HTMLImageElement).src =
+                              "/placeholder.svg";
                           }}
                         />
                       </div>
@@ -487,14 +552,17 @@ export default function MyRegistrations() {
                   )}
                   {selected.documentUrls?.signature && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-gray-700 text-sm">Digital Signature</h4>
+                      <h4 className="font-medium text-gray-700 text-sm">
+                        Digital Signature
+                      </h4>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <img
                           src={selected.documentUrls.signature}
                           alt="Signature"
                           className="w-full h-48 object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            (e.target as HTMLImageElement).src =
+                              "/placeholder.svg";
                           }}
                         />
                       </div>
@@ -502,14 +570,17 @@ export default function MyRegistrations() {
                   )}
                   {selected.documentUrls?.photo && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-gray-700 text-sm">Profile Photo</h4>
+                      <h4 className="font-medium text-gray-700 text-sm">
+                        Profile Photo
+                      </h4>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
                         <img
                           src={selected.documentUrls.photo}
                           alt="Profile Photo"
                           className="w-full h-48 object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            (e.target as HTMLImageElement).src =
+                              "/placeholder.svg";
                           }}
                         />
                       </div>
@@ -523,7 +594,9 @@ export default function MyRegistrations() {
                   !selected.documentUrls?.photo && (
                     <div className="text-center py-12 bg-gray-50 rounded-lg">
                       <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No documents uploaded for this registration.</p>
+                      <p className="text-gray-500">
+                        No documents uploaded for this registration.
+                      </p>
                     </div>
                   )}
               </div>
@@ -552,10 +625,15 @@ export default function MyRegistrations() {
               <div>
                 <div className="flex items-center gap-3">
                   <Building2 className="w-6 h-6 text-primary" />
-                  <h1 className="text-2xl font-bold text-gray-800">My Registrations</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    My Registrations
+                  </h1>
                 </div>
                 <p className="text-gray-600 mt-1">
-                  Registrations submitted by <span className="font-semibold">{user?.username ?? "you"}</span>
+                  Registrations submitted by{" "}
+                  <span className="font-semibold">
+                    {user?.username ?? "you"}
+                  </span>
                 </p>
               </div>
             </div>
@@ -599,7 +677,9 @@ export default function MyRegistrations() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Filter className="w-4 h-4" />
-                <span>{filtered.length} of {registrations.length} registrations</span>
+                <span>
+                  {filtered.length} of {registrations.length} registrations
+                </span>
               </div>
             </div>
           </CardContent>
@@ -611,7 +691,9 @@ export default function MyRegistrations() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-center py-12">
                 <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <span className="ml-3 text-gray-600">Loading registrations...</span>
+                <span className="ml-3 text-gray-600">
+                  Loading registrations...
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -624,12 +706,13 @@ export default function MyRegistrations() {
                   <CardContent className="pt-6">
                     <div className="text-center py-12">
                       <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-600 mb-2">No registrations found</h3>
+                      <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                        No registrations found
+                      </h3>
                       <p className="text-gray-500">
-                        {search 
+                        {search
                           ? "Try adjusting your search criteria"
-                          : "You haven't submitted any registrations yet"
-                        }
+                          : "You haven't submitted any registrations yet"}
                       </p>
                     </div>
                   </CardContent>
@@ -645,12 +728,14 @@ export default function MyRegistrations() {
                         <div className="flex-1 space-y-4">
                           <div className="flex items-center gap-3">
                             <User className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-semibold text-gray-900">{r.name}</h3>
+                            <h3 className="text-xl font-semibold text-gray-900">
+                              {r.name}
+                            </h3>
                             <Badge variant="outline" className="text-xs">
                               ID #{r.id}
                             </Badge>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {r.phone && (
                               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -672,7 +757,9 @@ export default function MyRegistrations() {
 
                           {/* Categories */}
                           <div className="space-y-2">
-                            <span className="text-sm font-medium text-gray-700">Categories:</span>
+                            <span className="text-sm font-medium text-gray-700">
+                              Categories:
+                            </span>
                             {r.categories && r.categories.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
                                 {r.categories.map((c: any) => (
@@ -687,7 +774,11 @@ export default function MyRegistrations() {
                               </div>
                             ) : (
                               <div className="flex flex-wrap gap-2">
-                                {(r.category_names || r.category_name || "No categories")
+                                {(
+                                  r.category_names ||
+                                  r.category_name ||
+                                  "No categories"
+                                )
                                   .split(",")
                                   .map((c, i) => (
                                     <Badge
