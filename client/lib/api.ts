@@ -1,6 +1,18 @@
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+// Compute possible API bases for different hosting environments
+function getApiBases(): string[] {
+  const bases: string[] = [];
+  const primary = API_BASE_URL;
+  bases.push(primary);
+  // Netlify functions fallback when primary relative "/api" isn't available
+  if (primary === "/api") {
+    bases.push("/.netlify/functions/api");
+  }
+  return bases;
+}
+
 // Get auth token from localStorage
 export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
