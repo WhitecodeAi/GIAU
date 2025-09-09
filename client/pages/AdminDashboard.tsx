@@ -114,11 +114,10 @@ export default function AdminDashboard() {
       const testConnectivity = async () => {
         try {
           console.log("Testing basic API connectivity...");
-          const response = await fetch("/api/ping");
-          if (!response.ok) {
-            throw new Error(`Ping failed: ${response.status}`);
+          const data = await apiRequest<{ message: string }>("/ping");
+          if (!data || typeof data.message !== "string") {
+            throw new Error("Ping failed: invalid response");
           }
-          const data = await response.json();
           console.log("Ping successful:", data);
           return true;
         } catch (error) {
