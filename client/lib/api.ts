@@ -498,9 +498,7 @@ export const dashboardAPI = {
       }>("/dashboard/statistics");
 
       return stats;
-    } catch (error) {
-      console.error("❌ Dashboard statistics error:", error);
-      // Return fallback data
+    } catch (_error) {
       return {
         totalRegistrations: 0,
         totalUsers: 0,
@@ -522,8 +520,7 @@ export const dashboardAPI = {
       >("/dashboard/activity");
 
       return activity;
-    } catch (error) {
-      console.error("❌ Recent activity error:", error);
+    } catch (_error) {
       return [];
     }
   },
