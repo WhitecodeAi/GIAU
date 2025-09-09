@@ -13,6 +13,9 @@ function getApiBases(): string[] {
   return bases;
 }
 
+// Global offline flag to avoid repeated failing fetch attempts
+let API_OFFLINE = false;
+
 // Get auth token from localStorage
 export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
