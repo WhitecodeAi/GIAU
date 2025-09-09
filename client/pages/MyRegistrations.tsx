@@ -268,9 +268,14 @@ export default function MyRegistrations() {
               <p className="text-gray-600">Registrations submitted by {user?.username ?? "you"}</p>
             </div>
           </div>
-          <Button variant="outline" onClick={logout} className="flex items-center gap-2">
-            <LogOut className="w-4 h-4" /> Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleExport} disabled={isExporting} className="btn-primary">
+              {isExporting ? "Exporting..." : "Export to Excel"}
+            </Button>
+            <Button variant="outline" onClick={logout} className="flex items-center gap-2">
+              <LogOut className="w-4 h-4" /> Logout
+            </Button>
+          </div>
         </div>
       </div>
 
