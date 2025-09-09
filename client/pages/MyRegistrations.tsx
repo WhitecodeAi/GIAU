@@ -100,6 +100,58 @@ export default function MyRegistrations() {
       minute: "2-digit",
     });
 
+  const handleExportServer = async () => {
+    try {
+      setIsExporting(true);
+      const stored = localStorage.getItem("user");
+      const me = stored ? JSON.parse(stored) : null;
+      const userId = me?.id ?? me?.userId;
+      if (!userId) {
+        alert("Unable to export: missing user id.");
+        return;
+      }
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("/api/registrations/export-by-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/csv",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!res.ok) {
+        let msg = "Export failed";
+        try {
+          const data = await res.json();
+          msg = (data as any)?.error || msg;
+        } catch {}
+        throw new Error(msg);
+      }
+
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const m = cd.match(/filename=\"?([^\";]+)\"?/);
+      const filename = m?.[1] || `registrations_by_${me?.username || "user"}_${new Date().toISOString().slice(0,10)}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Export failed. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleExport = async () => {
     try {
       setIsExporting(true);
@@ -219,7 +271,7 @@ export default function MyRegistrations() {
               </Button>
               <div className="flex items-center gap-3">
                 <Button
-                  onClick={handleExport}
+                  onClick={handleExportServer}
                   disabled={isExporting}
                   className="btn-primary flex items-center gap-2"
                 >
@@ -509,7 +561,7 @@ export default function MyRegistrations() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={handleExport}
+                onClick={handleExportServer}
                 disabled={isExporting || filtered.length === 0}
                 className="btn-primary flex items-center gap-2"
               >
