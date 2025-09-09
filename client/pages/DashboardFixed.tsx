@@ -58,6 +58,10 @@ export default function DashboardFixed() {
     }
   };
 
+  const handleViewByUser = () => {
+    window.location.href = "/admin/users";
+  };
+
   const handleGenerateReports = () => {
     navigate("/reports");
   };
