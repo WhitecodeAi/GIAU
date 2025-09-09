@@ -138,9 +138,19 @@ export default function MyRegistrations() {
             <Button variant="outline" onClick={() => setSelected(null)} className="flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" /> Back to My Registrations
             </Button>
-            <Button variant="outline" onClick={logout} className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" /> Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleExport} disabled={isExporting} className="btn-primary">
+                {isExporting ? "Exporting..." : "Export to Excel"}
+              </Button>
+              <div className="flex items-center gap-2">
+              <Button onClick={handleExport} disabled={isExporting} className="btn-primary">
+                {isExporting ? "Exporting..." : "Export to Excel"}
+              </Button>
+              <Button variant="outline" onClick={logout} className="flex items-center gap-2">
+                <LogOut className="w-4 h-4" /> Logout
+              </Button>
+            </div>
+            </div>
           </div>
 
           <Card>
