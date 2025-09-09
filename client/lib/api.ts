@@ -44,20 +44,22 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
 // Internal helper to try multiple API base URLs
 async function fetchWithFallback(endpoint: string, options: RequestInit): Promise<Response> {
   const bases = getApiBases();
-  let lastError: any = null;
 
   for (const base of bases) {
     const url = `${base}${endpoint}`;
     try {
       const res = await fetch(url, options);
       return res;
-    } catch (err) {
-      lastError = err;
+    } catch {
       // Try next base on network-level failure only
       continue;
     }
   }
-  throw new Error("Failed to fetch");
+  // No base reachable: return a synthetic error response to avoid network TypeError
+  return new Response(
+    JSON.stringify({ error: "Service unavailable" }),
+    { status: 503, headers: { "Content-Type": "application/json" } },
+  );
 }
 
 // Generic API request function
