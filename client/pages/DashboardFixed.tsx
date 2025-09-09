@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { dashboardAPI, registrationsAPI, logout } from "@/lib/api";
 
 export default function DashboardFixed() {
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     totalUsers: 0,
@@ -13,6 +16,12 @@ export default function DashboardFixed() {
 
   useEffect(() => {
     fetchDashboardData();
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        setCurrentUser(JSON.parse(userData));
+      } catch {}
+    }
   }, []);
 
   const fetchDashboardData = async () => {
@@ -39,31 +48,31 @@ export default function DashboardFixed() {
   };
 
   const handleNewRegistration = () => {
-    window.location.href = "/registration";
+    navigate("/registration");
   };
 
   const handleViewRegistrations = () => {
-    window.location.href = "/registrations";
+    navigate("/registrations");
   };
 
   const handleViewRegistrationsByUser = () => {
-    window.location.href = "/admin/users";
+    navigate("/admin/users");
   };
 
   const handleGenerateReports = () => {
-    window.location.href = "/reports";
+    navigate("/reports");
   };
 
   const handleCompressionTest = () => {
-    window.location.href = "/compression-test";
+    navigate("/compression-test");
   };
 
   const handleTestUpload = () => {
-    window.location.href = "/test-upload";
+    navigate("/test-upload");
   };
 
   const handleSimpleTest = () => {
-    window.location.href = "/test-simple";
+    navigate("/test-simple");
   };
 
   if (loading) {
@@ -202,12 +211,14 @@ export default function DashboardFixed() {
               >
                 View All Registrations
               </button>
-              <button
-                onClick={handleViewRegistrationsByUser}
-                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                View Registrations by User
-              </button>
+              {currentUser?.role === "admin" && (
+                <button
+                  onClick={handleViewRegistrationsByUser}
+                  className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  View Registrations by User
+                </button>
+              )}
               {/* <button
                 onClick={handleCompressionTest}
                 className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors"
