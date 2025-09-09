@@ -89,12 +89,12 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
     const existingCatMap: Record<number, Record<string, string>> = {};
     const detailMap: Record<
       number,
-      Record<string, { quantity: string; unit: string; turnover: string }>
+      Record<string, { quantity: string; unit: string; turnover: string; turnoverUnit: string }>
     > = {};
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const pdRows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit, annual_turnover
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
          FROM user_production_details
          WHERE registration_id IN (${placeholders})
          ORDER BY registration_id, id`,
@@ -106,6 +106,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           quantity: (row.annual_production || "").toString(),
           unit: (row.unit || "").toString(),
           turnover: (row.annual_turnover || "").toString(),
+          turnoverUnit: (row.turnover_unit || "").toString(),
         };
       }
       const spRows = await dbQuery(
@@ -169,7 +170,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       "Existing Products",
       "Annual Production Quantity",
       "Annual production type",
-      "Annual Turnover",
+      "Annual Turnover","Annual Turnover Unit",
       "Future Products",
     ];
 
@@ -209,10 +210,12 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
             quantity: "",
             unit: "",
             turnover: (reg.annual_turnover || "").toString(),
+            turnoverUnit: (reg.turnover_unit || "").toString(),
           };
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const turnoverUnit = (d.turnoverUnit || reg.turnover_unit || "").toString();
           const cat =
             (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
             reg.category_names ||
@@ -224,6 +227,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
             qty,
             unit,
             turnover,
+            turnoverUnit,
             "",
           ]);
         }
@@ -235,10 +239,12 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
             quantity: "",
             unit: "",
             turnover: (reg.annual_turnover || "").toString(),
+            turnoverUnit: (reg.turnover_unit || "").toString(),
           };
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const turnoverUnit = (d.turnoverUnit || reg.turnover_unit || "").toString();
           const cat =
             (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
             reg.category_names ||
@@ -250,6 +256,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
             qty,
             unit,
             turnover,
+            turnoverUnit,
             `"${productName}"`,
           ]);
         }
@@ -263,6 +270,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           (fbParsed.q || "").toString(),
           (fbParsed.u || "").toString(),
           (reg.annual_turnover || "").toString(),
+          (reg.turnover_unit || "").toString(),
           "",
         ]);
       }
@@ -357,13 +365,13 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     const existingCatMap: Record<number, Record<string, string>> = {};
     const detailMap: Record<
       number,
-      Record<string, { quantity: string; unit: string; turnover: string }>
+      Record<string, { quantity: string; unit: string; turnover: string; turnoverUnit: string }>
     > = {};
 
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
       const pdRows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit, annual_turnover
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
          FROM user_production_details
          WHERE registration_id IN (${placeholders})
          ORDER BY registration_id, id`,
@@ -375,6 +383,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           quantity: (row.annual_production || "").toString(),
           unit: (row.unit || "").toString(),
           turnover: (row.annual_turnover || "").toString(),
+          turnoverUnit: (row.turnover_unit || "").toString(),
         };
       }
 
@@ -440,7 +449,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       "Existing Products",
       "Annual Production Quantity",
       "Annual production type",
-      "Annual Turnover",
+      "Annual Turnover","Annual Turnover Unit",
       "Future Products",
     ];
 
@@ -483,10 +492,12 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
             quantity: "",
             unit: "",
             turnover: (reg.annual_turnover || "").toString(),
+            turnoverUnit: (reg.turnover_unit || "").toString(),
           };
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const turnoverUnit = (d.turnoverUnit || reg.turnover_unit || "").toString();
           const cat =
             (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
             reg.category_names ||
@@ -498,6 +509,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
             qty,
             unit,
             turnover,
+            turnoverUnit,
             "",
           ]);
         }
@@ -510,10 +522,12 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
             quantity: "",
             unit: "",
             turnover: (reg.annual_turnover || "").toString(),
+            turnoverUnit: (reg.turnover_unit || "").toString(),
           };
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          const turnoverUnit = (d.turnoverUnit || reg.turnover_unit || "").toString();
           const cat =
             (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
             reg.category_names ||
@@ -525,6 +539,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
             qty,
             unit,
             turnover,
+            turnoverUnit,
             `"${productName}"`,
           ]);
         }
@@ -538,6 +553,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           (fbParsed.q || "").toString(),
           (fbParsed.u || "").toString(),
           (reg.annual_turnover || "").toString(),
+          (reg.turnover_unit || "").toString(),
           "",
         ]);
       }
@@ -634,7 +650,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
     if (regIds.length > 0) {
       const ph = regIds.map(() => "?").join(",");
       const rows = await dbQuery(
-        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit
+        `SELECT registration_id, product_name, annual_production, unit, annual_turnover, turnover_unit, turnover_unit
          FROM user_production_details
          WHERE registration_id IN (${ph})
          ORDER BY registration_id, id`,
@@ -682,7 +698,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       "Existing Products",
       "Annual Production Quantity",
       "Annual production type",
-      "Annual Turnover",
+      "Annual Turnover","Annual Turnover Unit",
       "Future Products",
     ];
 
