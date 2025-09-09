@@ -138,7 +138,9 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
 
     const parseQtyUnit = (val: any) => {
       if (!val) return { q: "", u: "" };
-      const m = String(val).trim().match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
+      const m = String(val)
+        .trim()
+        .match(/^(\d+(?:\.\d+)?)(?:\s*(.*))?$/);
       return { q: (m && m[1]) || String(val), u: (m && m[2]) || "" };
     };
 
@@ -204,14 +206,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          csvRows.push([
-            ...baseCommon,
-            `"${prod}"`,
-            qty,
-            unit,
-            turnover,
-            "",
-          ]);
+          csvRows.push([...baseCommon, `"${prod}"`, qty, unit, turnover, ""]);
         }
       }
 
