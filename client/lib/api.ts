@@ -45,12 +45,15 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
 }
 
 // Internal helper to try multiple API base URLs
-async function fetchWithFallback(endpoint: string, options: RequestInit): Promise<Response> {
+async function fetchWithFallback(
+  endpoint: string,
+  options: RequestInit,
+): Promise<Response> {
   if (API_OFFLINE) {
-    return new Response(
-      JSON.stringify({ error: "Service unavailable" }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Service unavailable" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const bases = getApiBases();
@@ -69,10 +72,10 @@ async function fetchWithFallback(endpoint: string, options: RequestInit): Promis
   }
   // No base reachable: set offline and return synthetic error response
   API_OFFLINE = true;
-  return new Response(
-    JSON.stringify({ error: "Service unavailable" }),
-    { status: 503, headers: { "Content-Type": "application/json" } },
-  );
+  return new Response(JSON.stringify({ error: "Service unavailable" }), {
+    status: 503,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 // Generic API request function
@@ -310,7 +313,6 @@ export const registrationsAPI = {
         }
         throw new Error(msg);
       }
-
 
       if (!res.ok) {
         let msg = "Network error";

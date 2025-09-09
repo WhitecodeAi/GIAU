@@ -68,7 +68,10 @@ export default function UsersManagement() {
         limit: String(10),
       });
       if (searchTerm) params.set("search", searchTerm);
-      const data = await apiRequest<{ users: UserWithStats[]; pagination: Pagination }>(`/users?${params.toString()}`);
+      const data = await apiRequest<{
+        users: UserWithStats[];
+        pagination: Pagination;
+      }>(`/users?${params.toString()}`);
       setUsers((data as any).users || []);
       setPagination((data as any).pagination);
     } catch (error) {

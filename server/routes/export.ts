@@ -258,7 +258,10 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     // Build maps for selected products and per-product details
     const regIds = registrations.map((r: any) => r.id);
     const selectedMap: Record<number, string[]> = {};
-    const detailMap: Record<number, Record<string, { quantity: string; unit: string; turnover: string }>> = {};
+    const detailMap: Record<
+      number,
+      Record<string, { quantity: string; unit: string; turnover: string }>
+    > = {};
 
     if (regIds.length > 0) {
       const placeholders = regIds.map(() => "?").join(",");
@@ -325,9 +328,12 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const csvRows: string[][] = [];
     for (const reg of registrations as any[]) {
-      const selected = selectedMap[reg.id] && selectedMap[reg.id].length > 0
-        ? selectedMap[reg.id]
-        : (reg.selected_products ? String(reg.selected_products).split(/\n|,\s*/) : []);
+      const selected =
+        selectedMap[reg.id] && selectedMap[reg.id].length > 0
+          ? selectedMap[reg.id]
+          : reg.selected_products
+            ? String(reg.selected_products).split(/\n|,\s*/)
+            : [];
       const detailsForReg = detailMap[reg.id] || {};
 
       const base = [
@@ -359,18 +365,16 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       }
 
       for (const productName of selected) {
-        const d = detailsForReg[productName] || { quantity: "", unit: "", turnover: (reg.annual_turnover || "").toString() };
+        const d = detailsForReg[productName] || {
+          quantity: "",
+          unit: "",
+          turnover: (reg.annual_turnover || "").toString(),
+        };
         const fb = parseQtyUnit(reg.annual_production);
         const qty = (d.quantity || fb.q || "").toString();
         const unit = (d.unit || fb.u || "").toString();
         const turnover = (d.turnover || reg.annual_turnover || "").toString();
-        csvRows.push([
-          ...base,
-          qty,
-          unit,
-          turnover,
-          `"${productName}"`,
-        ]);
+        csvRows.push([...base, qty, unit, turnover, `"${productName}"`]);
       }
     }
 

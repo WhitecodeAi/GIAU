@@ -28,7 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { dashboardAPI, registrationsAPI, apiRequest, productsAPI } from "@/lib/api";
+import {
+  dashboardAPI,
+  registrationsAPI,
+  apiRequest,
+  productsAPI,
+} from "@/lib/api";
 
 interface Registration {
   id: number;
@@ -206,7 +211,9 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       console.log("Fetching users...");
-      const data = await apiRequest<{ users: UserForDropdown[] }>("/users/dropdown");
+      const data = await apiRequest<{ users: UserForDropdown[] }>(
+        "/users/dropdown",
+      );
       console.log("Users data:", data);
       setUsers((data as any).users || []);
     } catch (error) {
