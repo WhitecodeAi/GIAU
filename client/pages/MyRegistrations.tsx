@@ -36,6 +36,7 @@ export default function MyRegistrations() {
   const [registrations, setRegistrations] = useState<RegistrationItem[]>([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<RegistrationItem | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
