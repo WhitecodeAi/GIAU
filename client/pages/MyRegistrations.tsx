@@ -83,52 +83,56 @@ export default function MyRegistrations() {
     });
 
   const handleExport = async () => {
-    const stored = localStorage.getItem("user");
-    if (!stored) {
-      navigate("/");
-      return;
-    }
-    const me = JSON.parse(stored);
-    const userId = me?.id;
-    if (!userId) return;
-    setIsExporting(true);
-    const bases = [
-      (import.meta as any).env?.VITE_API_URL || "/api",
-      "/.netlify/functions/api",
-    ];
-    let success = false;
-    for (const base of bases) {
-      try {
-        const res = await fetch(`${base}/registrations/export-by-user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        });
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          // rely on server filename when possible
-          const cd = res.headers.get("Content-Disposition") || "";
-          const m = cd.match(/filename="?([^";]+)"?/i);
-          a.download =
-            m?.[1] ||
-            `my_registrations_${new Date().toISOString().slice(0, 10)}.csv`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-          success = true;
-          break;
-        }
-      } catch {
-        // try next base
-      }
-    }
-    setIsExporting(false);
-    if (!success) {
-      alert("Export failed. Please try again later.");
+    try {
+      setIsExporting(true);
+      const stored = localStorage.getItem("user");
+      const me = stored ? JSON.parse(stored) : null;
+      const username = me?.username || "";
+
+      // Build CSV from the CURRENT SCREEN (filtered list)
+      const headers = [
+        "Reg. Date",
+        "User name",
+        "Reg. ID No",
+        "Name of AU Applicant",
+        "Mobile Number",
+        "Categories",
+      ];
+
+      const escape = (val: any) => {
+        const s = val == null ? "" : String(val);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+
+      const rows = filtered.map((r) => {
+        const regDate = new Date(r.created_at).toLocaleDateString("en-GB");
+        const categories = (r as any).categories && (r as any).categories.length
+          ? (r as any).categories.map((c: any) => c.name).join(", ")
+          : (r.category_names || r.category_name || "");
+        return [
+          regDate,
+          username,
+          r.id,
+          r.name,
+          r.phone || "",
+          categories,
+        ].map(escape).join(",");
+      });
+
+      const csv = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `my_registrations_view_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (_e) {
+      alert("Export failed. Please try again.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
