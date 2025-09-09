@@ -386,14 +386,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          csvRows.push([
-            ...baseCommon,
-            `"${prod}"`,
-            qty,
-            unit,
-            turnover,
-            "",
-          ]);
+          csvRows.push([...baseCommon, `"${prod}"`, qty, unit, turnover, ""]);
         }
       }
 
