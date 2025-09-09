@@ -36,8 +36,8 @@ export default function DashboardFixed() {
 
       setStats(statsData);
       setRecentActivity(activityData);
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+    } catch (_error) {
+      // Silent fallback: UI will show zeros/empty lists
     } finally {
       setLoading(false);
     }
