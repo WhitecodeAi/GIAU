@@ -255,9 +255,10 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         .json({ error: "No registrations found for this user" });
     }
 
-    // Build maps for selected products and per-product details
+    // Build maps for selected, existing products and per-product details
     const regIds = registrations.map((r: any) => r.id);
     const selectedMap: Record<number, string[]> = {};
+    const existingMap: Record<number, string[]> = {};
     const detailMap: Record<
       number,
       Record<string, { quantity: string; unit: string; turnover: string }>
@@ -293,6 +294,21 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       for (const row of spRows as any[]) {
         if (row.product_name) {
           (selectedMap[row.registration_id] ||= []).push(row.product_name);
+        }
+      }
+
+      const epRows = await dbQuery(
+        `SELECT ur.id as registration_id, ep.name as product_name
+         FROM user_registrations ur
+         LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
+         LEFT JOIN products ep ON uep.product_id = ep.id
+         WHERE ur.id IN (${placeholders})
+         ORDER BY ur.id, ep.name`,
+        regIds,
+      );
+      for (const row of epRows as any[]) {
+        if (row.product_name) {
+          (existingMap[row.registration_id] ||= []).push(row.product_name);
         }
       }
     }
@@ -334,9 +350,15 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           : reg.selected_products
             ? String(reg.selected_products).split(/\n|,\s*/)
             : [];
+      const existing =
+        existingMap[reg.id] && existingMap[reg.id].length > 0
+          ? existingMap[reg.id]
+          : reg.existing_products
+            ? String(reg.existing_products).split(/\n|,\s*/)
+            : [];
       const detailsForReg = detailMap[reg.id] || {};
 
-      const base = [
+      const baseCommon = [
         new Date(reg.created_at).toLocaleDateString("en-GB"),
         user.username || "",
         reg.id,
@@ -349,32 +371,56 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         reg.pan_number || "",
         reg.voter_id || "",
         `"${reg.category_names || ""}"`,
-        `"${reg.existing_products || ""}"`,
       ];
 
-      if (selected.length === 0) {
-        const fb = parseQtyUnit(reg.annual_production);
+      const fbParsed = parseQtyUnit(reg.annual_production);
+
+      // Existing products rows
+      if (existing.length > 0) {
+        for (const prod of existing) {
+          const d = detailsForReg[prod] || {
+            quantity: "",
+            unit: "",
+            turnover: (reg.annual_turnover || "").toString(),
+          };
+          const qty = (d.quantity || fbParsed.q || "").toString();
+          const unit = (d.unit || fbParsed.u || "").toString();
+          const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          csvRows.push([...baseCommon, `"${prod}"`, qty, unit, turnover, ""]);
+        }
+      }
+
+      // Future (selected) products rows
+      if (selected.length > 0) {
+        for (const productName of selected) {
+          const d = detailsForReg[productName] || {
+            quantity: "",
+            unit: "",
+            turnover: (reg.annual_turnover || "").toString(),
+          };
+          const qty = (d.quantity || fbParsed.q || "").toString();
+          const unit = (d.unit || fbParsed.u || "").toString();
+          const turnover = (d.turnover || reg.annual_turnover || "").toString();
+          csvRows.push([
+            ...baseCommon,
+            "",
+            qty,
+            unit,
+            turnover,
+            `"${productName}"`,
+          ]);
+        }
+      }
+
+      if (existing.length === 0 && selected.length === 0) {
         csvRows.push([
-          ...base,
-          fb.q.toString(),
-          fb.u.toString(),
+          ...baseCommon,
+          "",
+          (fbParsed.q || "").toString(),
+          (fbParsed.u || "").toString(),
           (reg.annual_turnover || "").toString(),
           "",
         ]);
-        continue;
-      }
-
-      for (const productName of selected) {
-        const d = detailsForReg[productName] || {
-          quantity: "",
-          unit: "",
-          turnover: (reg.annual_turnover || "").toString(),
-        };
-        const fb = parseQtyUnit(reg.annual_production);
-        const qty = (d.quantity || fb.q || "").toString();
-        const unit = (d.unit || fb.u || "").toString();
-        const turnover = (d.turnover || reg.annual_turnover || "").toString();
-        csvRows.push([...base, qty, unit, turnover, `"${productName}"`]);
       }
     }
 
