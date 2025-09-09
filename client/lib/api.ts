@@ -275,7 +275,7 @@ export const registrationsAPI = {
     }
 
     const postOnce = async () => {
-      const res = await fetch(`${API_BASE_URL}/registrations`, {
+      const res = await fetchWithFallback(`/registrations`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
