@@ -56,7 +56,7 @@ export default function DashboardFixed() {
   };
 
   const handleViewRegistrationsByUser = () => {
-    navigate("/admin/users");
+    navigate("/my-registrations");
   };
 
   const handleGenerateReports = () => {
