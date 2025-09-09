@@ -109,7 +109,7 @@ export default function MyRegistrations() {
           body: JSON.stringify({
             userId,
             // Pass filtered registration IDs to only export current view
-            registrationIds: filtered.map(r => r.id)
+            registrationIds: filtered.map((r) => r.id),
           }),
         });
         if (res.ok) {

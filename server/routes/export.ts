@@ -214,7 +214,11 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
     let whereClause = "WHERE ur.user_id = ?";
     let queryParams = [userId];
 
-    if (registrationIds && Array.isArray(registrationIds) && registrationIds.length > 0) {
+    if (
+      registrationIds &&
+      Array.isArray(registrationIds) &&
+      registrationIds.length > 0
+    ) {
       const placeholders = registrationIds.map(() => "?").join(",");
       whereClause += ` AND ur.id IN (${placeholders})`;
       queryParams.push(...registrationIds);
