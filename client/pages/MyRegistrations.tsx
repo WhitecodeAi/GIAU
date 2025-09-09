@@ -82,6 +82,54 @@ export default function MyRegistrations() {
       minute: "2-digit",
     });
 
+  const handleExport = async () => {
+    const stored = localStorage.getItem("user");
+    if (!stored) {
+      navigate("/");
+      return;
+    }
+    const me = JSON.parse(stored);
+    const userId = me?.id;
+    if (!userId) return;
+    setIsExporting(true);
+    const bases = [
+      (import.meta as any).env?.VITE_API_URL || "/api",
+      "/.netlify/functions/api",
+    ];
+    let success = false;
+    for (const base of bases) {
+      try {
+        const res = await fetch(`${base}/registrations/export-by-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          // rely on server filename when possible
+          const cd = res.headers.get("Content-Disposition") || "";
+          const m = cd.match(/filename="?([^";]+)"?/i);
+          a.download = m?.[1] || `my_registrations_${new Date().toISOString().slice(0,10)}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          success = true;
+          break;
+        }
+      } catch {
+        // try next base
+      }
+    }
+    setIsExporting(false);
+    if (!success) {
+      alert("Export failed. Please try again later.");
+    }
+  };
+
   if (selected) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
