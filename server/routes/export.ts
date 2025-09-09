@@ -192,7 +192,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
 
 export async function exportRegistrationsByUser(req: Request, res: Response) {
   try {
-    const { userId } = req.body;
+    const { userId, registrationIds } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -210,7 +210,17 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const user = userResult[0];
 
-    // Fetch all registrations for this user (including production fields)
+    // Build WHERE clause - filter by user and optionally by specific registration IDs
+    let whereClause = "WHERE ur.user_id = ?";
+    let queryParams = [userId];
+
+    if (registrationIds && Array.isArray(registrationIds) && registrationIds.length > 0) {
+      const placeholders = registrationIds.map(() => "?").join(",");
+      whereClause += ` AND ur.id IN (${placeholders})`;
+      queryParams.push(...registrationIds);
+    }
+
+    // Fetch registrations for this user (including production fields)
     const registrations = await dbQuery(
       `
       SELECT
@@ -242,11 +252,11 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       LEFT JOIN products p ON usp.product_id = p.id
       LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
       LEFT JOIN products ep ON uep.product_id = ep.id
-      WHERE ur.user_id = ?
+      ${whereClause}
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
     `,
-      [userId],
+      queryParams,
     );
 
     if (registrations.length === 0) {
