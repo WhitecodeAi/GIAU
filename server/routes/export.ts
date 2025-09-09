@@ -121,7 +121,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       for (const row of spRows as any[]) {
         if (row.product_name) {
           (selectedMap[row.registration_id] ||= []).push(row.product_name);
-          (selectedCatMap[row.registration_id] ||= {})[row.product_name] = row.category_name || "";
+          (selectedCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
       const epRows = await dbQuery(
@@ -137,7 +138,8 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       for (const row of epRows as any[]) {
         if (row.product_name) {
           (existingMap[row.registration_id] ||= []).push(row.product_name);
-          (existingCatMap[row.registration_id] ||= {})[row.product_name] = row.category_name || "";
+          (existingCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
     }
@@ -211,8 +213,19 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          const cat = (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) || (reg.category_names || "");
-          csvRows.push([...baseCommon, `"${cat}"`, `"${prod}"`, qty, unit, turnover, ""]);
+          const cat =
+            (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
+            reg.category_names ||
+            "";
+          csvRows.push([
+            ...baseCommon,
+            `"${cat}"`,
+            `"${prod}"`,
+            qty,
+            unit,
+            turnover,
+            "",
+          ]);
         }
       }
 
@@ -226,7 +239,10 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          const cat = (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) || (reg.category_names || "");
+          const cat =
+            (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
+            reg.category_names ||
+            "";
           csvRows.push([
             ...baseCommon,
             `"${cat}"`,
@@ -375,7 +391,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       for (const row of spRows as any[]) {
         if (row.product_name) {
           (selectedMap[row.registration_id] ||= []).push(row.product_name);
-          (selectedCatMap[row.registration_id] ||= {})[row.product_name] = row.category_name || "";
+          (selectedCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
 
@@ -392,7 +409,8 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       for (const row of epRows as any[]) {
         if (row.product_name) {
           (existingMap[row.registration_id] ||= []).push(row.product_name);
-          (existingCatMap[row.registration_id] ||= {})[row.product_name] = row.category_name || "";
+          (existingCatMap[row.registration_id] ||= {})[row.product_name] =
+            row.category_name || "";
         }
       }
     }
@@ -469,8 +487,19 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          const cat = (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) || (reg.category_names || "");
-          csvRows.push([...baseCommon, `"${cat}"`, `"${prod}"`, qty, unit, turnover, ""]);
+          const cat =
+            (existingCatMap[reg.id] && existingCatMap[reg.id][prod]) ||
+            reg.category_names ||
+            "";
+          csvRows.push([
+            ...baseCommon,
+            `"${cat}"`,
+            `"${prod}"`,
+            qty,
+            unit,
+            turnover,
+            "",
+          ]);
         }
       }
 
@@ -485,7 +514,10 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
           const qty = (d.quantity || fbParsed.q || "").toString();
           const unit = (d.unit || fbParsed.u || "").toString();
           const turnover = (d.turnover || reg.annual_turnover || "").toString();
-          const cat = (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) || (reg.category_names || "");
+          const cat =
+            (selectedCatMap[reg.id] && selectedCatMap[reg.id][productName]) ||
+            reg.category_names ||
+            "";
           csvRows.push([
             ...baseCommon,
             `"${cat}"`,
