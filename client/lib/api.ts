@@ -46,19 +46,29 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
 
 // Internal helper to try multiple API base URLs
 async function fetchWithFallback(endpoint: string, options: RequestInit): Promise<Response> {
+  if (API_OFFLINE) {
+    return new Response(
+      JSON.stringify({ error: "Service unavailable" }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const bases = getApiBases();
 
   for (const base of bases) {
     const url = `${base}${endpoint}`;
     try {
       const res = await fetch(url, options);
+      // If we reached here, network worked; clear offline flag
+      API_OFFLINE = false;
       return res;
     } catch {
       // Try next base on network-level failure only
       continue;
     }
   }
-  // No base reachable: return a synthetic error response to avoid network TypeError
+  // No base reachable: set offline and return synthetic error response
+  API_OFFLINE = true;
   return new Response(
     JSON.stringify({ error: "Service unavailable" }),
     { status: 503, headers: { "Content-Type": "application/json" } },
