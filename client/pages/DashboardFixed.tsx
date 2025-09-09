@@ -46,6 +46,10 @@ export default function DashboardFixed() {
     window.location.href = "/registrations";
   };
 
+  const handleViewRegistrationsByUser = () => {
+    window.location.href = "/admin/users";
+  };
+
   const handleGenerateReports = () => {
     window.location.href = "/reports";
   };
