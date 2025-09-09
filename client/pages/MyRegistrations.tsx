@@ -107,7 +107,7 @@ export default function MyRegistrations() {
         "Annual Production Quantity",
         "Annual production type",
         "Annual Turnover",
-        "Future Products"
+        "Future Products",
       ];
 
       const escape = (val: any) => {
@@ -119,13 +119,17 @@ export default function MyRegistrations() {
 
       for (const r of filtered) {
         const regDate = new Date(r.created_at).toLocaleDateString("en-GB");
-        const categories = (r as any).categories && (r as any).categories.length
-          ? (r as any).categories.map((c: any) => c.name).join(", ")
-          : (r.category_names || r.category_name || "");
+        const categories =
+          (r as any).categories && (r as any).categories.length
+            ? (r as any).categories.map((c: any) => c.name).join(", ")
+            : r.category_names || r.category_name || "";
 
         // Get selected products - split by comma or newline
         const selectedProducts = r.selected_products
-          ? String(r.selected_products).split(/[,\n]/).map(p => p.trim()).filter(p => p)
+          ? String(r.selected_products)
+              .split(/[,\n]/)
+              .map((p) => p.trim())
+              .filter((p) => p)
           : [];
 
         // Base row data (same for all product rows)
@@ -145,7 +149,7 @@ export default function MyRegistrations() {
           r.existing_products || "",
           "", // annual production quantity - not available in current interface
           "", // annual production type - not available in current interface
-          "" // annual turnover - not available in current interface
+          "", // annual turnover - not available in current interface
         ];
 
         if (selectedProducts.length === 0) {
@@ -164,7 +168,7 @@ export default function MyRegistrations() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `my_registrations_detailed_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `my_registrations_detailed_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
