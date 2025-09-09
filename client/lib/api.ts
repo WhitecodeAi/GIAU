@@ -61,7 +61,7 @@ async function fetchWithFallback(endpoint: string, options: RequestInit): Promis
 }
 
 // Generic API request function
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   includeContentType = true,
