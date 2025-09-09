@@ -202,6 +202,12 @@ export default function DashboardFixed() {
               >
                 View All Registrations
               </button>
+              <button
+                onClick={handleViewRegistrationsByUser}
+                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                View Registrations by User
+              </button>
               {/* <button
                 onClick={handleCompressionTest}
                 className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors"
