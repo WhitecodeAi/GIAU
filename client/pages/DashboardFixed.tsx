@@ -4,6 +4,7 @@ import { dashboardAPI, registrationsAPI, logout } from "@/lib/api";
 
 export default function DashboardFixed() {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     totalUsers: 0,
@@ -15,22 +16,25 @@ export default function DashboardFixed() {
 
   useEffect(() => {
     fetchDashboardData();
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        setCurrentUser(JSON.parse(userData));
+      } catch {}
+    }
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      
       const [statsData, activityData] = await Promise.all([
         dashboardAPI.getStatistics(),
         dashboardAPI.getRecentActivity(),
       ]);
 
-    
-
       setStats(statsData);
       setRecentActivity(activityData);
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+    } catch (_error) {
+      // Silent fallback: UI will show zeros/empty lists
     } finally {
       setLoading(false);
     }
@@ -48,17 +52,8 @@ export default function DashboardFixed() {
     navigate("/registrations");
   };
 
-  const handleViewByUser = () => {
-    try {
-      const raw = localStorage.getItem("user");
-      if (!raw) return navigate("/admin/users");
-      const u = JSON.parse(raw);
-      if (u?.role === "admin") return navigate("/admin/users");
-      if (u?.id) return navigate(`/admin/users/${u.id}/registrations`);
-      navigate("/admin/users");
-    } catch {
-      navigate("/admin/users");
-    }
+  const handleViewRegistrationsByUser = () => {
+    navigate("/my-registrations");
   };
 
   const handleGenerateReports = () => {
@@ -213,6 +208,12 @@ export default function DashboardFixed() {
               >
                 View All Registrations
               </button>
+              <button
+                onClick={handleViewRegistrationsByUser}
+                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                View Registrations by User
+              </button>
               {/* <button
                 onClick={handleCompressionTest}
                 className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors"
@@ -246,7 +247,9 @@ export default function DashboardFixed() {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Data Collectors</span>
+                <span className="text-sm text-gray-600">
+                  Total Data Collectors
+                </span>
                 <span className="text-sm text-blue-600 font-medium">
                   {stats.totalUsers}
                 </span>

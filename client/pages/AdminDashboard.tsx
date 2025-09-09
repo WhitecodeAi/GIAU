@@ -28,6 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  dashboardAPI,
+  registrationsAPI,
+  apiRequest,
+  productsAPI,
+} from "@/lib/api";
 
 interface Registration {
   id: number;
@@ -113,11 +119,10 @@ export default function AdminDashboard() {
       const testConnectivity = async () => {
         try {
           console.log("Testing basic API connectivity...");
-          const response = await fetch("/api/ping");
-          if (!response.ok) {
-            throw new Error(`Ping failed: ${response.status}`);
+          const data = await apiRequest<{ message: string }>("/ping");
+          if (!data || typeof data.message !== "string") {
+            throw new Error("Ping failed: invalid response");
           }
-          const data = await response.json();
           console.log("Ping successful:", data);
           return true;
         } catch (error) {
@@ -158,15 +163,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       console.log("Fetching registrations...");
-      const response = await fetch(
-        `/api/registrations/all?page=${currentPage}&limit=10`,
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await registrationsAPI.getAllRegistrations(currentPage, 10);
       console.log("Registrations data:", data);
 
       setRegistrations(data.registrations || []);
@@ -191,13 +188,7 @@ export default function AdminDashboard() {
   const fetchStatistics = async (retryCount = 0) => {
     try {
       console.log("Fetching statistics...");
-      const response = await fetch("/api/dashboard/statistics");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await dashboardAPI.getStatistics();
       console.log("Statistics data:", data);
       setStatistics(data);
     } catch (error) {
@@ -220,15 +211,11 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       console.log("Fetching users...");
-      const response = await fetch("/api/users/dropdown");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await apiRequest<{ users: UserForDropdown[] }>(
+        "/users/dropdown",
+      );
       console.log("Users data:", data);
-      setUsers(data.users || []);
+      setUsers((data as any).users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
       // Set empty users array to prevent UI issues
@@ -239,15 +226,9 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       console.log("Fetching products...");
-      const response = await fetch("/api/products");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await productsAPI.getProducts();
       console.log("Products data:", data);
-      setProducts(data.products || []);
+      setProducts((data as any).products || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
       // Set empty products array to prevent UI issues
