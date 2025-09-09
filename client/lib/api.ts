@@ -46,7 +46,11 @@ async function apiRequest<T>(
   };
 
   // Add a timeout so fetch doesn't hang forever
-  const fetchWithTimeout = async (url: string, init: RequestInit, ms = 15000) => {
+  const fetchWithTimeout = async (
+    url: string,
+    init: RequestInit,
+    ms = 15000,
+  ) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), ms);
     try {
@@ -297,7 +301,6 @@ export const registrationsAPI = {
         }
         throw new Error(msg);
       }
-
 
       if (!res.ok) {
         let msg = "Network error";
