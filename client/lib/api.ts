@@ -1,6 +1,21 @@
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+// Compute possible API bases for different hosting environments
+function getApiBases(): string[] {
+  const bases: string[] = [];
+  const primary = API_BASE_URL;
+  bases.push(primary);
+  // Netlify functions fallback when primary relative "/api" isn't available
+  if (primary === "/api") {
+    bases.push("/.netlify/functions/api");
+  }
+  return bases;
+}
+
+// Global offline flag to avoid repeated failing fetch attempts
+let API_OFFLINE = false;
+
 // Get auth token from localStorage
 export function getAuthToken(): string | null {
   const user = localStorage.getItem("user");
@@ -29,14 +44,46 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
   return headers;
 }
 
+// Internal helper to try multiple API base URLs
+async function fetchWithFallback(
+  endpoint: string,
+  options: RequestInit,
+): Promise<Response> {
+  if (API_OFFLINE) {
+    return new Response(JSON.stringify({ error: "Service unavailable" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const bases = getApiBases();
+
+  for (const base of bases) {
+    const url = `${base}${endpoint}`;
+    try {
+      const res = await fetch(url, options);
+      // If we reached here, network worked; clear offline flag
+      API_OFFLINE = false;
+      return res;
+    } catch {
+      // Try next base on network-level failure only
+      continue;
+    }
+  }
+  // No base reachable: set offline and return synthetic error response
+  API_OFFLINE = true;
+  return new Response(JSON.stringify({ error: "Service unavailable" }), {
+    status: 503,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 // Generic API request function
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   includeContentType = true,
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-
   const config: RequestInit = {
     ...options,
     headers: {
@@ -45,13 +92,7 @@ async function apiRequest<T>(
     },
   };
 
-  let response: Response;
-  try {
-    response = await fetch(url, config);
-  } catch (_err) {
-    // Network-level failure (e.g., offline, DNS)
-    throw new Error("Failed to fetch");
-  }
+  const response = await fetchWithFallback(endpoint, config);
 
   if (response.status === 401 || response.status === 403) {
     let message = "Unauthorized";
@@ -68,7 +109,6 @@ async function apiRequest<T>(
   }
 
   if (!response.ok) {
-
     if (response.status === 401 || response.status === 403) {
       throw new Error("Please log in again");
     }
@@ -76,9 +116,8 @@ async function apiRequest<T>(
       .json()
       .catch(() => ({ error: "Network error" }));
     throw new Error(
-      errorData.error || `HTTP error! status: ${response.status}`,
+      (errorData as any).error || `HTTP error! status: ${response.status}`,
     );
-
   }
 
   return response.json();
@@ -254,7 +293,7 @@ export const registrationsAPI = {
     }
 
     const postOnce = async () => {
-      const res = await fetch(`${API_BASE_URL}/registrations`, {
+      const res = await fetchWithFallback(`/registrations`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -274,7 +313,6 @@ export const registrationsAPI = {
         }
         throw new Error(msg);
       }
-
 
       if (!res.ok) {
         let msg = "Network error";
@@ -477,9 +515,7 @@ export const dashboardAPI = {
       }>("/dashboard/statistics");
 
       return stats;
-    } catch (error) {
-      console.error("❌ Dashboard statistics error:", error);
-      // Return fallback data
+    } catch (_error) {
       return {
         totalRegistrations: 0,
         totalUsers: 0,
@@ -501,8 +537,7 @@ export const dashboardAPI = {
       >("/dashboard/activity");
 
       return activity;
-    } catch (error) {
-      console.error("❌ Recent activity error:", error);
+    } catch (_error) {
       return [];
     }
   },

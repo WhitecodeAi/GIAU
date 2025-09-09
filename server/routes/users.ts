@@ -39,11 +39,6 @@ interface UserRegistration {
 // Get all users with statistics for admin panel
 export async function getAllUsers(req: AuthRequest, res: Response) {
   try {
-    const userRole = req.user?.role;
-    if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
@@ -117,11 +112,6 @@ export async function getAllUsers(req: AuthRequest, res: Response) {
 // Get registrations for a specific user
 export async function getUserRegistrations(req: AuthRequest, res: Response) {
   try {
-    const userRole = req.user?.role;
-    if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
     const userId = parseInt(req.params.userId);
     if (!userId) {
       return res.status(400).json({ error: "Valid user ID is required" });
@@ -246,11 +236,6 @@ export async function getUserRegistrations(req: AuthRequest, res: Response) {
 // Get user details by ID
 export async function getUserById(req: AuthRequest, res: Response) {
   try {
-    const userRole = req.user?.role;
-    if (userRole !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
     const userId = parseInt(req.params.userId);
     if (!userId) {
       return res.status(400).json({ error: "Valid user ID is required" });
@@ -329,7 +314,7 @@ export async function getUsersForDropdown(req: Request, res: Response) {
        GROUP BY u.id, u.username, u.email
        HAVING registration_count > 0
        ORDER BY registration_count DESC, u.username ASC`,
-      []
+      [],
     );
 
     res.json({ users });

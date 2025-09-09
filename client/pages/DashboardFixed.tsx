@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { dashboardAPI, registrationsAPI, logout } from "@/lib/api";
 
 export default function DashboardFixed() {
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     totalUsers: 0,
@@ -13,22 +16,25 @@ export default function DashboardFixed() {
 
   useEffect(() => {
     fetchDashboardData();
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        setCurrentUser(JSON.parse(userData));
+      } catch {}
+    }
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      
       const [statsData, activityData] = await Promise.all([
         dashboardAPI.getStatistics(),
         dashboardAPI.getRecentActivity(),
       ]);
 
-    
-
       setStats(statsData);
       setRecentActivity(activityData);
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+    } catch (_error) {
+      // Silent fallback: UI will show zeros/empty lists
     } finally {
       setLoading(false);
     }
@@ -39,27 +45,31 @@ export default function DashboardFixed() {
   };
 
   const handleNewRegistration = () => {
-    window.location.href = "/registration";
+    navigate("/registration");
   };
 
   const handleViewRegistrations = () => {
-    window.location.href = "/registrations";
+    navigate("/registrations");
+  };
+
+  const handleViewRegistrationsByUser = () => {
+    navigate("/my-registrations");
   };
 
   const handleGenerateReports = () => {
-    window.location.href = "/reports";
+    navigate("/reports");
   };
 
   const handleCompressionTest = () => {
-    window.location.href = "/compression-test";
+    navigate("/compression-test");
   };
 
   const handleTestUpload = () => {
-    window.location.href = "/test-upload";
+    navigate("/test-upload");
   };
 
   const handleSimpleTest = () => {
-    window.location.href = "/test-simple";
+    navigate("/test-simple");
   };
 
   if (loading) {
@@ -198,6 +208,12 @@ export default function DashboardFixed() {
               >
                 View All Registrations
               </button>
+              <button
+                onClick={handleViewRegistrationsByUser}
+                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                View Registrations by User
+              </button>
               {/* <button
                 onClick={handleCompressionTest}
                 className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors"
@@ -231,7 +247,9 @@ export default function DashboardFixed() {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Data Collectors</span>
+                <span className="text-sm text-gray-600">
+                  Total Data Collectors
+                </span>
                 <span className="text-sm text-blue-600 font-medium">
                   {stats.totalUsers}
                 </span>

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { apiRequest } from "@/lib/api";
 
 interface UserWithStats {
   id: number;
@@ -52,10 +53,6 @@ export default function UsersManagement() {
     const userData = localStorage.getItem("user");
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      if (parsedUser.role !== "admin") {
-        navigate("/");
-        return;
-      }
       setUser(parsedUser);
       fetchUsers();
     } else {
@@ -66,24 +63,17 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const userData = localStorage.getItem("user");
-      const token = userData ? JSON.parse(userData).token : null;
-      const response = await fetch(
-        `/api/users?page=${currentPage}&limit=10${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
-
-      const data = await response.json();
-      setUsers(data.users || []);
-      setPagination(data.pagination);
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(10),
+      });
+      if (searchTerm) params.set("search", searchTerm);
+      const data = await apiRequest<{
+        users: UserWithStats[];
+        pagination: Pagination;
+      }>(`/users?${params.toString()}`);
+      setUsers((data as any).users || []);
+      setPagination((data as any).pagination);
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {
