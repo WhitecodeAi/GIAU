@@ -89,14 +89,25 @@ export default function MyRegistrations() {
       const me = stored ? JSON.parse(stored) : null;
       const username = me?.username || "";
 
-      // Build CSV from the CURRENT SCREEN (filtered list)
+      // Build detailed CSV matching the format from the image
       const headers = [
         "Reg. Date",
         "User name",
         "Reg. ID No",
         "Name of AU Applicant",
-        "Mobile Number",
+        "Age",
+        "Gender",
+        "email id",
+        "Phone number",
+        "Aadhar Card",
+        "Pan Card",
+        "Voter Id Card",
         "Categories",
+        "Existing Products",
+        "Annual Production Quantity",
+        "Annual production type",
+        "Annual Turnover",
+        "Future Products"
       ];
 
       const escape = (val: any) => {
@@ -104,27 +115,56 @@ export default function MyRegistrations() {
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
 
-      const rows = filtered.map((r) => {
+      const rows: string[] = [];
+
+      for (const r of filtered) {
         const regDate = new Date(r.created_at).toLocaleDateString("en-GB");
         const categories = (r as any).categories && (r as any).categories.length
           ? (r as any).categories.map((c: any) => c.name).join(", ")
           : (r.category_names || r.category_name || "");
-        return [
+
+        // Get selected products - split by comma or newline
+        const selectedProducts = r.selected_products
+          ? String(r.selected_products).split(/[,\n]/).map(p => p.trim()).filter(p => p)
+          : [];
+
+        // Base row data (same for all product rows)
+        const baseData = [
           regDate,
           username,
-          r.id,
+          r.id.toString(),
           r.name,
+          "", // age - not available in current interface
+          "", // gender - not available in current interface
+          r.email || "",
           r.phone || "",
+          r.aadhar_number || "",
+          r.pan_number || "",
+          r.voter_id || "",
           categories,
-        ].map(escape).join(",");
-      });
+          r.existing_products || "",
+          "", // annual production quantity - not available in current interface
+          "", // annual production type - not available in current interface
+          "" // annual turnover - not available in current interface
+        ];
+
+        if (selectedProducts.length === 0) {
+          // No products, add single row with empty Future Products
+          rows.push([...baseData, ""].map(escape).join(","));
+        } else {
+          // Multiple products - create one row per product
+          for (const product of selectedProducts) {
+            rows.push([...baseData, product.trim()].map(escape).join(","));
+          }
+        }
+      }
 
       const csv = [headers.join(","), ...rows].join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `my_registrations_view_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `my_registrations_detailed_${new Date().toISOString().slice(0,10)}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
