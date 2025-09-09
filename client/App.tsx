@@ -15,6 +15,7 @@ import CompressionTest from "./pages/CompressionTest";
 import CameraTest from "./pages/CameraTest";
 import UsersManagement from "./pages/UsersManagement";
 import UserRegistrations from "./pages/UserRegistrations";
+import MyRegistrations from "./pages/MyRegistrations";
 import RegistrationDetails from "./pages/RegistrationDetails";
 import TestSignatureExport from "./pages/TestSignatureExport";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ function App() {
         />
         <Route path="/registration" element={<RegistrationForm />} />
         <Route path="/registrations" element={<AllRegistrations />} />
+        <Route path="/my-registrations" element={<MyRegistrations />} />
         <Route
           path="/registration-details/:id"
           element={<RegistrationDetails />}
