@@ -83,100 +83,60 @@ export default function MyRegistrations() {
     });
 
   const handleExport = async () => {
-    try {
-      setIsExporting(true);
-      const stored = localStorage.getItem("user");
-      const me = stored ? JSON.parse(stored) : null;
-      const username = me?.username || "";
+    const stored = localStorage.getItem("user");
+    if (!stored) {
+      navigate("/");
+      return;
+    }
+    const me = JSON.parse(stored);
+    const userId = me?.id;
+    if (!userId) return;
 
-      // Build detailed CSV matching the format from the image
-      const headers = [
-        "Reg. Date",
-        "User name",
-        "Reg. ID No",
-        "Name of AU Applicant",
-        "Age",
-        "Gender",
-        "email id",
-        "Phone number",
-        "Aadhar Card",
-        "Pan Card",
-        "Voter Id Card",
-        "Categories",
-        "Existing Products",
-        "Annual Production Quantity",
-        "Annual production type",
-        "Annual Turnover",
-        "Future Products",
-      ];
+    setIsExporting(true);
 
-      const escape = (val: any) => {
-        const s = val == null ? "" : String(val);
-        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-      };
+    // Use server-side export which properly handles individual products and production details
+    const bases = [
+      (import.meta as any).env?.VITE_API_URL || "/api",
+      "/.netlify/functions/api",
+    ];
 
-      const rows: string[] = [];
-
-      for (const r of filtered) {
-        const regDate = new Date(r.created_at).toLocaleDateString("en-GB");
-        const categories =
-          (r as any).categories && (r as any).categories.length
-            ? (r as any).categories.map((c: any) => c.name).join(", ")
-            : r.category_names || r.category_name || "";
-
-        // Get selected products - split by comma or newline
-        const selectedProducts = r.selected_products
-          ? String(r.selected_products)
-              .split(/[,\n]/)
-              .map((p) => p.trim())
-              .filter((p) => p)
-          : [];
-
-        // Base row data (same for all product rows)
-        const baseData = [
-          regDate,
-          username,
-          r.id.toString(),
-          r.name,
-          "", // age - not available in current interface
-          "", // gender - not available in current interface
-          r.email || "",
-          r.phone || "",
-          r.aadhar_number || "",
-          r.pan_number || "",
-          r.voter_id || "",
-          categories,
-          r.existing_products || "",
-          "", // annual production quantity - not available in current interface
-          "", // annual production type - not available in current interface
-          "", // annual turnover - not available in current interface
-        ];
-
-        if (selectedProducts.length === 0) {
-          // No products, add single row with empty Future Products
-          rows.push([...baseData, ""].map(escape).join(","));
-        } else {
-          // Multiple products - create one row per product
-          for (const product of selectedProducts) {
-            rows.push([...baseData, product.trim()].map(escape).join(","));
-          }
+    let success = false;
+    for (const base of bases) {
+      try {
+        const res = await fetch(`${base}/registrations/export-by-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            // Pass filtered registration IDs to only export current view
+            registrationIds: filtered.map(r => r.id)
+          }),
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          // rely on server filename when possible
+          const cd = res.headers.get("Content-Disposition") || "";
+          const m = cd.match(/filename="?([^";]+)"?/i);
+          a.download =
+            m?.[1] ||
+            `my_registrations_detailed_${new Date().toISOString().slice(0, 10)}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          success = true;
+          break;
         }
+      } catch {
+        // try next base
       }
-
-      const csv = [headers.join(","), ...rows].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `my_registrations_detailed_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (_e) {
-      alert("Export failed. Please try again.");
-    } finally {
-      setIsExporting(false);
+    }
+    setIsExporting(false);
+    if (!success) {
+      alert("Export failed. Please try again later.");
     }
   };
 
