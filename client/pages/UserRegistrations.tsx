@@ -74,9 +74,6 @@ export default function UserRegistrations() {
   });
   const [selectedRegistration, setSelectedRegistration] =
     useState<UserRegistration | null>(null);
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
   const { userId } = useParams();
 
@@ -84,11 +81,7 @@ export default function UserRegistrations() {
     const userDataStored = localStorage.getItem("user");
     if (userDataStored) {
       const parsedUser = JSON.parse(userDataStored);
-      // Allow admins, or the same user viewing their own registrations
-      if (
-        parsedUser.role !== "admin" &&
-        String(parsedUser.id) !== String(userId)
-      ) {
+      if (parsedUser.role !== "admin") {
         navigate("/");
         return;
       }
@@ -127,7 +120,7 @@ export default function UserRegistrations() {
       const userData = localStorage.getItem("user");
       const token = userData ? JSON.parse(userData).token : null;
       const response = await fetch(
-        `/api/users/${userId}/registrations?page=${currentPage}&limit=100000`,
+        `/api/users/${userId}/registrations?page=${currentPage}&limit=10`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -155,48 +148,6 @@ export default function UserRegistrations() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const handleExportAll = async () => {
-    if (!userId) return;
-    try {
-      setExporting(true);
-      const res = await fetch("/api/registrations/export-by-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: parseInt(userId) }),
-      });
-      if (!res.ok) {
-        let message = `HTTP ${res.status}`;
-        try {
-          const ct = res.headers.get("Content-Type") || "";
-          if (ct.includes("application/json")) {
-            const j = await res.json();
-            if (j?.error) message = j.error;
-          } else {
-            const t = await res.text();
-            if (t) message = t;
-          }
-        } catch {}
-        throw new Error(message);
-      }
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.style.display = "none";
-      const uname = userData?.username || "user";
-      a.download = `registrations_by_${uname}_all.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (e) {
-      console.error("Export error:", e);
-      alert(e instanceof Error ? e.message : "Failed to export");
-    } finally {
-      setExporting(false);
-    }
   };
 
   const filteredRegistrations = registrations.filter(
@@ -465,15 +416,11 @@ export default function UserRegistrations() {
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              onClick={() =>
-                navigate(
-                  currentUser?.role === "admin" ? "/admin" : "/dashboard",
-                )
-              }
+              onClick={() => navigate("/admin/users")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
+              Back to Users
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
@@ -545,36 +492,24 @@ export default function UserRegistrations() {
             </CardContent>
           </Card>
 
-          {/* Search + Export */}
+          {/* Search Bar */}
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                        size={16}
-                      />
-                      <Input
-                        type="text"
-                        placeholder="Search registrations by name, phone, or category..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={16}
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Search registrations by name, phone, or category..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
-                </div>
-
-                <div className="flex items-end justify-end">
-                  <Button
-                    onClick={handleExportAll}
-                    disabled={exporting}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {exporting ? "Exporting..." : "Export All CSV"}
-                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -671,7 +606,7 @@ export default function UserRegistrations() {
               )}
 
               {/* Pagination */}
-              {false && (
+              {pagination.totalPages > 1 && (
                 <div className="flex justify-center gap-2 mt-6">
                   <Button
                     onClick={() => handlePageChange(currentPage - 1)}

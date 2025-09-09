@@ -1785,27 +1785,7 @@ export async function exportProductNOC(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    // Build GI Application No from products table id
-    let giId: number | null = null;
-    if (productId) {
-      giId = Number(productId);
-    } else if (productData && productData.length > 0) {
-      giId = Number(productData[0].id);
-    }
-    if (!giId || Number.isNaN(giId)) {
-      return res
-        .status(400)
-        .send(
-          "NOC_EXPORT_MISSING_PRODUCT_ID: Unable to resolve product id for GI Application No",
-        );
-    }
-    const appNumber = giId.toString();
-
-    const nocHtml = await generateProductNOCHtml(
-      registration,
-      productName,
-      appNumber,
-    );
+    const nocHtml = await generateProductNOCHtml(registration, productName);
 
     // Create complete HTML document
     const fullHtml = `
@@ -2240,7 +2220,9 @@ async function getAssociationStamp(
 }
 
 // Helper to get both stamp and registration short form (registration_number) from associations
-async function getAssociationDetails(associationName: string): Promise<{
+async function getAssociationDetails(
+  associationName: string,
+): Promise<{
   stamp_image_path: string | null;
   registration_number: string | null;
 }> {
@@ -2407,9 +2389,9 @@ async function generateProductFormGI3AHtml(
 async function generateProductNOCHtml(
   registration: any,
   productName: string,
-  appNumber: string,
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
+  const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
