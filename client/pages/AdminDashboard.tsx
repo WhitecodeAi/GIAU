@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { dashboardAPI, registrationsAPI, apiRequest, productsAPI } from "@/lib/api";
 
 interface Registration {
   id: number;
