@@ -192,11 +192,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
 
 export async function exportRegistrationsByUser(req: Request, res: Response) {
   try {
-    const { userId, startDate, endDate } = req.body as {
-      userId?: number;
-      startDate?: string;
-      endDate?: string;
-    };
+    const { userId, registrationIds } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -214,8 +210,23 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
 
     const user = userResult[0];
 
-    // Fetch registrations for this user (optionally filter by date range)
-    const baseQuery = `
+    // Build WHERE clause - filter by user and optionally by specific registration IDs
+    let whereClause = "WHERE ur.user_id = ?";
+    let queryParams = [userId];
+
+    if (
+      registrationIds &&
+      Array.isArray(registrationIds) &&
+      registrationIds.length > 0
+    ) {
+      const placeholders = registrationIds.map(() => "?").join(",");
+      whereClause += ` AND ur.id IN (${placeholders})`;
+      queryParams.push(...registrationIds);
+    }
+
+    // Fetch registrations for this user (including production fields)
+    const registrations = await dbQuery(
+      `
       SELECT
         ur.id,
         ur.name,
@@ -245,23 +256,12 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       LEFT JOIN products p ON usp.product_id = p.id
       LEFT JOIN user_existing_products uep ON ur.id = uep.registration_id
       LEFT JOIN products ep ON uep.product_id = ep.id
-      WHERE ur.user_id = ?
-      {{DATE_FILTER}}
+      ${whereClause}
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
-    `;
-
-    const params: any[] = [userId];
-    let query = baseQuery.replace("{{DATE_FILTER}}", "");
-    if (startDate && endDate) {
-      query = baseQuery.replace(
-        "{{DATE_FILTER}}",
-        " AND DATE(ur.created_at) BETWEEN ? AND ?",
-      );
-      params.push(startDate, endDate);
-    }
-
-    const registrations = await dbQuery(query, params);
+    `,
+      queryParams,
+    );
 
     if (registrations.length === 0) {
       return res

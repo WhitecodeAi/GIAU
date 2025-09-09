@@ -91,18 +91,26 @@ export default function MyRegistrations() {
     const me = JSON.parse(stored);
     const userId = me?.id;
     if (!userId) return;
+
     setIsExporting(true);
+
+    // Use server-side export which properly handles individual products and production details
     const bases = [
       (import.meta as any).env?.VITE_API_URL || "/api",
       "/.netlify/functions/api",
     ];
+
     let success = false;
     for (const base of bases) {
       try {
         const res = await fetch(`${base}/registrations/export-by-user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({
+            userId,
+            // Pass filtered registration IDs to only export current view
+            registrationIds: filtered.map((r) => r.id),
+          }),
         });
         if (res.ok) {
           const blob = await res.blob();
@@ -114,7 +122,7 @@ export default function MyRegistrations() {
           const m = cd.match(/filename="?([^";]+)"?/i);
           a.download =
             m?.[1] ||
-            `my_registrations_${new Date().toISOString().slice(0, 10)}.csv`;
+            `my_registrations_detailed_${new Date().toISOString().slice(0, 10)}.csv`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
