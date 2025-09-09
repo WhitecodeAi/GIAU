@@ -158,15 +158,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       console.log("Fetching registrations...");
-      const response = await fetch(
-        `/api/registrations/all?page=${currentPage}&limit=10`,
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await registrationsAPI.getAllRegistrations(currentPage, 10);
       console.log("Registrations data:", data);
 
       setRegistrations(data.registrations || []);
@@ -191,13 +183,7 @@ export default function AdminDashboard() {
   const fetchStatistics = async (retryCount = 0) => {
     try {
       console.log("Fetching statistics...");
-      const response = await fetch("/api/dashboard/statistics");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await dashboardAPI.getStatistics();
       console.log("Statistics data:", data);
       setStatistics(data);
     } catch (error) {
@@ -220,15 +206,9 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       console.log("Fetching users...");
-      const response = await fetch("/api/users/dropdown");
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await apiRequest<{ users: UserForDropdown[] }>("/users/dropdown");
       console.log("Users data:", data);
-      setUsers(data.users || []);
+      setUsers((data as any).users || []);
     } catch (error) {
       console.error("Failed to fetch users:", error);
       // Set empty users array to prevent UI issues
