@@ -55,5 +55,14 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+declare global {
+  interface Window {
+    __APP_ROOT__?: ReturnType<typeof createRoot>;
+  }
+}
+
+const container = document.getElementById("root")!;
+if (!window.__APP_ROOT__) {
+  window.__APP_ROOT__ = createRoot(container);
+}
+window.__APP_ROOT__!.render(<App />);
