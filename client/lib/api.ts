@@ -41,14 +41,31 @@ function getAuthHeaders(includeContentType = true): HeadersInit {
   return headers;
 }
 
+// Internal helper to try multiple API base URLs
+async function fetchWithFallback(endpoint: string, options: RequestInit): Promise<Response> {
+  const bases = getApiBases();
+  let lastError: any = null;
+
+  for (const base of bases) {
+    const url = `${base}${endpoint}`;
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (err) {
+      lastError = err;
+      // Try next base on network-level failure only
+      continue;
+    }
+  }
+  throw new Error("Failed to fetch");
+}
+
 // Generic API request function
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   includeContentType = true,
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-
   const config: RequestInit = {
     ...options,
     headers: {
@@ -57,13 +74,7 @@ async function apiRequest<T>(
     },
   };
 
-  let response: Response;
-  try {
-    response = await fetch(url, config);
-  } catch (_err) {
-    // Network-level failure (e.g., offline, DNS)
-    throw new Error("Failed to fetch");
-  }
+  const response = await fetchWithFallback(endpoint, config);
 
   if (response.status === 401 || response.status === 403) {
     let message = "Unauthorized";
@@ -80,7 +91,6 @@ async function apiRequest<T>(
   }
 
   if (!response.ok) {
-
     if (response.status === 401 || response.status === 403) {
       throw new Error("Please log in again");
     }
@@ -88,9 +98,8 @@ async function apiRequest<T>(
       .json()
       .catch(() => ({ error: "Network error" }));
     throw new Error(
-      errorData.error || `HTTP error! status: ${response.status}`,
+      (errorData as any).error || `HTTP error! status: ${response.status}`,
     );
-
   }
 
   return response.json();
