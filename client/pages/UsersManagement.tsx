@@ -53,10 +53,6 @@ export default function UsersManagement() {
     const userData = localStorage.getItem("user");
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      if (parsedUser.role !== "admin") {
-        navigate("/");
-        return;
-      }
       setUser(parsedUser);
       fetchUsers();
     } else {
