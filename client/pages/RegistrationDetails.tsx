@@ -99,6 +99,19 @@ export default function RegistrationDetails() {
     [key: string]: boolean;
   }>({});
 
+  const [viewerImage, setViewerImage] = useState<{ src: string; alt?: string } | null>(null);
+
+  const openImageInViewer = (u: string, name?: string) => {
+    if (!u) return;
+    if (u.toLowerCase().endsWith(".pdf")) {
+      window.open(u, "_blank");
+      return;
+    }
+    setViewerImage({ src: u, alt: name });
+  };
+
+  const closeViewer = () => setViewerImage(null);
+
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
       if (!id) {
