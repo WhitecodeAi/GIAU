@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ImageViewer from "@/components/ImageViewer";
 
 interface RegistrationDetails {
   id: number;
@@ -97,6 +98,22 @@ export default function RegistrationDetails() {
   const [uploadingDocuments, setUploadingDocuments] = useState<{
     [key: string]: boolean;
   }>({});
+
+  const [viewerImage, setViewerImage] = useState<{
+    src: string;
+    alt?: string;
+  } | null>(null);
+
+  const openImageInViewer = (u: string, name?: string) => {
+    if (!u) return;
+    if (u.toLowerCase().endsWith(".pdf")) {
+      window.open(u, "_blank");
+      return;
+    }
+    setViewerImage({ src: u, alt: name });
+  };
+
+  const closeViewer = () => setViewerImage(null);
 
   useEffect(() => {
     const fetchRegistrationDetails = async () => {
@@ -1008,7 +1025,9 @@ export default function RegistrationDetails() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(url, "_blank")}
+                              onClick={() =>
+                                openImageInViewer(url, documentNames[key])
+                              }
                               className="text-xs"
                             >
                               <Eye size={12} className="mr-1" />
@@ -1050,6 +1069,14 @@ export default function RegistrationDetails() {
             </Card>
           </div>
         </div>
+        {viewerImage && (
+          <ImageViewer
+            src={viewerImage.src}
+            alt={viewerImage.alt}
+            open={Boolean(viewerImage)}
+            onClose={closeViewer}
+          />
+        )}
       </div>
     </div>
   );
