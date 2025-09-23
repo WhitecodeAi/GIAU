@@ -362,6 +362,19 @@ export default function RegistrationDetails() {
     return null;
   }
 
+  const [viewerImage, setViewerImage] = useState<{ src: string; alt?: string } | null>(null);
+
+  const openImageInViewer = (u: string, name?: string) => {
+    if (!u) return;
+    if (u.toLowerCase().endsWith(".pdf")) {
+      window.open(u, "_blank");
+      return;
+    }
+    setViewerImage({ src: u, alt: name });
+  };
+
+  const closeViewer = () => setViewerImage(null);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-white">
       <div className="desktop-content max-w-6xl mx-auto">
