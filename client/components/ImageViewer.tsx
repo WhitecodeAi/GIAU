@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, RotateCw, X, Download } from "lucide-react";
 
@@ -10,7 +15,12 @@ interface ImageViewerProps {
   onClose: () => void;
 }
 
-export function ImageViewer({ src, alt = "Image", open, onClose }: ImageViewerProps) {
+export function ImageViewer({
+  src,
+  alt = "Image",
+  open,
+  onClose,
+}: ImageViewerProps) {
   const [rotation, setRotation] = useState(0);
 
   const rotate = (delta: number) => {
@@ -33,7 +43,15 @@ export function ImageViewer({ src, alt = "Image", open, onClose }: ImageViewerPr
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) { reset(); onClose(); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          reset();
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="max-w-4xl mx-auto">
         <DialogHeader>
           <div className="flex items-center justify-between w-full">
@@ -43,7 +61,8 @@ export function ImageViewer({ src, alt = "Image", open, onClose }: ImageViewerPr
                 <RotateCcw className="w-4 h-4 mr-1" /> Rotate Left
               </Button>
               <Button size="sm" variant="outline" onClick={() => rotate(90)}>
-                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" /> Rotate Right
+                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" />{" "}
+                Rotate Right
               </Button>
               <Button size="sm" variant="outline" onClick={reset}>
                 Reset
@@ -51,7 +70,14 @@ export function ImageViewer({ src, alt = "Image", open, onClose }: ImageViewerPr
               <Button size="sm" variant="ghost" onClick={downloadImage}>
                 <Download className="w-4 h-4 mr-1" /> Download
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => { reset(); onClose(); }}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -63,7 +89,10 @@ export function ImageViewer({ src, alt = "Image", open, onClose }: ImageViewerPr
             <img
               src={src}
               alt={alt}
-              style={{ transform: `rotate(${rotation}deg)`, transition: "transform 200ms" }}
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transition: "transform 200ms",
+              }}
               className="max-h-[70vh] max-w-full object-contain"
             />
           </div>

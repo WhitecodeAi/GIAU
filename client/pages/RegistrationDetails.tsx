@@ -99,7 +99,10 @@ export default function RegistrationDetails() {
     [key: string]: boolean;
   }>({});
 
-  const [viewerImage, setViewerImage] = useState<{ src: string; alt?: string } | null>(null);
+  const [viewerImage, setViewerImage] = useState<{
+    src: string;
+    alt?: string;
+  } | null>(null);
 
   const openImageInViewer = (u: string, name?: string) => {
     if (!u) return;
@@ -1022,7 +1025,9 @@ export default function RegistrationDetails() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => openImageInViewer(url, documentNames[key])}
+                              onClick={() =>
+                                openImageInViewer(url, documentNames[key])
+                              }
                               className="text-xs"
                             >
                               <Eye size={12} className="mr-1" />
@@ -1064,9 +1069,14 @@ export default function RegistrationDetails() {
             </Card>
           </div>
         </div>
-      {viewerImage && (
-        <ImageViewer src={viewerImage.src} alt={viewerImage.alt} open={Boolean(viewerImage)} onClose={closeViewer} />
-      )}
+        {viewerImage && (
+          <ImageViewer
+            src={viewerImage.src}
+            alt={viewerImage.alt}
+            open={Boolean(viewerImage)}
+            onClose={closeViewer}
+          />
+        )}
       </div>
     </div>
   );
