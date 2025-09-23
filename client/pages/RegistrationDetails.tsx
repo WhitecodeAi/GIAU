@@ -1022,7 +1022,7 @@ export default function RegistrationDetails() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(url, "_blank")}
+                              onClick={() => openImageInViewer(url, documentNames[key])}
                               className="text-xs"
                             >
                               <Eye size={12} className="mr-1" />
