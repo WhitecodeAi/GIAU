@@ -1064,6 +1064,9 @@ export default function RegistrationDetails() {
             </Card>
           </div>
         </div>
+      {viewerImage && (
+        <ImageViewer src={viewerImage.src} alt={viewerImage.alt} open={Boolean(viewerImage)} onClose={closeViewer} />
+      )}
       </div>
     </div>
   );
