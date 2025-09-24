@@ -14,6 +14,8 @@ interface ImageViewerProps {
   alt?: string;
   open: boolean;
   onClose: () => void;
+  // Optional: save rotated image to profile or server
+  onSave?: (blob: Blob, filename?: string) => Promise<void>;
 }
 
 export function ImageViewer({
