@@ -90,6 +90,56 @@ export function ImageViewer({
     }
   };
 
+  const saveImage = async () => {
+    if (!onSave) return;
+    try {
+      // Load image
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = src;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = (e) => reject(e);
+      });
+
+      const angle = (rotation % 360 + 360) % 360;
+      const radians = (angle * Math.PI) / 180;
+
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+
+      const absCos = Math.abs(Math.cos(radians));
+      const absSin = Math.abs(Math.sin(radians));
+
+      const canvas = document.createElement("canvas");
+      const cw = Math.round(w * absCos + h * absSin);
+      const ch = Math.round(w * absSin + h * absCos);
+      canvas.width = cw;
+      canvas.height = ch;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Could not get canvas context");
+
+      ctx.translate(cw / 2, ch / 2);
+      ctx.rotate(radians);
+      ctx.drawImage(img, -w / 2, -h / 2);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          console.error("Failed to create blob from canvas");
+          return;
+        }
+        try {
+          await onSave(blob, (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image.jpg");
+        } catch (e) {
+          console.error("Save failed", e);
+        }
+      }, "image/jpeg", 0.95);
+    } catch (e) {
+      console.error("Save failed", e);
+    }
+  };
+
   return (
     <Dialog
       open={open}
