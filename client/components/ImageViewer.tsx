@@ -33,8 +33,34 @@ export function ImageViewer({
   const reset = () => setRotation(0);
 
   // Helper to load image via fetch (avoids crossOrigin issues)
+  const normalizeFileUrl = (u: string) => {
+    try {
+      // If it's an absolute URL, return as-is
+      if (/^https?:\/\//i.test(u)) return u;
+
+      // Handle legacy /api/files/serve/<relativePath>
+      const servePrefix = "/api/files/serve/";
+      if (u.startsWith(servePrefix)) {
+        const rel = u.slice(servePrefix.length).split("?")[0];
+        const decoded = decodeURIComponent(rel);
+        const m = decoded.match(/^registration_(\d+)\/(.+)$/);
+        if (m) {
+          const id = m[1];
+          const filename = m[2];
+          return `/api/files/${id}/${encodeURIComponent(filename)}?view=true`;
+        }
+        return u;
+      }
+
+      return u;
+    } catch (e) {
+      return u;
+    }
+  };
+
   const loadImageViaFetch = async () => {
-    const resp = await fetch(src, { credentials: "include" });
+    const fetchUrl = normalizeFileUrl(src);
+    const resp = await fetch(fetchUrl, { credentials: "include" });
     if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.status}`);
     const blob = await resp.blob();
     const url = URL.createObjectURL(blob);
