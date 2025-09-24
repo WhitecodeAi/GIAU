@@ -159,12 +159,16 @@ export function ImageViewer({
                 <RotateCcw className="w-4 h-4 mr-1" /> Rotate Left
               </Button>
               <Button size="sm" variant="outline" onClick={() => rotate(90)}>
-                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" />{" "}
-                Rotate Right
+                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" /> Rotate Right
               </Button>
               <Button size="sm" variant="outline" onClick={reset}>
                 Reset
               </Button>
+              {onSave && (
+                <Button size="sm" variant="outline" onClick={saveImage}>
+                  <SaveIcon className="w-4 h-4 mr-1" /> Save to profile
+                </Button>
+              )}
               <Button size="sm" variant="ghost" onClick={downloadImage}>
                 <Download className="w-4 h-4 mr-1" /> Download
               </Button>
