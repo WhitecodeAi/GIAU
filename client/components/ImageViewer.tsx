@@ -22,6 +22,7 @@ export function ImageViewer({
   alt = "Image",
   open,
   onClose,
+  onSave,
 }: ImageViewerProps) {
   const [rotation, setRotation] = useState(0);
 
