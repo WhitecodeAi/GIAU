@@ -6,7 +6,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, RotateCw, X, Download, Save as SaveIcon } from "lucide-react";
+import {
+  RotateCcw,
+  RotateCw,
+  X,
+  Download,
+  Save as SaveIcon,
+} from "lucide-react";
 
 interface ImageViewerProps {
   src: string;
@@ -73,14 +79,20 @@ export function ImageViewer({
     return { img, url } as { img: HTMLImageElement; url: string };
   };
 
-  const canvasToBlob = (canvas: HTMLCanvasElement, type = "image/jpeg", quality = 0.95) =>
-    new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), type, quality));
+  const canvasToBlob = (
+    canvas: HTMLCanvasElement,
+    type = "image/jpeg",
+    quality = 0.95,
+  ) =>
+    new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), type, quality),
+    );
 
   const downloadImage = async () => {
     try {
       const { img, url } = await loadImageViaFetch();
 
-      const angle = (rotation % 360 + 360) % 360;
+      const angle = ((rotation % 360) + 360) % 360;
       const radians = (angle * Math.PI) / 180;
 
       const w = img.naturalWidth;
@@ -107,7 +119,8 @@ export function ImageViewer({
 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image";
+      link.download =
+        (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image";
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -116,7 +129,10 @@ export function ImageViewer({
       // cleanup
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Download failed", err instanceof Error ? err.message : String(err));
+      console.error(
+        "Download failed",
+        err instanceof Error ? err.message : String(err),
+      );
     }
   };
 
@@ -125,7 +141,7 @@ export function ImageViewer({
     try {
       const { img, url } = await loadImageViaFetch();
 
-      const angle = (rotation % 360 + 360) % 360;
+      const angle = ((rotation % 360) + 360) % 360;
       const radians = (angle * Math.PI) / 180;
 
       const w = img.naturalWidth;
@@ -151,15 +167,24 @@ export function ImageViewer({
       if (!blob) throw new Error("Failed to create blob from canvas");
 
       try {
-        await onSave(blob, (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image.jpg");
+        await onSave(
+          blob,
+          (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image.jpg",
+        );
       } catch (e) {
-        console.error("Save failed", e instanceof Error ? e.message : String(e));
+        console.error(
+          "Save failed",
+          e instanceof Error ? e.message : String(e),
+        );
       }
 
       // cleanup
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Save failed", err instanceof Error ? err.message : String(err));
+      console.error(
+        "Save failed",
+        err instanceof Error ? err.message : String(err),
+      );
     }
   };
 
@@ -182,7 +207,8 @@ export function ImageViewer({
                 <RotateCcw className="w-4 h-4 mr-1" /> Rotate Left
               </Button>
               <Button size="sm" variant="outline" onClick={() => rotate(90)}>
-                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" /> Rotate Right
+                <RotateCw className="w-4 h-4 mr-1 transform rotate-180" />{" "}
+                Rotate Right
               </Button>
               <Button size="sm" variant="outline" onClick={reset}>
                 Reset
