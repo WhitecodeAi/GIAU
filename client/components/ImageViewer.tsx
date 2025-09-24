@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, RotateCw, X, Download } from "lucide-react";
+import { RotateCcw, RotateCw, X, Download, Save as SaveIcon } from "lucide-react";
 
 interface ImageViewerProps {
   src: string;
