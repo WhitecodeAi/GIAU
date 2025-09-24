@@ -102,15 +102,16 @@ export default function RegistrationDetails() {
   const [viewerImage, setViewerImage] = useState<{
     src: string;
     alt?: string;
+    key?: string;
   } | null>(null);
 
-  const openImageInViewer = (u: string, name?: string) => {
+  const openImageInViewer = (u: string, name?: string, key?: string) => {
     if (!u) return;
     if (u.toLowerCase().endsWith(".pdf")) {
       window.open(u, "_blank");
       return;
     }
-    setViewerImage({ src: u, alt: name });
+    setViewerImage({ src: u, alt: name, key });
   };
 
   const closeViewer = () => setViewerImage(null);
