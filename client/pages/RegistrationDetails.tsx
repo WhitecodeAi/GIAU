@@ -1027,7 +1027,7 @@ export default function RegistrationDetails() {
                               size="sm"
                               variant="outline"
                               onClick={() =>
-                                openImageInViewer(url, documentNames[key])
+                                openImageInViewer(url, documentNames[key], key)
                               }
                               className="text-xs"
                             >
