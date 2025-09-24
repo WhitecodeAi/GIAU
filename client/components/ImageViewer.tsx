@@ -32,16 +32,27 @@ export function ImageViewer({
 
   const reset = () => setRotation(0);
 
+  // Helper to load image via fetch (avoids crossOrigin issues)
+  const loadImageViaFetch = async () => {
+    const resp = await fetch(src, { credentials: "include" });
+    if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.status}`);
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = url;
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = (ev) => reject(new Error("Image load failed"));
+    });
+    return { img, url } as { img: HTMLImageElement; url: string };
+  };
+
+  const canvasToBlob = (canvas: HTMLCanvasElement, type = "image/jpeg", quality = 0.95) =>
+    new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), type, quality));
+
   const downloadImage = async () => {
     try {
-      // Load image (attempt CORS-enabled fetch via crossOrigin)
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = src;
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = (e) => reject(e);
-      });
+      const { img, url } = await loadImageViaFetch();
 
       const angle = (rotation % 360 + 360) % 360;
       const radians = (angle * Math.PI) / 180;
@@ -61,46 +72,32 @@ export function ImageViewer({
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Could not get canvas context");
 
-      // Translate to center so rotation occurs around image center
       ctx.translate(cw / 2, ch / 2);
       ctx.rotate(radians);
       ctx.drawImage(img, -w / 2, -h / 2);
 
-      // Convert canvas to blob and trigger download
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            console.error("Failed to create blob from canvas");
-            return;
-          }
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download =
-            (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(link.href);
-        },
-        "image/jpeg",
-        0.95,
-      );
-    } catch (e) {
-      console.error("Download failed", e);
+      const blob = await canvasToBlob(canvas, "image/jpeg", 0.95);
+      if (!blob) throw new Error("Failed to create blob from canvas");
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+
+      // cleanup
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed", err instanceof Error ? err.message : String(err));
     }
   };
 
   const saveImage = async () => {
     if (!onSave) return;
     try {
-      // Load image
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = src;
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = (e) => reject(e);
-      });
+      const { img, url } = await loadImageViaFetch();
 
       const angle = (rotation % 360 + 360) % 360;
       const radians = (angle * Math.PI) / 180;
@@ -124,19 +121,19 @@ export function ImageViewer({
       ctx.rotate(radians);
       ctx.drawImage(img, -w / 2, -h / 2);
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          console.error("Failed to create blob from canvas");
-          return;
-        }
-        try {
-          await onSave(blob, (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image.jpg");
-        } catch (e) {
-          console.error("Save failed", e);
-        }
-      }, "image/jpeg", 0.95);
-    } catch (e) {
-      console.error("Save failed", e);
+      const blob = await canvasToBlob(canvas, "image/jpeg", 0.95);
+      if (!blob) throw new Error("Failed to create blob from canvas");
+
+      try {
+        await onSave(blob, (alt && alt.replace(/\s+/g, "-").toLowerCase()) || "image.jpg");
+      } catch (e) {
+        console.error("Save failed", e instanceof Error ? e.message : String(e));
+      }
+
+      // cleanup
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Save failed", err instanceof Error ? err.message : String(err));
     }
   };
 
