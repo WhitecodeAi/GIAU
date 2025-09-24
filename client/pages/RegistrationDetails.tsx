@@ -102,15 +102,16 @@ export default function RegistrationDetails() {
   const [viewerImage, setViewerImage] = useState<{
     src: string;
     alt?: string;
+    key?: string;
   } | null>(null);
 
-  const openImageInViewer = (u: string, name?: string) => {
+  const openImageInViewer = (u: string, name?: string, key?: string) => {
     if (!u) return;
     if (u.toLowerCase().endsWith(".pdf")) {
       window.open(u, "_blank");
       return;
     }
-    setViewerImage({ src: u, alt: name });
+    setViewerImage({ src: u, alt: name, key });
   };
 
   const closeViewer = () => setViewerImage(null);
@@ -1026,7 +1027,7 @@ export default function RegistrationDetails() {
                               size="sm"
                               variant="outline"
                               onClick={() =>
-                                openImageInViewer(url, documentNames[key])
+                                openImageInViewer(url, documentNames[key], key)
                               }
                               className="text-xs"
                             >
@@ -1075,6 +1076,18 @@ export default function RegistrationDetails() {
             alt={viewerImage.alt}
             open={Boolean(viewerImage)}
             onClose={closeViewer}
+            onSave={async (blob, filename) => {
+              // Convert blob to File and reuse existing upload handler
+              if (!viewerImage.key || !registration) return;
+              const name = filename || `${viewerImage.key}.jpg`;
+              const file = new File([blob], name, {
+                type: blob.type || "image/jpeg",
+              });
+              // Use existing handler which posts to /api/upload-document
+              await handleDocumentUpload(viewerImage.key, file);
+              // Close viewer after save
+              closeViewer();
+            }}
           />
         )}
       </div>
