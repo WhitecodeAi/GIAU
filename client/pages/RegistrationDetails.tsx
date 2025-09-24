@@ -1076,6 +1076,16 @@ export default function RegistrationDetails() {
             alt={viewerImage.alt}
             open={Boolean(viewerImage)}
             onClose={closeViewer}
+            onSave={async (blob, filename) => {
+              // Convert blob to File and reuse existing upload handler
+              if (!viewerImage.key || !registration) return;
+              const name = filename || `${viewerImage.key}.jpg`;
+              const file = new File([blob], name, { type: blob.type || "image/jpeg" });
+              // Use existing handler which posts to /api/upload-document
+              await handleDocumentUpload(viewerImage.key, file);
+              // Close viewer after save
+              closeViewer();
+            }}
           />
         )}
       </div>
