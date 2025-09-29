@@ -1785,11 +1785,11 @@ export async function exportProductNOC(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-  const nocHtml = await generateProductNOCHtml(
-    registration,
-    productName,
-    productId,
-  );
+    const nocHtml = await generateProductNOCHtml(
+      registration,
+      productName,
+      productId,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2399,13 +2399,18 @@ async function generateProductNOCHtml(
   let productIdNumber = productId;
   if (!productIdNumber && productName) {
     try {
-      const p = await dbQuery(`SELECT id FROM products WHERE name = ? LIMIT 1`, [productName]);
+      const p = await dbQuery(
+        `SELECT id FROM products WHERE name = ? LIMIT 1`,
+        [productName],
+      );
       if (p && p.length > 0) productIdNumber = p[0].id;
     } catch (err) {
-      console.error('Error resolving product ID for NOC:', err);
+      console.error("Error resolving product ID for NOC:", err);
     }
   }
-  const displayProductId = productIdNumber ? productIdNumber.toString() : 'Not specified';
+  const displayProductId = productIdNumber
+    ? productIdNumber.toString()
+    : "Not specified";
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
