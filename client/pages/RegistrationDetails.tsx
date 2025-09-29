@@ -858,175 +858,264 @@ export default function RegistrationDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {registration.production_details.map((detail) => (
-                      <div
-                        key={detail.id}
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-gray-800">
-                            {detail.productName}
-                          </h4>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "card",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                    {(
+                      isEditing
+                        ? (editedData.production_details || registration.production_details)
+                        : registration.production_details
+                    ).map((detail) => {
+                      const currentDetail = isEditing
+                        ? (editedData.production_details || registration.production_details).find((d) => d.id === detail.id) || detail
+                        : detail;
+
+                      return (
+                        <div
+                          key={detail.id}
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-gray-800">
+                              {currentDetail.productName || detail.productName}
+                            </h4>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName || detail.productName,
+                                    "card",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-card`
+                                  ]
+                                }
+                                className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-card`
                                 ]
-                              }
-                              className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-card`
-                              ]
-                                ? "..."
-                                : "Card"}
-                            </Button>
+                                  ? "..."
+                                  : "Card"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "gi3a",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName || detail.productName,
+                                    "gi3a",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-gi3a`
+                                  ]
+                                }
+                                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-gi3a`
                                 ]
-                              }
-                              className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-gi3a`
-                              ]
-                                ? "..."
-                                : "Form GI 3A"}
-                            </Button>
+                                  ? "..."
+                                  : "Form GI 3A"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "noc",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName || detail.productName,
+                                    "noc",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-noc`
+                                  ]
+                                }
+                                className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-noc`
                                 ]
-                              }
-                              className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-noc`
-                              ]
-                                ? "..."
-                                : "NOC"}
-                            </Button>
+                                  ? "..."
+                                  : "NOC"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "statement",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName || detail.productName,
+                                    "statement",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-statement`
+                                  ]
+                                }
+                                className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-statement`
                                 ]
-                              }
-                              className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-statement`
-                              ]
-                                ? "..."
-                                : "Statement"}
-                            </Button>
+                                  ? "..."
+                                  : "Statement"}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-                          {detail.annualProduction && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            {/* Annual Production */}
                             <div>
-                              <label className="text-gray-500">
-                                Annual Production
-                              </label>
-                              <p className="font-medium">
-                                {detail.annualProduction} {detail.unit || ""}
-                              </p>
+                              <label className="text-gray-500">Annual Production</label>
+                              {isEditing ? (
+                                <div>
+                                  <Input
+                                    value={currentDetail.annualProduction || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        annualProduction: e.target.value,
+                                      })
+                                    }
+                                    placeholder="e.g. 1000"
+                                  />
+                                  <Input
+                                    value={currentDetail.unit || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        unit: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Unit (kg, pcs, L)"
+                                    className="mt-2"
+                                  />
+                                </div>
+                              ) : (
+                                currentDetail.annualProduction && (
+                                  <p className="font-medium">
+                                    {currentDetail.annualProduction} {currentDetail.unit || ""}
+                                  </p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.areaOfProduction && (
+
+                            {/* Area of Production */}
                             <div>
-                              <label className="text-gray-500">
-                                Area of Production
-                              </label>
-                              <p className="font-medium">
-                                {detail.areaOfProduction}
-                              </p>
+                              <label className="text-gray-500">Area of Production</label>
+                              {isEditing ? (
+                                <Input
+                                  value={currentDetail.areaOfProduction || ""}
+                                  onChange={(e) =>
+                                    updateProductionDetail(detail.id, {
+                                      areaOfProduction: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Describe area"
+                                />
+                              ) : (
+                                currentDetail.areaOfProduction && (
+                                  <p className="font-medium">{currentDetail.areaOfProduction}</p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.yearsOfProduction && (
+
+                            {/* Years of Production */}
                             <div>
-                              <label className="text-gray-500">
-                                Years of Production
-                              </label>
-                              <p className="font-medium">
-                                {detail.yearsOfProduction} years
-                              </p>
+                              <label className="text-gray-500">Years of Production</label>
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  value={currentDetail.yearsOfProduction ?? ""}
+                                  onChange={(e) =>
+                                    updateProductionDetail(detail.id, {
+                                      yearsOfProduction: e.target.value ? parseInt(e.target.value) : undefined,
+                                    })
+                                  }
+                                  placeholder="e.g. 5"
+                                />
+                              ) : (
+                                currentDetail.yearsOfProduction && (
+                                  <p className="font-medium">{currentDetail.yearsOfProduction} years</p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.annualTurnover && (
+
+                            {/* Annual Turnover */}
                             <div>
-                              <label className="text-gray-500">
-                                Annual Turnover
-                              </label>
-                              <p className="font-medium">
-                                {formatTurnover(
-                                  detail.annualTurnover,
-                                  detail.turnoverUnit,
-                                )}
-                              </p>
+                              <label className="text-gray-500">Annual Turnover</label>
+                              {isEditing ? (
+                                <div>
+                                  <Input
+                                    type="number"
+                                    value={currentDetail.annualTurnover ?? ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        annualTurnover: e.target.value ? parseFloat(e.target.value) : undefined,
+                                      })
+                                    }
+                                    placeholder="Amount (numbers only)"
+                                  />
+                                  <Input
+                                    value={currentDetail.turnoverUnit || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        turnoverUnit: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Unit (Lakh, Thousand)"
+                                    className="mt-2"
+                                  />
+                                </div>
+                              ) : (
+                                currentDetail.annualTurnover && (
+                                  <p className="font-medium">
+                                    {formatTurnover(currentDetail.annualTurnover, currentDetail.turnoverUnit)}
+                                  </p>
+                                )
+                              )}
                             </div>
+                          </div>
+
+                          {/* Additional Notes */}
+                          {isEditing ? (
+                            <div className="mt-3">
+                              <label className="text-gray-500 text-sm">Additional Notes</label>
+                              <Textarea
+                                value={currentDetail.additionalNotes || ""}
+                                onChange={(e) =>
+                                  updateProductionDetail(detail.id, {
+                                    additionalNotes: e.target.value,
+                                  })
+                                }
+                                rows={3}
+                              />
+                            </div>
+                          ) : (
+                            currentDetail.additionalNotes && (
+                              <div className="mt-3">
+                                <label className="text-gray-500 text-sm">Additional Notes</label>
+                                <p className="text-gray-700">{currentDetail.additionalNotes}</p>
+                              </div>
+                            )
                           )}
                         </div>
-                        {detail.additionalNotes && (
-                          <div className="mt-3">
-                            <label className="text-gray-500 text-sm">
-                              Additional Notes
-                            </label>
-                            <p className="text-gray-700">
-                              {detail.additionalNotes}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
