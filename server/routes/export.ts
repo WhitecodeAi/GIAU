@@ -645,7 +645,8 @@ export async function exportFormGI3A(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -977,7 +978,8 @@ export async function exportNOC(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -1223,7 +1225,8 @@ export async function exportStatementOfCase(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -1511,7 +1514,8 @@ export async function exportProducerCards(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
