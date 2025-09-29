@@ -1784,15 +1784,12 @@ export async function exportProductNOC(req: Request, res: Response) {
     registration.product_association =
       productData.length > 0 ? productData[0].description : null;
 
-    // Compute application number to be used in NOC title and content (only the main application number is shown)
-    const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-
     // Generate HTML for the specific product
-    const nocHtml = await generateProductNOCHtml(
-      registration,
-      productName,
-      productId,
-    );
+  const nocHtml = await generateProductNOCHtml(
+    registration,
+    productName,
+    productId,
+  );
 
     // Create complete HTML document
     const fullHtml = `
@@ -1800,7 +1797,7 @@ export async function exportProductNOC(req: Request, res: Response) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>NOC - ${appNumber}</title>
+      <title>NOC</title>
       <style>
         @page {
           size: A4;
@@ -2397,9 +2394,18 @@ async function generateProductNOCHtml(
   productId?: number,
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
-  const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  // For NOC we only display the main application number (no product ID or names)
-  const displayAppNumber = appNumber;
+
+  // Resolve product ID: prefer explicit productId param, otherwise lookup by product name
+  let productIdNumber = productId;
+  if (!productIdNumber && productName) {
+    try {
+      const p = await dbQuery(`SELECT id FROM products WHERE name = ? LIMIT 1`, [productName]);
+      if (p && p.length > 0) productIdNumber = p[0].id;
+    } catch (err) {
+      console.error('Error resolving product ID for NOC:', err);
+    }
+  }
+  const displayProductId = productIdNumber ? productIdNumber.toString() : 'Not specified';
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
@@ -2435,15 +2441,15 @@ async function generateProductNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that an Authorised User is registered bearing GI Application No. <span class="highlight">${displayAppNumber}</span> within the designated GI Area.
+          This No Objection Certificate is issued for Product ID: <span class="highlight">${displayProductId}</span>.
         </div>
 
         <div class="noc-paragraph">
-          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, hereby declare that we have no objection to the registration corresponding to the above GI Application No.
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, hereby declare that we have no objection to the registration related to the above Product ID.
         </div>
 
         <div class="noc-paragraph">
-          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods within <span class="highlight">${giArea}</span>, the Registered Proprietor shall not be held responsible for any resulting actions by the competent authority.
+          The authorised producer must adhere to the quality standards maintained as per the registered GI within <span class="highlight">${giArea}</span>. The Registered Proprietor will not be held responsible for actions resulting from independent modifications to production methods.
         </div>
       </div>
 
