@@ -1145,14 +1145,16 @@ async function generateNOCHtml(
   // Format registration date
   const certificateDate = new Date().toLocaleDateString("en-GB");
 
-  // Get primary product name for GI
+  // Get primary product name and id for GI
   const primaryProduct =
     registration.product_names?.split(",")[0] ||
     registration.category_names?.split(",")[0] ||
     "Bodo Traditional Food Product";
+  const primaryProductId = registration.product_ids?.split(",")[0] || "";
 
   // Generate application number based on registration ID and date
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+  const displayAppNumber = primaryProductId ? `${appNumber} - Product ID: ${primaryProductId}` : appNumber;
 
   // Organization details - Generic for bulk exports covering multiple associations
   const organizationName = "Bodo Traditional Producers Consortium";
