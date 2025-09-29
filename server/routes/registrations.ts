@@ -2515,6 +2515,8 @@ async function generateProductStatementHtml(
     ? new Date(registration.created_at).getFullYear()
     : new Date().getFullYear();
   const currentYear = new Date().getFullYear();
+  // Years of experience determined for statement (declared in outer scope so template can use it)
+  let yearsOfExperience: number | null = null;
 
   // Resolve production and turnover dynamically
   let estimatedProduction = "Not specified";
@@ -2544,12 +2546,10 @@ async function generateProductStatementHtml(
     const detail = rows && rows[0];
 
     // Determine years of production: prefer explicit value from production detail, then registration, else compute from registration date
-    let yearsOfExperience: number | null = null;
     if (detail && detail.years_of_production) {
       yearsOfExperience = parseInt(String(detail.years_of_production)) || null;
     } else if (registration.years_of_production) {
-      yearsOfExperience =
-        parseInt(String(registration.years_of_production)) || null;
+      yearsOfExperience = parseInt(String(registration.years_of_production)) || null;
     } else if (registration.created_at) {
       yearsOfExperience = Math.max(1, currentYear - registrationYear);
     } else {
