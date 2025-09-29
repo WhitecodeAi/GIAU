@@ -298,6 +298,22 @@ export default function RegistrationDetails() {
     }
   };
 
+  const updateProductionDetail = (
+    id: number,
+    changes: Partial<RegistrationDetails["production_details"][0]>,
+  ) => {
+    setEditedData((prev) => {
+      const prevDetails = (prev.production_details || registration.production_details || []).map((d) => ({ ...d }));
+      const idx = prevDetails.findIndex((d) => d.id === id);
+      if (idx !== -1) {
+        prevDetails[idx] = { ...prevDetails[idx], ...changes } as any;
+      } else {
+        prevDetails.push({ id, ...(changes as any) });
+      }
+      return { ...prev, production_details: prevDetails } as Partial<RegistrationDetails>;
+    });
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
       year: "numeric",
