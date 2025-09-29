@@ -195,6 +195,11 @@ export default function RegistrationDetails() {
       aadhar_number: registration?.aadhar_number,
       voter_id: registration?.voter_id,
       pan_number: registration?.pan_number,
+      area_of_production: registration?.area_of_production,
+      annual_turnover: registration?.annual_turnover,
+      turnover_unit: registration?.turnover_unit,
+      years_of_production: registration?.years_of_production,
+      production_details: registration?.production_details?.map((d) => ({ ...d })) || [],
     });
   };
 
