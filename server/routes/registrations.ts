@@ -1785,7 +1785,11 @@ export async function exportProductNOC(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    const nocHtml = await generateProductNOCHtml(registration, productName);
+    const nocHtml = await generateProductNOCHtml(
+      registration,
+      productName,
+      productId,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2220,9 +2224,7 @@ async function getAssociationStamp(
 }
 
 // Helper to get both stamp and registration short form (registration_number) from associations
-async function getAssociationDetails(
-  associationName: string,
-): Promise<{
+async function getAssociationDetails(associationName: string): Promise<{
   stamp_image_path: string | null;
   registration_number: string | null;
 }> {
@@ -2389,9 +2391,13 @@ async function generateProductFormGI3AHtml(
 async function generateProductNOCHtml(
   registration: any,
   productName: string,
+  productId?: number,
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+  const displayAppNumber = productId
+    ? `${appNumber} - Product ID: ${productId}`
+    : appNumber;
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
@@ -2427,7 +2433,7 @@ async function generateProductNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${productName}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${productName}</span>", bearing GI Application No. <span class="highlight">${displayAppNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
         </div>
 
         <div class="noc-paragraph">

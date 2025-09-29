@@ -21,6 +21,7 @@ interface RegistrationData {
   signature_path?: string;
   category_names: string;
   product_names?: string;
+  product_ids?: string;
 }
 
 export async function exportUsersWithDateRange(req: Request, res: Response) {
@@ -644,7 +645,8 @@ export async function exportFormGI3A(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -976,7 +978,8 @@ export async function exportNOC(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -1142,14 +1145,18 @@ async function generateNOCHtml(
   // Format registration date
   const certificateDate = new Date().toLocaleDateString("en-GB");
 
-  // Get primary product name for GI
+  // Get primary product name and id for GI
   const primaryProduct =
     registration.product_names?.split(",")[0] ||
     registration.category_names?.split(",")[0] ||
     "Bodo Traditional Food Product";
+  const primaryProductId = registration.product_ids?.split(",")[0] || "";
 
   // Generate application number based on registration ID and date
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+  const displayAppNumber = primaryProductId
+    ? `${appNumber} - Product ID: ${primaryProductId}`
+    : appNumber;
 
   // Organization details - Generic for bulk exports covering multiple associations
   const organizationName = "Bodo Traditional Producers Consortium";
@@ -1163,7 +1170,7 @@ async function generateNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${primaryProduct}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${primaryProduct}</span>", bearing GI Application No. <span class="highlight">${displayAppNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
         </div>
 
         <div class="noc-paragraph">
@@ -1222,7 +1229,8 @@ export async function exportStatementOfCase(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
@@ -1510,7 +1518,8 @@ export async function exportProducerCards(req: Request, res: Response) {
         ur.photo_path,
         ur.signature_path,
         GROUP_CONCAT(DISTINCT pc.name) as category_names,
-        GROUP_CONCAT(DISTINCT p.name) as product_names
+        GROUP_CONCAT(DISTINCT p.name) as product_names,
+        GROUP_CONCAT(DISTINCT p.id) as product_ids
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
