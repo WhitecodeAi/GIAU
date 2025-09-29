@@ -700,8 +700,9 @@ export default function RegistrationDetails() {
                             setEditedData({ ...editedData, pan_number: val });
                             setFieldErrors((prev) => ({ ...prev, pan_number: "" }));
                           }}
-                          placeholder="Enter PAN number"
+                          placeholder="Enter PAN number (e.g. ABCDE1234F)"
                         />
+                        <p className="text-sm text-gray-500 mt-1">Example: ABCDE1234F — 5 letters, 4 digits, 1 letter</p>
                         {fieldErrors.pan_number && (
                           <p className="error-message">{fieldErrors.pan_number}</p>
                         )}
