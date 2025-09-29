@@ -2446,15 +2446,7 @@ async function generateProductNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This No Objection Certificate is issued for Product ID: <span class="highlight">${displayProductId}</span>.
-        </div>
-
-        <div class="noc-paragraph">
-          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, hereby declare that we have no objection to the registration related to the above Product ID.
-        </div>
-
-        <div class="noc-paragraph">
-          The authorised producer must adhere to the quality standards maintained as per the registered GI within <span class="highlight">${giArea}</span>. The Registered Proprietor will not be held responsible for actions resulting from independent modifications to production methods.
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of <span class="highlight">${productName}</span>, bearing GI Application No. <span class="highlight">${displayProductId}</span>, and the said proposed Authorised User is the producer within the designated <span class="highlight">${giArea}</span> GI Area.
         </div>
       </div>
 
