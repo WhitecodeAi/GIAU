@@ -242,7 +242,9 @@ export default function RegistrationDetails() {
     } catch (error) {
       console.error("Error updating registration:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update registration",
+        error instanceof Error
+          ? error.message
+          : "Failed to update registration",
       );
     } finally {
       setSaving(false);
@@ -642,13 +644,21 @@ export default function RegistrationDetails() {
                           value={editedData.aadhar_number || ""}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setEditedData({ ...editedData, aadhar_number: val });
-                            setFieldErrors((prev) => ({ ...prev, aadhar_number: "" }));
+                            setEditedData({
+                              ...editedData,
+                              aadhar_number: val,
+                            });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              aadhar_number: "",
+                            }));
                           }}
                           placeholder="Enter Aadhar number"
                         />
                         {fieldErrors.aadhar_number && (
-                          <p className="error-message">{fieldErrors.aadhar_number}</p>
+                          <p className="error-message">
+                            {fieldErrors.aadhar_number}
+                          </p>
                         )}
                       </>
                     ) : (
@@ -670,13 +680,20 @@ export default function RegistrationDetails() {
                           onChange={(e) => {
                             const val = e.target.value;
                             setEditedData({ ...editedData, voter_id: val });
-                            setFieldErrors((prev) => ({ ...prev, voter_id: "" }));
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              voter_id: "",
+                            }));
                           }}
                           placeholder="Enter Voter ID (e.g. ABC1234567)"
                         />
-                        <p className="text-sm text-gray-500 mt-1">Example: ABC1234567 — 3 letters followed by 7 digits</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABC1234567 — 3 letters followed by 7 digits
+                        </p>
                         {fieldErrors.voter_id && (
-                          <p className="error-message">{fieldErrors.voter_id}</p>
+                          <p className="error-message">
+                            {fieldErrors.voter_id}
+                          </p>
                         )}
                       </>
                     ) : (
@@ -698,13 +715,20 @@ export default function RegistrationDetails() {
                           onChange={(e) => {
                             const val = e.target.value;
                             setEditedData({ ...editedData, pan_number: val });
-                            setFieldErrors((prev) => ({ ...prev, pan_number: "" }));
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              pan_number: "",
+                            }));
                           }}
                           placeholder="Enter PAN number (e.g. ABCDE1234F)"
                         />
-                        <p className="text-sm text-gray-500 mt-1">Example: ABCDE1234F — 5 letters, 4 digits, 1 letter</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABCDE1234F — 5 letters, 4 digits, 1 letter
+                        </p>
                         {fieldErrors.pan_number && (
-                          <p className="error-message">{fieldErrors.pan_number}</p>
+                          <p className="error-message">
+                            {fieldErrors.pan_number}
+                          </p>
                         )}
                       </>
                     ) : (
