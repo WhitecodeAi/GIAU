@@ -1168,7 +1168,7 @@ async function generateNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${primaryProduct}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${primaryProduct}</span>", bearing GI Application No. <span class="highlight">${displayAppNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
         </div>
 
         <div class="noc-paragraph">
