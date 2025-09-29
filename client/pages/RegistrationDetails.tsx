@@ -199,7 +199,8 @@ export default function RegistrationDetails() {
       annual_turnover: registration?.annual_turnover,
       turnover_unit: registration?.turnover_unit,
       years_of_production: registration?.years_of_production,
-      production_details: registration?.production_details?.map((d) => ({ ...d })) || [],
+      production_details:
+        registration?.production_details?.map((d) => ({ ...d })) || [],
     });
   };
 
@@ -303,14 +304,21 @@ export default function RegistrationDetails() {
     changes: Partial<RegistrationDetails["production_details"][0]>,
   ) => {
     setEditedData((prev) => {
-      const prevDetails = (prev.production_details || registration.production_details || []).map((d) => ({ ...d }));
+      const prevDetails = (
+        prev.production_details ||
+        registration.production_details ||
+        []
+      ).map((d) => ({ ...d }));
       const idx = prevDetails.findIndex((d) => d.id === id);
       if (idx !== -1) {
         prevDetails[idx] = { ...prevDetails[idx], ...changes } as any;
       } else {
         prevDetails.push({ id, ...(changes as any) });
       }
-      return { ...prev, production_details: prevDetails } as Partial<RegistrationDetails>;
+      return {
+        ...prev,
+        production_details: prevDetails,
+      } as Partial<RegistrationDetails>;
     });
   };
 
@@ -858,13 +866,16 @@ export default function RegistrationDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {(
-                      isEditing
-                        ? (editedData.production_details || registration.production_details)
-                        : registration.production_details
+                    {(isEditing
+                      ? editedData.production_details ||
+                        registration.production_details
+                      : registration.production_details
                     ).map((detail) => {
                       const currentDetail = isEditing
-                        ? (editedData.production_details || registration.production_details).find((d) => d.id === detail.id) || detail
+                        ? (
+                            editedData.production_details ||
+                            registration.production_details
+                          ).find((d) => d.id === detail.id) || detail
                         : detail;
 
                       return (
@@ -883,7 +894,8 @@ export default function RegistrationDetails() {
                                 onClick={() =>
                                   handleExportProduct(
                                     detail.productId || detail.id,
-                                    currentDetail.productName || detail.productName,
+                                    currentDetail.productName ||
+                                      detail.productName,
                                     "card",
                                   )
                                 }
@@ -908,7 +920,8 @@ export default function RegistrationDetails() {
                                 onClick={() =>
                                   handleExportProduct(
                                     detail.productId || detail.id,
-                                    currentDetail.productName || detail.productName,
+                                    currentDetail.productName ||
+                                      detail.productName,
                                     "gi3a",
                                   )
                                 }
@@ -933,7 +946,8 @@ export default function RegistrationDetails() {
                                 onClick={() =>
                                   handleExportProduct(
                                     detail.productId || detail.id,
-                                    currentDetail.productName || detail.productName,
+                                    currentDetail.productName ||
+                                      detail.productName,
                                     "noc",
                                   )
                                 }
@@ -958,7 +972,8 @@ export default function RegistrationDetails() {
                                 onClick={() =>
                                   handleExportProduct(
                                     detail.productId || detail.id,
-                                    currentDetail.productName || detail.productName,
+                                    currentDetail.productName ||
+                                      detail.productName,
                                     "statement",
                                   )
                                 }
@@ -982,7 +997,9 @@ export default function RegistrationDetails() {
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                             {/* Annual Production */}
                             <div>
-                              <label className="text-gray-500">Annual Production</label>
+                              <label className="text-gray-500">
+                                Annual Production
+                              </label>
                               {isEditing ? (
                                 <div>
                                   <Input
@@ -1008,7 +1025,8 @@ export default function RegistrationDetails() {
                               ) : (
                                 currentDetail.annualProduction && (
                                   <p className="font-medium">
-                                    {currentDetail.annualProduction} {currentDetail.unit || ""}
+                                    {currentDetail.annualProduction}{" "}
+                                    {currentDetail.unit || ""}
                                   </p>
                                 )
                               )}
@@ -1016,7 +1034,9 @@ export default function RegistrationDetails() {
 
                             {/* Area of Production */}
                             <div>
-                              <label className="text-gray-500">Area of Production</label>
+                              <label className="text-gray-500">
+                                Area of Production
+                              </label>
                               {isEditing ? (
                                 <Input
                                   value={currentDetail.areaOfProduction || ""}
@@ -1029,35 +1049,45 @@ export default function RegistrationDetails() {
                                 />
                               ) : (
                                 currentDetail.areaOfProduction && (
-                                  <p className="font-medium">{currentDetail.areaOfProduction}</p>
+                                  <p className="font-medium">
+                                    {currentDetail.areaOfProduction}
+                                  </p>
                                 )
                               )}
                             </div>
 
                             {/* Years of Production */}
                             <div>
-                              <label className="text-gray-500">Years of Production</label>
+                              <label className="text-gray-500">
+                                Years of Production
+                              </label>
                               {isEditing ? (
                                 <Input
                                   type="number"
                                   value={currentDetail.yearsOfProduction ?? ""}
                                   onChange={(e) =>
                                     updateProductionDetail(detail.id, {
-                                      yearsOfProduction: e.target.value ? parseInt(e.target.value) : undefined,
+                                      yearsOfProduction: e.target.value
+                                        ? parseInt(e.target.value)
+                                        : undefined,
                                     })
                                   }
                                   placeholder="e.g. 5"
                                 />
                               ) : (
                                 currentDetail.yearsOfProduction && (
-                                  <p className="font-medium">{currentDetail.yearsOfProduction} years</p>
+                                  <p className="font-medium">
+                                    {currentDetail.yearsOfProduction} years
+                                  </p>
                                 )
                               )}
                             </div>
 
                             {/* Annual Turnover */}
                             <div>
-                              <label className="text-gray-500">Annual Turnover</label>
+                              <label className="text-gray-500">
+                                Annual Turnover
+                              </label>
                               {isEditing ? (
                                 <div>
                                   <Input
@@ -1065,7 +1095,9 @@ export default function RegistrationDetails() {
                                     value={currentDetail.annualTurnover ?? ""}
                                     onChange={(e) =>
                                       updateProductionDetail(detail.id, {
-                                        annualTurnover: e.target.value ? parseFloat(e.target.value) : undefined,
+                                        annualTurnover: e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : undefined,
                                       })
                                     }
                                     placeholder="Amount (numbers only)"
@@ -1084,7 +1116,10 @@ export default function RegistrationDetails() {
                               ) : (
                                 currentDetail.annualTurnover && (
                                   <p className="font-medium">
-                                    {formatTurnover(currentDetail.annualTurnover, currentDetail.turnoverUnit)}
+                                    {formatTurnover(
+                                      currentDetail.annualTurnover,
+                                      currentDetail.turnoverUnit,
+                                    )}
                                   </p>
                                 )
                               )}
@@ -1094,7 +1129,9 @@ export default function RegistrationDetails() {
                           {/* Additional Notes */}
                           {isEditing ? (
                             <div className="mt-3">
-                              <label className="text-gray-500 text-sm">Additional Notes</label>
+                              <label className="text-gray-500 text-sm">
+                                Additional Notes
+                              </label>
                               <Textarea
                                 value={currentDetail.additionalNotes || ""}
                                 onChange={(e) =>
@@ -1108,8 +1145,12 @@ export default function RegistrationDetails() {
                           ) : (
                             currentDetail.additionalNotes && (
                               <div className="mt-3">
-                                <label className="text-gray-500 text-sm">Additional Notes</label>
-                                <p className="text-gray-700">{currentDetail.additionalNotes}</p>
+                                <label className="text-gray-500 text-sm">
+                                  Additional Notes
+                                </label>
+                                <p className="text-gray-700">
+                                  {currentDetail.additionalNotes}
+                                </p>
                               </div>
                             )
                           )}
