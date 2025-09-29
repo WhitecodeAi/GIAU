@@ -2502,9 +2502,10 @@ async function generateProductStatementHtml(
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
-  const registrationYear = new Date(registration.created_at).getFullYear();
+  const registrationYear = registration.created_at
+    ? new Date(registration.created_at).getFullYear()
+    : new Date().getFullYear();
   const currentYear = new Date().getFullYear();
-  const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
 
   // Resolve production and turnover dynamically
   let estimatedProduction = "Not specified";
@@ -2532,6 +2533,19 @@ async function generateProductStatementHtml(
     }
 
     const detail = rows && rows[0];
+
+    // Determine years of production: prefer explicit value from production detail, then registration, else compute from registration date
+    let yearsOfExperience: number | null = null;
+    if (detail && detail.years_of_production) {
+      yearsOfExperience = parseInt(String(detail.years_of_production)) || null;
+    } else if (registration.years_of_production) {
+      yearsOfExperience =
+        parseInt(String(registration.years_of_production)) || null;
+    } else if (registration.created_at) {
+      yearsOfExperience = Math.max(1, currentYear - registrationYear);
+    } else {
+      yearsOfExperience = 1;
+    }
 
     console.log("🔎 Statement data lookup:", {
       productId,
