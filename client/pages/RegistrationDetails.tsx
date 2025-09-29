@@ -98,6 +98,41 @@ export default function RegistrationDetails() {
   const [uploadingDocuments, setUploadingDocuments] = useState<{
     [key: string]: boolean;
   }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  const validateIdFields = () => {
+    const errors: { [key: string]: string } = {};
+
+    // Aadhar: accept digits with or without spaces, but must total 12 digits
+    const aadharVal = editedData.aadhar_number?.toString().trim();
+    if (editedData.hasOwnProperty("aadhar_number") && aadharVal) {
+      const digits = aadharVal.replace(/\s+/g, "");
+      if (!/^\d{12}$/.test(digits)) {
+        errors.aadhar_number = "Aadhar number must be 12 digits";
+      }
+    }
+
+    // PAN: 5 letters, 4 digits, 1 letter
+    const panVal = editedData.pan_number?.toString().trim();
+    if (editedData.hasOwnProperty("pan_number") && panVal) {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(panVal)) {
+        errors.pan_number =
+          "PAN must be 10 characters in format: 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)";
+      }
+    }
+
+    // Voter ID: common EPIC format: 3 letters followed by 7 digits
+    const voterVal = editedData.voter_id?.toString().trim();
+    if (editedData.hasOwnProperty("voter_id") && voterVal) {
+      if (!/^[A-Z]{3}[0-9]{7}$/i.test(voterVal)) {
+        errors.voter_id =
+          "Voter ID must be 10 characters (3 letters followed by 7 digits)";
+      }
+    }
+
+    setFieldErrors(errors);
+    return errors;
+  };
 
   const [viewerImage, setViewerImage] = useState<{
     src: string;
@@ -171,6 +206,13 @@ export default function RegistrationDetails() {
   const handleSaveEdit = async () => {
     if (!registration || !id) return;
 
+    // Validate ID fields
+    const errors = validateIdFields();
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fix validation errors before saving");
+      return;
+    }
+
     setSaving(true);
     try {
       const response = await fetch(`/api/registrations/${id}`, {
@@ -182,17 +224,28 @@ export default function RegistrationDetails() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update registration");
+        // Try to parse validation errors from server if provided
+        let message = "Failed to update registration";
+        try {
+          const err = await response.json();
+          if (err && err.error) message = err.error;
+        } catch {}
+        throw new Error(message);
       }
 
       const updatedData = await response.json();
       setRegistration({ ...registration, ...editedData });
       setIsEditing(false);
       setEditedData({});
+      setFieldErrors({});
       toast.success("Registration updated successfully");
     } catch (error) {
       console.error("Error updating registration:", error);
-      toast.error("Failed to update registration");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update registration",
+      );
     } finally {
       setSaving(false);
     }
@@ -586,16 +639,28 @@ export default function RegistrationDetails() {
                       Aadhar Number
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.aadhar_number || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            aadhar_number: e.target.value,
-                          })
-                        }
-                        placeholder="Enter Aadhar number"
-                      />
+                      <>
+                        <Input
+                          value={editedData.aadhar_number || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({
+                              ...editedData,
+                              aadhar_number: val,
+                            });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              aadhar_number: "",
+                            }));
+                          }}
+                          placeholder="Enter Aadhar number"
+                        />
+                        {fieldErrors.aadhar_number && (
+                          <p className="error-message">
+                            {fieldErrors.aadhar_number}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.aadhar_number && (
                         <p className="text-gray-900 font-mono">
@@ -609,16 +674,28 @@ export default function RegistrationDetails() {
                       Voter ID
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.voter_id || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            voter_id: e.target.value,
-                          })
-                        }
-                        placeholder="Enter Voter ID"
-                      />
+                      <>
+                        <Input
+                          value={editedData.voter_id || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({ ...editedData, voter_id: val });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              voter_id: "",
+                            }));
+                          }}
+                          placeholder="Enter Voter ID (e.g. ABC1234567)"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABC1234567 — 3 letters followed by 7 digits
+                        </p>
+                        {fieldErrors.voter_id && (
+                          <p className="error-message">
+                            {fieldErrors.voter_id}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.voter_id && (
                         <p className="text-gray-900 font-mono">
@@ -632,16 +709,28 @@ export default function RegistrationDetails() {
                       PAN Number
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.pan_number || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            pan_number: e.target.value,
-                          })
-                        }
-                        placeholder="Enter PAN number"
-                      />
+                      <>
+                        <Input
+                          value={editedData.pan_number || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({ ...editedData, pan_number: val });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              pan_number: "",
+                            }));
+                          }}
+                          placeholder="Enter PAN number (e.g. ABCDE1234F)"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABCDE1234F — 5 letters, 4 digits, 1 letter
+                        </p>
+                        {fieldErrors.pan_number && (
+                          <p className="error-message">
+                            {fieldErrors.pan_number}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.pan_number && (
                         <p className="text-gray-900 font-mono">
