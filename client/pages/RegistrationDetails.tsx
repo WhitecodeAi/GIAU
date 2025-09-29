@@ -672,8 +672,9 @@ export default function RegistrationDetails() {
                             setEditedData({ ...editedData, voter_id: val });
                             setFieldErrors((prev) => ({ ...prev, voter_id: "" }));
                           }}
-                          placeholder="Enter Voter ID"
+                          placeholder="Enter Voter ID (e.g. ABC1234567)"
                         />
+                        <p className="text-sm text-gray-500 mt-1">Example: ABC1234567 — 3 letters followed by 7 digits</p>
                         {fieldErrors.voter_id && (
                           <p className="error-message">{fieldErrors.voter_id}</p>
                         )}
