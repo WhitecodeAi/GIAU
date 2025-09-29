@@ -21,6 +21,7 @@ interface RegistrationData {
   signature_path?: string;
   category_names: string;
   product_names?: string;
+  product_ids?: string;
 }
 
 export async function exportUsersWithDateRange(req: Request, res: Response) {
