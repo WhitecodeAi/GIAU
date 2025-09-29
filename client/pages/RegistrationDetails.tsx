@@ -98,6 +98,41 @@ export default function RegistrationDetails() {
   const [uploadingDocuments, setUploadingDocuments] = useState<{
     [key: string]: boolean;
   }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  const validateIdFields = () => {
+    const errors: { [key: string]: string } = {};
+
+    // Aadhar: accept digits with or without spaces, but must total 12 digits
+    const aadharVal = editedData.aadhar_number?.toString().trim();
+    if (editedData.hasOwnProperty("aadhar_number") && aadharVal) {
+      const digits = aadharVal.replace(/\s+/g, "");
+      if (!/^\d{12}$/.test(digits)) {
+        errors.aadhar_number = "Aadhar number must be 12 digits";
+      }
+    }
+
+    // PAN: 5 letters, 4 digits, 1 letter
+    const panVal = editedData.pan_number?.toString().trim();
+    if (editedData.hasOwnProperty("pan_number") && panVal) {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(panVal)) {
+        errors.pan_number =
+          "PAN must be 10 characters in format: 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)";
+      }
+    }
+
+    // Voter ID: common EPIC format: 3 letters followed by 7 digits
+    const voterVal = editedData.voter_id?.toString().trim();
+    if (editedData.hasOwnProperty("voter_id") && voterVal) {
+      if (!/^[A-Z]{3}[0-9]{7}$/i.test(voterVal)) {
+        errors.voter_id =
+          "Voter ID must be 10 characters (3 letters followed by 7 digits)";
+      }
+    }
+
+    setFieldErrors(errors);
+    return errors;
+  };
 
   const [viewerImage, setViewerImage] = useState<{
     src: string;
@@ -160,6 +195,12 @@ export default function RegistrationDetails() {
       aadhar_number: registration?.aadhar_number,
       voter_id: registration?.voter_id,
       pan_number: registration?.pan_number,
+      area_of_production: registration?.area_of_production,
+      annual_turnover: registration?.annual_turnover,
+      turnover_unit: registration?.turnover_unit,
+      years_of_production: registration?.years_of_production,
+      production_details:
+        registration?.production_details?.map((d) => ({ ...d })) || [],
     });
   };
 
@@ -170,6 +211,13 @@ export default function RegistrationDetails() {
 
   const handleSaveEdit = async () => {
     if (!registration || !id) return;
+
+    // Validate ID fields
+    const errors = validateIdFields();
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fix validation errors before saving");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -182,17 +230,28 @@ export default function RegistrationDetails() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update registration");
+        // Try to parse validation errors from server if provided
+        let message = "Failed to update registration";
+        try {
+          const err = await response.json();
+          if (err && err.error) message = err.error;
+        } catch {}
+        throw new Error(message);
       }
 
       const updatedData = await response.json();
       setRegistration({ ...registration, ...editedData });
       setIsEditing(false);
       setEditedData({});
+      setFieldErrors({});
       toast.success("Registration updated successfully");
     } catch (error) {
       console.error("Error updating registration:", error);
-      toast.error("Failed to update registration");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update registration",
+      );
     } finally {
       setSaving(false);
     }
@@ -238,6 +297,29 @@ export default function RegistrationDetails() {
     } finally {
       setUploadingDocuments((prev) => ({ ...prev, [documentType]: false }));
     }
+  };
+
+  const updateProductionDetail = (
+    id: number,
+    changes: Partial<RegistrationDetails["production_details"][0]>,
+  ) => {
+    setEditedData((prev) => {
+      const prevDetails = (
+        prev.production_details ||
+        registration.production_details ||
+        []
+      ).map((d) => ({ ...d }));
+      const idx = prevDetails.findIndex((d) => d.id === id);
+      if (idx !== -1) {
+        prevDetails[idx] = { ...prevDetails[idx], ...changes } as any;
+      } else {
+        prevDetails.push({ id, ...(changes as any) });
+      }
+      return {
+        ...prev,
+        production_details: prevDetails,
+      } as Partial<RegistrationDetails>;
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -586,16 +668,28 @@ export default function RegistrationDetails() {
                       Aadhar Number
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.aadhar_number || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            aadhar_number: e.target.value,
-                          })
-                        }
-                        placeholder="Enter Aadhar number"
-                      />
+                      <>
+                        <Input
+                          value={editedData.aadhar_number || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({
+                              ...editedData,
+                              aadhar_number: val,
+                            });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              aadhar_number: "",
+                            }));
+                          }}
+                          placeholder="Enter Aadhar number"
+                        />
+                        {fieldErrors.aadhar_number && (
+                          <p className="error-message">
+                            {fieldErrors.aadhar_number}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.aadhar_number && (
                         <p className="text-gray-900 font-mono">
@@ -609,16 +703,28 @@ export default function RegistrationDetails() {
                       Voter ID
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.voter_id || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            voter_id: e.target.value,
-                          })
-                        }
-                        placeholder="Enter Voter ID"
-                      />
+                      <>
+                        <Input
+                          value={editedData.voter_id || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({ ...editedData, voter_id: val });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              voter_id: "",
+                            }));
+                          }}
+                          placeholder="Enter Voter ID (e.g. ABC1234567)"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABC1234567 — 3 letters followed by 7 digits
+                        </p>
+                        {fieldErrors.voter_id && (
+                          <p className="error-message">
+                            {fieldErrors.voter_id}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.voter_id && (
                         <p className="text-gray-900 font-mono">
@@ -632,16 +738,28 @@ export default function RegistrationDetails() {
                       PAN Number
                     </label>
                     {isEditing ? (
-                      <Input
-                        value={editedData.pan_number || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            pan_number: e.target.value,
-                          })
-                        }
-                        placeholder="Enter PAN number"
-                      />
+                      <>
+                        <Input
+                          value={editedData.pan_number || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditedData({ ...editedData, pan_number: val });
+                            setFieldErrors((prev) => ({
+                              ...prev,
+                              pan_number: "",
+                            }));
+                          }}
+                          placeholder="Enter PAN number (e.g. ABCDE1234F)"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Example: ABCDE1234F — 5 letters, 4 digits, 1 letter
+                        </p>
+                        {fieldErrors.pan_number && (
+                          <p className="error-message">
+                            {fieldErrors.pan_number}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       registration.pan_number && (
                         <p className="text-gray-900 font-mono">
@@ -748,175 +866,297 @@ export default function RegistrationDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {registration.production_details.map((detail) => (
-                      <div
-                        key={detail.id}
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-semibold text-gray-800">
-                            {detail.productName}
-                          </h4>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "card",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                    {(isEditing
+                      ? editedData.production_details ||
+                        registration.production_details
+                      : registration.production_details
+                    ).map((detail) => {
+                      const currentDetail = isEditing
+                        ? (
+                            editedData.production_details ||
+                            registration.production_details
+                          ).find((d) => d.id === detail.id) || detail
+                        : detail;
+
+                      return (
+                        <div
+                          key={detail.id}
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-gray-800">
+                              {currentDetail.productName || detail.productName}
+                            </h4>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName ||
+                                      detail.productName,
+                                    "card",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-card`
+                                  ]
+                                }
+                                className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-card`
                                 ]
-                              }
-                              className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-card`
-                              ]
-                                ? "..."
-                                : "Card"}
-                            </Button>
+                                  ? "..."
+                                  : "Card"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "gi3a",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName ||
+                                      detail.productName,
+                                    "gi3a",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-gi3a`
+                                  ]
+                                }
+                                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-gi3a`
                                 ]
-                              }
-                              className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-gi3a`
-                              ]
-                                ? "..."
-                                : "Form GI 3A"}
-                            </Button>
+                                  ? "..."
+                                  : "Form GI 3A"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "noc",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName ||
+                                      detail.productName,
+                                    "noc",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-noc`
+                                  ]
+                                }
+                                className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-noc`
                                 ]
-                              }
-                              className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-noc`
-                              ]
-                                ? "..."
-                                : "NOC"}
-                            </Button>
+                                  ? "..."
+                                  : "NOC"}
+                              </Button>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                handleExportProduct(
-                                  detail.productId || detail.id,
-                                  detail.productName,
-                                  "statement",
-                                )
-                              }
-                              disabled={
-                                exportingStates[
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleExportProduct(
+                                    detail.productId || detail.id,
+                                    currentDetail.productName ||
+                                      detail.productName,
+                                    "statement",
+                                  )
+                                }
+                                disabled={
+                                  exportingStates[
+                                    `${detail.productId || detail.id}-statement`
+                                  ]
+                                }
+                                className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
+                              >
+                                <Download size={12} className="mr-1" />
+                                {exportingStates[
                                   `${detail.productId || detail.id}-statement`
                                 ]
-                              }
-                              className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200"
-                            >
-                              <Download size={12} className="mr-1" />
-                              {exportingStates[
-                                `${detail.productId || detail.id}-statement`
-                              ]
-                                ? "..."
-                                : "Statement"}
-                            </Button>
+                                  ? "..."
+                                  : "Statement"}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-                          {detail.annualProduction && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            {/* Annual Production */}
                             <div>
                               <label className="text-gray-500">
                                 Annual Production
                               </label>
-                              <p className="font-medium">
-                                {detail.annualProduction} {detail.unit || ""}
-                              </p>
+                              {isEditing ? (
+                                <div>
+                                  <Input
+                                    value={currentDetail.annualProduction || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        annualProduction: e.target.value,
+                                      })
+                                    }
+                                    placeholder="e.g. 1000"
+                                  />
+                                  <Input
+                                    value={currentDetail.unit || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        unit: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Unit (kg, pcs, L)"
+                                    className="mt-2"
+                                  />
+                                </div>
+                              ) : (
+                                currentDetail.annualProduction && (
+                                  <p className="font-medium">
+                                    {currentDetail.annualProduction}{" "}
+                                    {currentDetail.unit || ""}
+                                  </p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.areaOfProduction && (
+
+                            {/* Area of Production */}
                             <div>
                               <label className="text-gray-500">
                                 Area of Production
                               </label>
-                              <p className="font-medium">
-                                {detail.areaOfProduction}
-                              </p>
+                              {isEditing ? (
+                                <Input
+                                  value={currentDetail.areaOfProduction || ""}
+                                  onChange={(e) =>
+                                    updateProductionDetail(detail.id, {
+                                      areaOfProduction: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Describe area"
+                                />
+                              ) : (
+                                currentDetail.areaOfProduction && (
+                                  <p className="font-medium">
+                                    {currentDetail.areaOfProduction}
+                                  </p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.yearsOfProduction && (
+
+                            {/* Years of Production */}
                             <div>
                               <label className="text-gray-500">
                                 Years of Production
                               </label>
-                              <p className="font-medium">
-                                {detail.yearsOfProduction} years
-                              </p>
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  value={currentDetail.yearsOfProduction ?? ""}
+                                  onChange={(e) =>
+                                    updateProductionDetail(detail.id, {
+                                      yearsOfProduction: e.target.value
+                                        ? parseInt(e.target.value)
+                                        : undefined,
+                                    })
+                                  }
+                                  placeholder="e.g. 5"
+                                />
+                              ) : (
+                                currentDetail.yearsOfProduction && (
+                                  <p className="font-medium">
+                                    {currentDetail.yearsOfProduction} years
+                                  </p>
+                                )
+                              )}
                             </div>
-                          )}
-                          {detail.annualTurnover && (
+
+                            {/* Annual Turnover */}
                             <div>
                               <label className="text-gray-500">
                                 Annual Turnover
                               </label>
-                              <p className="font-medium">
-                                {formatTurnover(
-                                  detail.annualTurnover,
-                                  detail.turnoverUnit,
-                                )}
-                              </p>
+                              {isEditing ? (
+                                <div>
+                                  <Input
+                                    type="number"
+                                    value={currentDetail.annualTurnover ?? ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        annualTurnover: e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : undefined,
+                                      })
+                                    }
+                                    placeholder="Amount (numbers only)"
+                                  />
+                                  <Input
+                                    value={currentDetail.turnoverUnit || ""}
+                                    onChange={(e) =>
+                                      updateProductionDetail(detail.id, {
+                                        turnoverUnit: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Unit (Lakh, Thousand)"
+                                    className="mt-2"
+                                  />
+                                </div>
+                              ) : (
+                                currentDetail.annualTurnover && (
+                                  <p className="font-medium">
+                                    {formatTurnover(
+                                      currentDetail.annualTurnover,
+                                      currentDetail.turnoverUnit,
+                                    )}
+                                  </p>
+                                )
+                              )}
                             </div>
+                          </div>
+
+                          {/* Additional Notes */}
+                          {isEditing ? (
+                            <div className="mt-3">
+                              <label className="text-gray-500 text-sm">
+                                Additional Notes
+                              </label>
+                              <Textarea
+                                value={currentDetail.additionalNotes || ""}
+                                onChange={(e) =>
+                                  updateProductionDetail(detail.id, {
+                                    additionalNotes: e.target.value,
+                                  })
+                                }
+                                rows={3}
+                              />
+                            </div>
+                          ) : (
+                            currentDetail.additionalNotes && (
+                              <div className="mt-3">
+                                <label className="text-gray-500 text-sm">
+                                  Additional Notes
+                                </label>
+                                <p className="text-gray-700">
+                                  {currentDetail.additionalNotes}
+                                </p>
+                              </div>
+                            )
                           )}
                         </div>
-                        {detail.additionalNotes && (
-                          <div className="mt-3">
-                            <label className="text-gray-500 text-sm">
-                              Additional Notes
-                            </label>
-                            <p className="text-gray-700">
-                              {detail.additionalNotes}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

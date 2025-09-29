@@ -1785,7 +1785,11 @@ export async function exportProductNOC(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    const nocHtml = await generateProductNOCHtml(registration, productName);
+    const nocHtml = await generateProductNOCHtml(
+      registration,
+      productName,
+      productId,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -1793,7 +1797,7 @@ export async function exportProductNOC(req: Request, res: Response) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>NOC - ${productName}</title>
+      <title>NOC</title>
       <style>
         @page {
           size: A4;
@@ -2124,7 +2128,7 @@ async function getProductAssociation(productName: string): Promise<string> {
       [productName],
     );
 
-    console.log(`📋 Database query result:`, productResult);
+    console.log(`���� Database query result:`, productResult);
 
     if (productResult.length > 0 && productResult[0].description) {
       console.log(
@@ -2220,9 +2224,7 @@ async function getAssociationStamp(
 }
 
 // Helper to get both stamp and registration short form (registration_number) from associations
-async function getAssociationDetails(
-  associationName: string,
-): Promise<{
+async function getAssociationDetails(associationName: string): Promise<{
   stamp_image_path: string | null;
   registration_number: string | null;
 }> {
@@ -2389,9 +2391,26 @@ async function generateProductFormGI3AHtml(
 async function generateProductNOCHtml(
   registration: any,
   productName: string,
+  productId?: number,
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
-  const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+
+  // Resolve product ID: prefer explicit productId param, otherwise lookup by product name
+  let productIdNumber = productId;
+  if (!productIdNumber && productName) {
+    try {
+      const p = await dbQuery(
+        `SELECT id FROM products WHERE name = ? LIMIT 1`,
+        [productName],
+      );
+      if (p && p.length > 0) productIdNumber = p[0].id;
+    } catch (err) {
+      console.error("Error resolving product ID for NOC:", err);
+    }
+  }
+  const displayProductId = productIdNumber
+    ? productIdNumber.toString()
+    : "Not specified";
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
@@ -2427,15 +2446,15 @@ async function generateProductNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${productName}</span>", bearing GI Application No. <span class="highlight">${appNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+          This No Objection Certificate is issued for Product ID: <span class="highlight">${displayProductId}</span>.
         </div>
 
         <div class="noc-paragraph">
-          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, have no objection to the registration of <span class="highlight">${registration.name}</span> as an Authorised User for <span class="highlight">${productName}</span>.
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, hereby declare that we have no objection to the registration related to the above Product ID.
         </div>
 
         <div class="noc-paragraph">
-          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods of "<span class="highlight">${productName}</span>" is done in <span class="highlight">${giArea}</span> by the said Authorised Users, then <span class="organization-name">${organizationName}</span> shall not be held responsible for any resulting actions by the competent authority.
+          The authorised producer must adhere to the quality standards maintained as per the registered GI within <span class="highlight">${giArea}</span>. The Registered Proprietor will not be held responsible for actions resulting from independent modifications to production methods.
         </div>
       </div>
 
@@ -2483,9 +2502,10 @@ async function generateProductStatementHtml(
 
   const giArea = "Bodoland Territorial Area Districts (BTAD)";
 
-  const registrationYear = new Date(registration.created_at).getFullYear();
+  const registrationYear = registration.created_at
+    ? new Date(registration.created_at).getFullYear()
+    : new Date().getFullYear();
   const currentYear = new Date().getFullYear();
-  const yearsOfExperience = Math.max(2, currentYear - registrationYear + 2);
 
   // Resolve production and turnover dynamically
   let estimatedProduction = "Not specified";
@@ -2513,6 +2533,19 @@ async function generateProductStatementHtml(
     }
 
     const detail = rows && rows[0];
+
+    // Determine years of production: prefer explicit value from production detail, then registration, else compute from registration date
+    let yearsOfExperience: number | null = null;
+    if (detail && detail.years_of_production) {
+      yearsOfExperience = parseInt(String(detail.years_of_production)) || null;
+    } else if (registration.years_of_production) {
+      yearsOfExperience =
+        parseInt(String(registration.years_of_production)) || null;
+    } else if (registration.created_at) {
+      yearsOfExperience = Math.max(1, currentYear - registrationYear);
+    } else {
+      yearsOfExperience = 1;
+    }
 
     console.log("🔎 Statement data lookup:", {
       productId,
