@@ -2448,6 +2448,14 @@ async function generateProductNOCHtml(
         <div class="noc-paragraph">
           This is to certify that <span class="highlight">${registration.name}</span> is a producer of <span class="highlight">${productName}</span>, bearing GI Application No. <span class="highlight">${displayProductId}</span>, and the said proposed Authorised User is the producer within the designated <span class="highlight">${giArea}</span> GI Area.
         </div>
+
+        <div class="noc-paragraph">
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, have no objection to the registration of <span class="highlight">${registration.name}</span> as an Authorised User for <span class="highlight">${productName}</span>.
+        </div>
+
+        <div class="noc-paragraph">
+          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods of <span class="highlight">${productName}</span> done in <span class="highlight">${giArea}</span> by the said Authorised Users, then <span class="organization-name">${organizationName}</span> shall not be held responsible for any resulting actions by the competent authority.
+        </div>
       </div>
 
       <div class="signature-section">
