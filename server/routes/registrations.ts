@@ -1784,6 +1784,9 @@ export async function exportProductNOC(req: Request, res: Response) {
     registration.product_association =
       productData.length > 0 ? productData[0].description : null;
 
+    // Compute application number to be used in NOC title and content (only the main application number is shown)
+    const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
+
     // Generate HTML for the specific product
     const nocHtml = await generateProductNOCHtml(
       registration,
@@ -1797,7 +1800,7 @@ export async function exportProductNOC(req: Request, res: Response) {
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>NOC - ${productName}</title>
+      <title>NOC - ${appNumber}</title>
       <style>
         @page {
           size: A4;
@@ -2128,7 +2131,7 @@ async function getProductAssociation(productName: string): Promise<string> {
       [productName],
     );
 
-    console.log(`📋 Database query result:`, productResult);
+    console.log(`���� Database query result:`, productResult);
 
     if (productResult.length > 0 && productResult[0].description) {
       console.log(
@@ -2395,9 +2398,8 @@ async function generateProductNOCHtml(
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  const displayAppNumber = productId
-    ? `${appNumber} - Product ID: ${productId}`
-    : appNumber;
+  // For NOC we only display the main application number (no product ID or names)
+  const displayAppNumber = appNumber;
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
@@ -2433,15 +2435,15 @@ async function generateProductNOCHtml(
 
       <div class="noc-content">
         <div class="noc-paragraph">
-          This is to certify that <span class="highlight">${registration.name}</span> is a producer of "<span class="highlight">${productName}</span>", bearing GI Application No. <span class="highlight">${displayAppNumber}</span>, and the said proposed Authorised User is the producer within the designated GI Area.
+          This is to certify that an Authorised User is registered bearing GI Application No. <span class="highlight">${displayAppNumber}</span> within the designated GI Area.
         </div>
 
         <div class="noc-paragraph">
-          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, have no objection to the registration of <span class="highlight">${registration.name}</span> as an Authorised User for <span class="highlight">${productName}</span>.
+          We, <span class="organization-name">${organizationName}</span>, the Registered Proprietor/Applicant of the said Geographical Indication, hereby declare that we have no objection to the registration corresponding to the above GI Application No.
         </div>
 
         <div class="noc-paragraph">
-          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods of "<span class="highlight">${productName}</span>" is done in <span class="highlight">${giArea}</span> by the said Authorised Users, then <span class="organization-name">${organizationName}</span> shall not be held responsible for any resulting actions by the competent authority.
+          The Authorised User is expected to adhere to the quality standards maintained as per registered GI. In case of any independent modification in cultivation or processing methods within <span class="highlight">${giArea}</span>, the Registered Proprietor shall not be held responsible for any resulting actions by the competent authority.
         </div>
       </div>
 
