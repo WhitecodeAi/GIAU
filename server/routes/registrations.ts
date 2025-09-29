@@ -1785,7 +1785,11 @@ export async function exportProductNOC(req: Request, res: Response) {
       productData.length > 0 ? productData[0].description : null;
 
     // Generate HTML for the specific product
-    const nocHtml = await generateProductNOCHtml(registration, productName, productId);
+    const nocHtml = await generateProductNOCHtml(
+      registration,
+      productName,
+      productId,
+    );
 
     // Create complete HTML document
     const fullHtml = `
@@ -2220,9 +2224,7 @@ async function getAssociationStamp(
 }
 
 // Helper to get both stamp and registration short form (registration_number) from associations
-async function getAssociationDetails(
-  associationName: string,
-): Promise<{
+async function getAssociationDetails(associationName: string): Promise<{
   stamp_image_path: string | null;
   registration_number: string | null;
 }> {
@@ -2393,7 +2395,9 @@ async function generateProductNOCHtml(
 ): Promise<string> {
   const certificateDate = new Date().toLocaleDateString("en-GB");
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  const displayAppNumber = productId ? `${appNumber} - Product ID: ${productId}` : appNumber;
+  const displayAppNumber = productId
+    ? `${appNumber} - Product ID: ${productId}`
+    : appNumber;
 
   // Use association from registration data if available, otherwise use static mapping
   let organizationName = registration.product_association;
