@@ -1154,9 +1154,7 @@ async function generateNOCHtml(
 
   // Generate application number based on registration ID and date
   const appNumber = `GI-BODO-${new Date().getFullYear()}-${registration.id.toString().padStart(4, "0")}`;
-  const displayAppNumber = primaryProductId
-    ? `${appNumber} - Product ID: ${primaryProductId}`
-    : appNumber;
+  const displayAppNumber = primaryProductId || appNumber;
 
   // Organization details - Generic for bulk exports covering multiple associations
   const organizationName = "Bodo Traditional Producers Consortium";
