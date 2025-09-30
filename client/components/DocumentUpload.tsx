@@ -12,6 +12,7 @@ interface DocumentUploadProps {
   accept?: string;
   disabled?: boolean;
   showPreview?: boolean;
+  previewUrl?: string | null;
 }
 
 export function DocumentUpload({
