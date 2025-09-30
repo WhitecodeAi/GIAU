@@ -57,6 +57,7 @@ export async function getDashboardStatistics(req: Request, res: Response) {
       totalUsers: 0,
       totalProducts: 0,
       totalCategories: 0,
+      totalApplications: 0,
     });
   }
 }
