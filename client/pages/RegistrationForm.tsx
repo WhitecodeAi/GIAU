@@ -1226,39 +1226,46 @@ export default function RegistrationForm() {
           </p>
         </div>
         <div className="mt-4 border border-gray-200 rounded-lg p-4 space-y-3">
-          {products
-            .filter((product) =>
-              formData.productCategoryIds.includes(product.category_id),
-            )
-            .map((product) => (
-              <div key={product.id} className="flex items-center space-x-3">
-                <Checkbox
-                  id={`existing-${product.id}`}
-                  checked={formData.existingProducts.includes(product.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      handleExistingProductToggle(product.id);
-                    } else {
-                      handleExistingProductToggle(product.id);
-                    }
-                  }}
-                  className="border-blue-500"
-                />
-                <div className="flex flex-col">
-                  <Label
-                    htmlFor={`existing-${product.id}`}
-                    className="text-gray-700 font-medium"
-                  >
-                    {product.name}
-                  </Label>
-                  {product.category_name && (
-                    <span className="text-sm text-gray-500">
-                      Category: {product.category_name}
-                    </span>
-                  )}
+          {(() => {
+            const productsToShow =
+              isAdditionalRegistration && verificationResult?.availableProducts
+                ? verificationResult.availableProducts
+                : products;
+
+            return productsToShow
+              .filter((product) =>
+                formData.productCategoryIds.includes(product.category_id),
+              )
+              .map((product) => (
+                <div key={product.id} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`existing-${product.id}`}
+                    checked={formData.existingProducts.includes(product.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        handleExistingProductToggle(product.id);
+                      } else {
+                        handleExistingProductToggle(product.id);
+                      }
+                    }}
+                    className="border-blue-500"
+                  />
+                  <div className="flex flex-col">
+                    <Label
+                      htmlFor={`existing-${product.id}`}
+                      className="text-gray-700 font-medium"
+                    >
+                      {product.name}
+                    </Label>
+                    {product.category_name && (
+                      <span className="text-sm text-gray-500">
+                        Category: {product.category_name}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ));
+          })()}
           {products.filter((product) =>
             formData.productCategoryIds.includes(product.category_id),
           ).length === 0 && (
