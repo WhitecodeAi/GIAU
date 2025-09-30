@@ -2522,6 +2522,7 @@ async function generateProductStatementHtml(
   let estimatedProduction = "Not specified";
   let turnoverAmount = "";
   let turnoverWords = "";
+  let areaOfProduction = registration.area_of_production || "Not specified";
 
   try {
     let rows = await dbQuery(
@@ -2546,7 +2547,7 @@ async function generateProductStatementHtml(
     const detail = rows && rows[0];
 
     // Resolve area of production from detail or registration
-    let areaOfProduction = registration.area_of_production || "Not specified";
+    areaOfProduction = registration.area_of_production || "Not specified";
     if (detail && detail.area_of_production) {
       areaOfProduction = detail.area_of_production;
     }
