@@ -136,9 +136,10 @@ export default function DashboardFixed() {
 
       {/* Main Content */}
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Stats Cards */}
-          <div className="bg-white rounded-lg shadow p-6 max-w-md">
+
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <svg
@@ -166,7 +167,7 @@ export default function DashboardFixed() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 max-w-md">
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <svg
@@ -196,6 +197,35 @@ export default function DashboardFixed() {
                     ? stats.totalApplications
                     : stats.totalProducts || 0}
                 </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <svg className="w-6 h-6 text-yellow-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 20v-1a4 4 0 014-4h4a4 4 0 014 4v1" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">My Registrations</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.myRegistrations}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">My Applications</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.myApplications}</p>
               </div>
             </div>
           </div>
