@@ -901,7 +901,8 @@ export default function AdminDashboard() {
                         onChange={() =>
                           handleSelectRegistration(registration.id)
                         }
-                        className="mt-1"
+                        className="mt-1 hidden"
+                        aria-hidden="true"
                       />
 
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
