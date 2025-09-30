@@ -239,13 +239,23 @@ export default function RegistrationForm() {
         }
 
         return hasBasicInfo;
-      case 2:
-        return !!(
-          formData.documents.aadharCardFront &&
-          formData.documents.aadharCardBack &&
-          formData.documents.signature &&
-          formData.documents.photo
+      case 2: {
+        const hasAadharFrontBack =
+          !!formData.documents.aadharCardFront && !!formData.documents.aadharCardBack;
+        const hasAadharFromBase = !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.aadharCard
         );
+        const hasSignature = !!formData.documents.signature || !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.signature
+        );
+        const hasPhoto = !!formData.documents.photo || !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.photo
+        );
+
+        return !!(
+          (hasAadharFrontBack || hasAadharFromBase) && hasSignature && hasPhoto
+        );
+      }
       case 3:
         return formData.productCategoryIds.length > 0;
       case 4:
