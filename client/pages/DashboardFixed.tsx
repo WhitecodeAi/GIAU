@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dashboardAPI, registrationsAPI, logout } from "@/lib/api";
 
@@ -7,6 +7,9 @@ export default function DashboardFixed() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
+    totalApplications: 0,
+    myRegistrations: 0,
+    myApplications: 0,
     totalUsers: 0,
     totalProducts: 0,
     totalCategories: 0,
@@ -31,7 +34,44 @@ export default function DashboardFixed() {
         dashboardAPI.getRecentActivity(),
       ]);
 
-      setStats(statsData);
+      // Compute user-specific counts if user is logged in
+      let myRegistrationsCount = 0;
+      let myApplicationsCount = 0;
+      const userDataRaw = localStorage.getItem("user");
+      if (userDataRaw) {
+        try {
+          const userRegsResp: any =
+            await registrationsAPI.getUserRegistrations();
+          let regs: any[] = [];
+          if (Array.isArray(userRegsResp)) regs = userRegsResp;
+          else if (userRegsResp && userRegsResp.registrations)
+            regs = userRegsResp.registrations;
+          myRegistrationsCount = regs.length;
+          myApplicationsCount = regs.filter((r) => {
+            const sel =
+              r.selected_products ||
+              r.selectedProducts ||
+              r.existing_products ||
+              r.existingProducts;
+            if (!sel) return false;
+            if (typeof sel === "string") {
+              const trimmed = sel.trim();
+              return trimmed !== "" && trimmed !== "[]";
+            }
+            if (Array.isArray(sel)) return sel.length > 0;
+            return false;
+          }).length;
+        } catch (err) {
+          // ignore per-user fetch errors
+        }
+      }
+
+      setStats({
+        ...statsData,
+        myRegistrations: myRegistrationsCount,
+        myApplications: myApplicationsCount,
+      } as any);
+
       setRecentActivity(activityData);
     } catch (_error) {
       // Silent fallback: UI will show zeros/empty lists
@@ -102,8 +142,9 @@ export default function DashboardFixed() {
 
       {/* Main Content */}
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Stats Cards */}
+
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -134,9 +175,9 @@ export default function DashboardFixed() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-indigo-100 rounded-lg">
                 <svg
-                  className="w-6 h-6 text-green-600"
+                  className="w-6 h-6 text-indigo-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -145,16 +186,24 @@ export default function DashboardFixed() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    d="M21 16V8a2 2 0 00-1-1.73l-8-4.62a2 2 0 00-2 0l-8 4.62A2 2 0 003 8v8a2 2 0 001 1.73l8 4.62a2 2 0 002 0l8-4.62A2 2 0 0021 16z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 7l10 5-10 5V7z"
                   />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Total Data Collectors
+                  Total Applications
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalUsers}
+                  {typeof stats.totalApplications === "number"
+                    ? stats.totalApplications
+                    : stats.totalProducts || 0}
                 </p>
               </div>
             </div>
@@ -162,27 +211,61 @@ export default function DashboardFixed() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-yellow-100 rounded-lg">
                 <svg
-                  className="w-6 h-6 text-purple-600"
+                  className="w-6 h-6 text-yellow-600"
+                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 20v-1a4 4 0 014-4h4a4 4 0 014 4v1"
                   />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Total Products
+                  My Registrations
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalProducts}
+                  {stats.myRegistrations}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 7h18M3 12h18M3 17h18"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">
+                  My Applications
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.myApplications}
                 </p>
               </div>
             </div>
