@@ -102,7 +102,9 @@ export default function RegistrationForm() {
   } | null>(null);
   const [isAdditionalRegistration, setIsAdditionalRegistration] =
     useState(false);
-  const [baseRegistrationId, setBaseRegistrationId] = useState<number | null>(null);
+  const [baseRegistrationId, setBaseRegistrationId] = useState<number | null>(
+    null,
+  );
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
@@ -245,19 +247,29 @@ export default function RegistrationForm() {
         return hasBasicInfo;
       case 2: {
         const hasAadharFrontBack =
-          !!formData.documents.aadharCardFront && !!formData.documents.aadharCardBack;
+          !!formData.documents.aadharCardFront &&
+          !!formData.documents.aadharCardBack;
         const hasAadharFromBase = !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.aadharCard
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.aadharCard
         );
-        const hasSignature = !!formData.documents.signature || !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.signature
-        );
-        const hasPhoto = !!formData.documents.photo || !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.photo
-        );
+        const hasSignature =
+          !!formData.documents.signature ||
+          !!(
+            isAdditionalRegistration &&
+            verificationResult?.userData?.documentPaths?.signature
+          );
+        const hasPhoto =
+          !!formData.documents.photo ||
+          !!(
+            isAdditionalRegistration &&
+            verificationResult?.userData?.documentPaths?.photo
+          );
 
         return !!(
-          (hasAadharFrontBack || hasAadharFromBase) && hasSignature && hasPhoto
+          (hasAadharFrontBack || hasAadharFromBase) &&
+          hasSignature &&
+          hasPhoto
         );
       }
       case 3:
@@ -561,7 +573,8 @@ export default function RegistrationForm() {
       } as const;
 
       if (isAdditionalRegistration) {
-        if (!baseRegistrationId) throw new Error("Base registration ID missing");
+        if (!baseRegistrationId)
+          throw new Error("Base registration ID missing");
 
         const additionalData = {
           baseRegistrationId,
@@ -583,7 +596,9 @@ export default function RegistrationForm() {
             fontWeight: "bold",
           },
         });
-        navigate("/dashboard", { state: { message: "Additional registration completed!" } });
+        navigate("/dashboard", {
+          state: { message: "Additional registration completed!" },
+        });
       } else {
         const result = await registrationsAPI.create(
           registrationData,
@@ -600,7 +615,9 @@ export default function RegistrationForm() {
             fontWeight: "bold",
           },
         });
-        navigate("/dashboard", { state: { message: "Registration completed!" } });
+        navigate("/dashboard", {
+          state: { message: "Registration completed!" },
+        });
       }
     } catch (err: any) {
       const errorMessage = err.message || "Something went wrong";
@@ -668,13 +685,16 @@ export default function RegistrationForm() {
       case 2: {
         const missingDocs = [] as string[];
         const aadharAvailableFromBase = !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.aadharCard
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.aadharCard
         );
         const signatureAvailableFromBase = !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.signature
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.signature
         );
         const photoAvailableFromBase = !!(
-          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.photo
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.photo
         );
 
         if (!formData.documents.aadharCardFront && !aadharAvailableFromBase)
@@ -846,7 +866,8 @@ export default function RegistrationForm() {
                               // Save base registration id for createAdditional
                               setBaseRegistrationId(
                                 verificationResult.registrationId ||
-                                  verificationResult.existingRegistrations?.[0]?.id ||
+                                  verificationResult.existingRegistrations?.[0]
+                                    ?.id ||
                                   null,
                               );
 
@@ -1077,31 +1098,44 @@ export default function RegistrationForm() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           {(() => {
-            const aadharPreview = verificationResult?.userData?.documentPaths?.aadharCard || null;
-            const panPreview = verificationResult?.userData?.documentPaths?.panCard || null;
-            const proofPreview = verificationResult?.userData?.documentPaths?.proofOfProduction || null;
-            const signaturePreview = verificationResult?.userData?.documentPaths?.signature || null;
+            const aadharPreview =
+              verificationResult?.userData?.documentPaths?.aadharCard || null;
+            const panPreview =
+              verificationResult?.userData?.documentPaths?.panCard || null;
+            const proofPreview =
+              verificationResult?.userData?.documentPaths?.proofOfProduction ||
+              null;
+            const signaturePreview =
+              verificationResult?.userData?.documentPaths?.signature || null;
 
             return (
               <>
                 <DocumentUpload
                   label="Aadhar Card (Front)"
                   file={formData.documents.aadharCardFront}
-                  onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
+                  onFileChange={(file) =>
+                    handleFileUpload("aadharCardFront", file)
+                  }
                   onFileRemove={() => handleFileUpload("aadharCardFront", null)}
                   required={true}
                   disabled={isAdditionalRegistration && !!aadharPreview}
-                  previewUrl={isAdditionalRegistration ? aadharPreview : undefined}
+                  previewUrl={
+                    isAdditionalRegistration ? aadharPreview : undefined
+                  }
                 />
 
                 <DocumentUpload
                   label="Aadhar Card (Back)"
                   file={formData.documents.aadharCardBack}
-                  onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
+                  onFileChange={(file) =>
+                    handleFileUpload("aadharCardBack", file)
+                  }
                   onFileRemove={() => handleFileUpload("aadharCardBack", null)}
                   required={true}
                   disabled={isAdditionalRegistration && !!aadharPreview}
-                  previewUrl={isAdditionalRegistration ? aadharPreview : undefined}
+                  previewUrl={
+                    isAdditionalRegistration ? aadharPreview : undefined
+                  }
                 />
 
                 <DocumentUpload
@@ -1117,11 +1151,17 @@ export default function RegistrationForm() {
                 <DocumentUpload
                   label="Proof of Production"
                   file={formData.documents.proofOfProduction}
-                  onFileChange={(file) => handleFileUpload("proofOfProduction", file)}
-                  onFileRemove={() => handleFileUpload("proofOfProduction", null)}
+                  onFileChange={(file) =>
+                    handleFileUpload("proofOfProduction", file)
+                  }
+                  onFileRemove={() =>
+                    handleFileUpload("proofOfProduction", null)
+                  }
                   required={false}
                   disabled={isAdditionalRegistration && !!proofPreview}
-                  previewUrl={isAdditionalRegistration ? proofPreview : undefined}
+                  previewUrl={
+                    isAdditionalRegistration ? proofPreview : undefined
+                  }
                 />
 
                 <DocumentUpload
@@ -1131,7 +1171,9 @@ export default function RegistrationForm() {
                   onFileRemove={() => handleFileUpload("signature", null)}
                   required={true}
                   disabled={isAdditionalRegistration && !!signaturePreview}
-                  previewUrl={isAdditionalRegistration ? signaturePreview : undefined}
+                  previewUrl={
+                    isAdditionalRegistration ? signaturePreview : undefined
+                  }
                 />
               </>
             );
@@ -1144,7 +1186,8 @@ export default function RegistrationForm() {
           </h3>
           <div className="w-full max-w-sm">
             {(() => {
-              const photoPreview = verificationResult?.userData?.documentPaths?.photo || null;
+              const photoPreview =
+                verificationResult?.userData?.documentPaths?.photo || null;
               return (
                 <DocumentUpload
                   label="Profile Photo"
@@ -1154,7 +1197,9 @@ export default function RegistrationForm() {
                   required={true}
                   showPreview={true}
                   disabled={isAdditionalRegistration && !!photoPreview}
-                  previewUrl={isAdditionalRegistration ? photoPreview : undefined}
+                  previewUrl={
+                    isAdditionalRegistration ? photoPreview : undefined
+                  }
                 />
               );
             })()}
@@ -1182,7 +1227,8 @@ export default function RegistrationForm() {
         <div className="mt-4 border border-gray-200 rounded-lg p-4 space-y-3 max-h-64 overflow-y-auto">
           {(() => {
             const categoriesToShow =
-              isAdditionalRegistration && verificationResult?.availableCategories
+              isAdditionalRegistration &&
+              verificationResult?.availableCategories
                 ? verificationResult.availableCategories
                 : categories;
 

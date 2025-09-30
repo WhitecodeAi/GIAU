@@ -113,7 +113,7 @@ export function DocumentUpload({
       </div>
 
       {/* File Preview */}
-      { (file || previewUrl) && showPreview ? (
+      {(file || previewUrl) && showPreview ? (
         <div className="mt-3">
           <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
             {previewUrl ? (
@@ -150,7 +150,7 @@ export function DocumentUpload({
             )}
           </div>
         </div>
-      ) : (file && !showPreview) ? (
+      ) : file && !showPreview ? (
         <div className="mt-3">
           <div className="flex items-center justify-between">
             <div className="text-sm text-green-600">
