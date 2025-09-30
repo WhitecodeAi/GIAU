@@ -24,20 +24,27 @@ export async function getDashboardStatistics(req: Request, res: Response) {
       "SELECT COUNT(*) as count FROM products",
     );
     const totalProducts = totalProductsResult[0]?.count || 0;
-    
+
+    // Get total production detail rows (applications)
+    const totalApplicationsResult = await dbQuery(
+      "SELECT COUNT(*) as count FROM user_production_details",
+    );
+    const totalApplications = totalApplicationsResult[0]?.count || 0;
+
 
     // Get total categories
     const totalCategoriesResult = await dbQuery(
       "SELECT COUNT(*) as count FROM product_categories",
     );
     const totalCategories = totalCategoriesResult[0]?.count || 0;
-   
+
 
     const dashboardStats = {
       totalRegistrations,
       totalUsers,
       totalProducts,
       totalCategories,
+      totalApplications,
     };
 
   
