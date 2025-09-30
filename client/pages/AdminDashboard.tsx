@@ -157,13 +157,28 @@ export default function AdminDashboard() {
     } else {
       navigate("/");
     }
-  }, [navigate, currentPage]);
+  }, [navigate, currentPage, searchTerm]);
 
   const fetchRegistrations = async (retryCount = 0) => {
     try {
       setLoading(true);
       console.log("Fetching registrations...");
-      const data = await registrationsAPI.getAllRegistrations(currentPage, 10);
+
+      let data;
+
+      // If the user is performing a search, fetch all registrations so client-side filtering
+      // works across the entire dataset and pagination does not hide results.
+      if (searchTerm && searchTerm.trim() !== "") {
+        const desiredLimit =
+          typeof statistics?.totalRegistrations === "number" &&
+          statistics.totalRegistrations > 0
+            ? statistics.totalRegistrations
+            : 10000;
+        data = await registrationsAPI.getAllRegistrations(1, desiredLimit);
+      } else {
+        data = await registrationsAPI.getAllRegistrations(currentPage, 10);
+      }
+
       console.log("Registrations data:", data);
 
       setRegistrations(data.registrations || []);
@@ -644,7 +659,10 @@ export default function AdminDashboard() {
                     type="text"
                     placeholder="Search by name, phone, Aadhar number, or Voter ID..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="pl-10"
                   />
                 </div>
