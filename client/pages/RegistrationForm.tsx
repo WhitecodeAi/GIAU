@@ -1046,45 +1046,66 @@ export default function RegistrationForm() {
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <DocumentUpload
-            label="Aadhar Card (Front)"
-            file={formData.documents.aadharCardFront}
-            onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
-            onFileRemove={() => handleFileUpload("aadharCardFront", null)}
-            required={true}
-          />
+          {(() => {
+            const aadharPreview = verificationResult?.userData?.documentPaths?.aadharCard || null;
+            const panPreview = verificationResult?.userData?.documentPaths?.panCard || null;
+            const proofPreview = verificationResult?.userData?.documentPaths?.proofOfProduction || null;
+            const signaturePreview = verificationResult?.userData?.documentPaths?.signature || null;
 
-          <DocumentUpload
-            label="Aadhar Card (Back)"
-            file={formData.documents.aadharCardBack}
-            onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
-            onFileRemove={() => handleFileUpload("aadharCardBack", null)}
-            required={true}
-          />
+            return (
+              <>
+                <DocumentUpload
+                  label="Aadhar Card (Front)"
+                  file={formData.documents.aadharCardFront}
+                  onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
+                  onFileRemove={() => handleFileUpload("aadharCardFront", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!aadharPreview}
+                  previewUrl={isAdditionalRegistration ? aadharPreview : undefined}
+                />
 
-          <DocumentUpload
-            label="PAN Card"
-            file={formData.documents.panCard}
-            onFileChange={(file) => handleFileUpload("panCard", file)}
-            onFileRemove={() => handleFileUpload("panCard", null)}
-            required={false}
-          />
+                <DocumentUpload
+                  label="Aadhar Card (Back)"
+                  file={formData.documents.aadharCardBack}
+                  onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
+                  onFileRemove={() => handleFileUpload("aadharCardBack", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!aadharPreview}
+                  previewUrl={isAdditionalRegistration ? aadharPreview : undefined}
+                />
 
-          <DocumentUpload
-            label="Proof of Production"
-            file={formData.documents.proofOfProduction}
-            onFileChange={(file) => handleFileUpload("proofOfProduction", file)}
-            onFileRemove={() => handleFileUpload("proofOfProduction", null)}
-            required={false}
-          />
+                <DocumentUpload
+                  label="PAN Card"
+                  file={formData.documents.panCard}
+                  onFileChange={(file) => handleFileUpload("panCard", file)}
+                  onFileRemove={() => handleFileUpload("panCard", null)}
+                  required={false}
+                  disabled={isAdditionalRegistration && !!panPreview}
+                  previewUrl={isAdditionalRegistration ? panPreview : undefined}
+                />
 
-          <DocumentUpload
-            label="Signature"
-            file={formData.documents.signature}
-            onFileChange={(file) => handleFileUpload("signature", file)}
-            onFileRemove={() => handleFileUpload("signature", null)}
-            required={true}
-          />
+                <DocumentUpload
+                  label="Proof of Production"
+                  file={formData.documents.proofOfProduction}
+                  onFileChange={(file) => handleFileUpload("proofOfProduction", file)}
+                  onFileRemove={() => handleFileUpload("proofOfProduction", null)}
+                  required={false}
+                  disabled={isAdditionalRegistration && !!proofPreview}
+                  previewUrl={isAdditionalRegistration ? proofPreview : undefined}
+                />
+
+                <DocumentUpload
+                  label="Signature"
+                  file={formData.documents.signature}
+                  onFileChange={(file) => handleFileUpload("signature", file)}
+                  onFileRemove={() => handleFileUpload("signature", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!signaturePreview}
+                  previewUrl={isAdditionalRegistration ? signaturePreview : undefined}
+                />
+              </>
+            );
+          })()}
         </div>
 
         <div className="flex flex-col items-center justify-center">
@@ -1092,14 +1113,21 @@ export default function RegistrationForm() {
             Profile Photo<span className="text-red-500">*</span>
           </h3>
           <div className="w-full max-w-sm">
-            <DocumentUpload
-              label="Profile Photo"
-              file={formData.documents.photo}
-              onFileChange={(file) => handleFileUpload("photo", file)}
-              onFileRemove={() => handleFileUpload("photo", null)}
-              required={true}
-              showPreview={true}
-            />
+            {(() => {
+              const photoPreview = verificationResult?.userData?.documentPaths?.photo || null;
+              return (
+                <DocumentUpload
+                  label="Profile Photo"
+                  file={formData.documents.photo}
+                  onFileChange={(file) => handleFileUpload("photo", file)}
+                  onFileRemove={() => handleFileUpload("photo", null)}
+                  required={true}
+                  showPreview={true}
+                  disabled={isAdditionalRegistration && !!photoPreview}
+                  previewUrl={isAdditionalRegistration ? photoPreview : undefined}
+                />
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -1946,7 +1974,7 @@ export default function RegistrationForm() {
                     <div className="text-green-600">✓ Signature</div>
                   )}
                   {formData.documents.photo && (
-                    <div className="text-green-600">✓ Profile Photo</div>
+                    <div className="text-green-600">��� Profile Photo</div>
                   )}
                 </div>
               </div>
