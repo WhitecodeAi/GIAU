@@ -1150,44 +1150,51 @@ export default function RegistrationForm() {
           can select multiple)
         </Label>
         <div className="mt-4 border border-gray-200 rounded-lg p-4 space-y-3 max-h-64 overflow-y-auto">
-          {categories.map((category) => (
-            <div key={category.id} className="flex items-center space-x-3">
-              <Checkbox
-                id={`category-${category.id}`}
-                checked={formData.productCategoryIds.includes(category.id)}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      productCategoryIds: [
-                        ...prev.productCategoryIds,
-                        category.id,
-                      ],
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      productCategoryIds: prev.productCategoryIds.filter(
-                        (id) => id !== category.id,
-                      ),
-                    }));
-                  }
-                }}
-                className="border-green-500"
-              />
-              <Label
-                htmlFor={`category-${category.id}`}
-                className="text-gray-700 cursor-pointer"
-              >
-                {category.name}
-              </Label>
-              {category.description && (
-                <span className="text-sm text-gray-500">
-                  ({category.description})
-                </span>
-              )}
-            </div>
-          ))}
+          {(() => {
+            const categoriesToShow =
+              isAdditionalRegistration && verificationResult?.availableCategories
+                ? verificationResult.availableCategories
+                : categories;
+
+            return categoriesToShow.map((category) => (
+              <div key={category.id} className="flex items-center space-x-3">
+                <Checkbox
+                  id={`category-${category.id}`}
+                  checked={formData.productCategoryIds.includes(category.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productCategoryIds: [
+                          ...prev.productCategoryIds,
+                          category.id,
+                        ],
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productCategoryIds: prev.productCategoryIds.filter(
+                          (id) => id !== category.id,
+                        ),
+                      }));
+                    }
+                  }}
+                  className="border-green-500"
+                />
+                <Label
+                  htmlFor={`category-${category.id}`}
+                  className="text-gray-700 cursor-pointer"
+                >
+                  {category.name}
+                </Label>
+                {category.description && (
+                  <span className="text-sm text-gray-500">
+                    ({category.description})
+                  </span>
+                )}
+              </div>
+            ));
+          })()}
         </div>
         {formData.productCategoryIds.length > 0 && (
           <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
@@ -1974,7 +1981,7 @@ export default function RegistrationForm() {
                     <div className="text-green-600">✓ Signature</div>
                   )}
                   {formData.documents.photo && (
-                    <div className="text-green-600">��� Profile Photo</div>
+                    <div className="text-green-600">✓ Profile Photo</div>
                   )}
                 </div>
               </div>
