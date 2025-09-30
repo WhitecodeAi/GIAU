@@ -959,7 +959,8 @@ export default function AdminDashboard() {
                               </p>
                               {registration.username && (
                                 <p className="text-sm text-gray-500">
-                                  <strong>Data collector:</strong> {registration.username}
+                                  <strong>Data collector:</strong>{" "}
+                                  {registration.username}
                                 </p>
                               )}
                             </div>
