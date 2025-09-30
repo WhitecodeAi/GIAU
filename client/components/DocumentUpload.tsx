@@ -12,6 +12,7 @@ interface DocumentUploadProps {
   accept?: string;
   disabled?: boolean;
   showPreview?: boolean;
+  previewUrl?: string | null;
 }
 
 export function DocumentUpload({
@@ -23,6 +24,7 @@ export function DocumentUpload({
   accept = "image/*",
   disabled = false,
   showPreview = true,
+  previewUrl = null,
 }: DocumentUploadProps) {
   const [showCamera, setShowCamera] = useState(false);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -111,20 +113,28 @@ export function DocumentUpload({
       </div>
 
       {/* File Preview */}
-      {file && showPreview ? (
+      {(file || previewUrl) && showPreview ? (
         <div className="mt-3">
           <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
-            {objectUrl && (
+            {previewUrl ? (
               <img
-                src={objectUrl}
+                src={previewUrl}
                 alt={`${label} preview`}
                 className="w-full h-full object-cover"
               />
+            ) : (
+              objectUrl && (
+                <img
+                  src={objectUrl}
+                  alt={`${label} preview`}
+                  className="w-full h-full object-cover"
+                />
+              )
             )}
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div className="text-sm text-green-600">
-              ✓ File uploaded: {file.name}
+              ✓ File uploaded: {file ? file.name : previewUrl}
             </div>
             {!disabled && (
               <Button

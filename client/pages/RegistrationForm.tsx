@@ -92,12 +92,19 @@ export default function RegistrationForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<{
     isRegistered: boolean;
+    registrationId?: number;
     name?: string;
     registrationDate?: string;
     userData?: any;
+    existingRegistrations?: Array<any>;
+    availableCategories?: Array<any>;
+    availableProducts?: Array<any>;
   } | null>(null);
   const [isAdditionalRegistration, setIsAdditionalRegistration] =
     useState(false);
+  const [baseRegistrationId, setBaseRegistrationId] = useState<number | null>(
+    null,
+  );
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
@@ -238,13 +245,33 @@ export default function RegistrationForm() {
         }
 
         return hasBasicInfo;
-      case 2:
-        return !!(
-          formData.documents.aadharCardFront &&
-          formData.documents.aadharCardBack &&
-          formData.documents.signature &&
-          formData.documents.photo
+      case 2: {
+        const hasAadharFrontBack =
+          !!formData.documents.aadharCardFront &&
+          !!formData.documents.aadharCardBack;
+        const hasAadharFromBase = !!(
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.aadharCard
         );
+        const hasSignature =
+          !!formData.documents.signature ||
+          !!(
+            isAdditionalRegistration &&
+            verificationResult?.userData?.documentPaths?.signature
+          );
+        const hasPhoto =
+          !!formData.documents.photo ||
+          !!(
+            isAdditionalRegistration &&
+            verificationResult?.userData?.documentPaths?.photo
+          );
+
+        return !!(
+          (hasAadharFrontBack || hasAadharFromBase) &&
+          hasSignature &&
+          hasPhoto
+        );
+      }
       case 3:
         return formData.productCategoryIds.length > 0;
       case 4:
@@ -545,22 +572,53 @@ export default function RegistrationForm() {
         photo: formData.documents.photo,
       } as const;
 
-      const result = await registrationsAPI.create(
-        registrationData,
-        documentsToSend,
-      );
+      if (isAdditionalRegistration) {
+        if (!baseRegistrationId)
+          throw new Error("Base registration ID missing");
 
-      toast.success("🎉 Registration Completed Successfully!", {
-        description: `Your GI registration has been submitted and is now being processed. Registration ID: ${result.registrationId}. Redirecting to dashboard...`,
-        duration: 5000,
-        style: {
-          fontSize: "20px",
-          padding: "30px",
-          minHeight: "100px",
-          fontWeight: "bold",
-        },
-      });
-      navigate("/dashboard", { state: { message: "Registration completed!" } });
+        const additionalData = {
+          baseRegistrationId,
+          productCategoryIds: formData.productCategoryIds,
+          existingProducts: formData.existingProducts,
+          selectedProducts: formData.selectedProducts,
+          productionDetails: productionDetails,
+        } as any;
+
+        const resp = await registrationsAPI.createAdditional(additionalData);
+
+        toast.success("🎉 Additional Registration Completed Successfully!", {
+          description: `Additional registration created (ID: ${resp.registrationId}). Redirecting to dashboard...`,
+          duration: 5000,
+          style: {
+            fontSize: "20px",
+            padding: "30px",
+            minHeight: "100px",
+            fontWeight: "bold",
+          },
+        });
+        navigate("/dashboard", {
+          state: { message: "Additional registration completed!" },
+        });
+      } else {
+        const result = await registrationsAPI.create(
+          registrationData,
+          documentsToSend,
+        );
+
+        toast.success("🎉 Registration Completed Successfully!", {
+          description: `Your GI registration has been submitted and is now being processed. Registration ID: ${result.registrationId}. Redirecting to dashboard...`,
+          duration: 5000,
+          style: {
+            fontSize: "20px",
+            padding: "30px",
+            minHeight: "100px",
+            fontWeight: "bold",
+          },
+        });
+        navigate("/dashboard", {
+          state: { message: "Registration completed!" },
+        });
+      }
     } catch (err: any) {
       const errorMessage = err.message || "Something went wrong";
       setError(errorMessage);
@@ -624,18 +682,34 @@ export default function RegistrationForm() {
         return missingFields.length > 0
           ? `Please fill in: ${missingFields.join(", ")}`
           : "";
-      case 2:
+      case 2: {
         const missingDocs = [] as string[];
-        if (!formData.documents.aadharCardFront)
+        const aadharAvailableFromBase = !!(
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.aadharCard
+        );
+        const signatureAvailableFromBase = !!(
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.signature
+        );
+        const photoAvailableFromBase = !!(
+          isAdditionalRegistration &&
+          verificationResult?.userData?.documentPaths?.photo
+        );
+
+        if (!formData.documents.aadharCardFront && !aadharAvailableFromBase)
           missingDocs.push("Aadhar Card (Front)");
-        if (!formData.documents.aadharCardBack)
+        if (!formData.documents.aadharCardBack && !aadharAvailableFromBase)
           missingDocs.push("Aadhar Card (Back)");
         // PAN Card and Proof of Production are optional
-        if (!formData.documents.signature) missingDocs.push("Signature");
-        if (!formData.documents.photo) missingDocs.push("Photo");
+        if (!formData.documents.signature && !signatureAvailableFromBase)
+          missingDocs.push("Signature");
+        if (!formData.documents.photo && !photoAvailableFromBase)
+          missingDocs.push("Photo");
         return missingDocs.length > 0
           ? `Please upload: ${missingDocs.join(", ")}`
           : "";
+      }
       case 3:
         return formData.productCategoryIds.length === 0
           ? "Please select at least one product category"
@@ -789,6 +863,14 @@ export default function RegistrationForm() {
                             type="button"
                             onClick={() => {
                               setIsAdditionalRegistration(true);
+                              // Save base registration id for createAdditional
+                              setBaseRegistrationId(
+                                verificationResult.registrationId ||
+                                  verificationResult.existingRegistrations?.[0]
+                                    ?.id ||
+                                  null,
+                              );
+
                               // Load existing user data if available
                               if (verificationResult.userData) {
                                 setFormData((prev) => ({
@@ -1015,45 +1097,87 @@ export default function RegistrationForm() {
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <DocumentUpload
-            label="Aadhar Card (Front)"
-            file={formData.documents.aadharCardFront}
-            onFileChange={(file) => handleFileUpload("aadharCardFront", file)}
-            onFileRemove={() => handleFileUpload("aadharCardFront", null)}
-            required={true}
-          />
+          {(() => {
+            const aadharPreview =
+              verificationResult?.userData?.documentPaths?.aadharCard || null;
+            const panPreview =
+              verificationResult?.userData?.documentPaths?.panCard || null;
+            const proofPreview =
+              verificationResult?.userData?.documentPaths?.proofOfProduction ||
+              null;
+            const signaturePreview =
+              verificationResult?.userData?.documentPaths?.signature || null;
 
-          <DocumentUpload
-            label="Aadhar Card (Back)"
-            file={formData.documents.aadharCardBack}
-            onFileChange={(file) => handleFileUpload("aadharCardBack", file)}
-            onFileRemove={() => handleFileUpload("aadharCardBack", null)}
-            required={true}
-          />
+            return (
+              <>
+                <DocumentUpload
+                  label="Aadhar Card (Front)"
+                  file={formData.documents.aadharCardFront}
+                  onFileChange={(file) =>
+                    handleFileUpload("aadharCardFront", file)
+                  }
+                  onFileRemove={() => handleFileUpload("aadharCardFront", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!aadharPreview}
+                  previewUrl={
+                    isAdditionalRegistration ? aadharPreview : undefined
+                  }
+                />
 
-          <DocumentUpload
-            label="PAN Card"
-            file={formData.documents.panCard}
-            onFileChange={(file) => handleFileUpload("panCard", file)}
-            onFileRemove={() => handleFileUpload("panCard", null)}
-            required={false}
-          />
+                <DocumentUpload
+                  label="Aadhar Card (Back)"
+                  file={formData.documents.aadharCardBack}
+                  onFileChange={(file) =>
+                    handleFileUpload("aadharCardBack", file)
+                  }
+                  onFileRemove={() => handleFileUpload("aadharCardBack", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!aadharPreview}
+                  previewUrl={
+                    isAdditionalRegistration ? aadharPreview : undefined
+                  }
+                />
 
-          <DocumentUpload
-            label="Proof of Production"
-            file={formData.documents.proofOfProduction}
-            onFileChange={(file) => handleFileUpload("proofOfProduction", file)}
-            onFileRemove={() => handleFileUpload("proofOfProduction", null)}
-            required={false}
-          />
+                <DocumentUpload
+                  label="PAN Card"
+                  file={formData.documents.panCard}
+                  onFileChange={(file) => handleFileUpload("panCard", file)}
+                  onFileRemove={() => handleFileUpload("panCard", null)}
+                  required={false}
+                  disabled={isAdditionalRegistration && !!panPreview}
+                  previewUrl={isAdditionalRegistration ? panPreview : undefined}
+                />
 
-          <DocumentUpload
-            label="Signature"
-            file={formData.documents.signature}
-            onFileChange={(file) => handleFileUpload("signature", file)}
-            onFileRemove={() => handleFileUpload("signature", null)}
-            required={true}
-          />
+                <DocumentUpload
+                  label="Proof of Production"
+                  file={formData.documents.proofOfProduction}
+                  onFileChange={(file) =>
+                    handleFileUpload("proofOfProduction", file)
+                  }
+                  onFileRemove={() =>
+                    handleFileUpload("proofOfProduction", null)
+                  }
+                  required={false}
+                  disabled={isAdditionalRegistration && !!proofPreview}
+                  previewUrl={
+                    isAdditionalRegistration ? proofPreview : undefined
+                  }
+                />
+
+                <DocumentUpload
+                  label="Signature"
+                  file={formData.documents.signature}
+                  onFileChange={(file) => handleFileUpload("signature", file)}
+                  onFileRemove={() => handleFileUpload("signature", null)}
+                  required={true}
+                  disabled={isAdditionalRegistration && !!signaturePreview}
+                  previewUrl={
+                    isAdditionalRegistration ? signaturePreview : undefined
+                  }
+                />
+              </>
+            );
+          })()}
         </div>
 
         <div className="flex flex-col items-center justify-center">
@@ -1061,14 +1185,24 @@ export default function RegistrationForm() {
             Profile Photo<span className="text-red-500">*</span>
           </h3>
           <div className="w-full max-w-sm">
-            <DocumentUpload
-              label="Profile Photo"
-              file={formData.documents.photo}
-              onFileChange={(file) => handleFileUpload("photo", file)}
-              onFileRemove={() => handleFileUpload("photo", null)}
-              required={true}
-              showPreview={true}
-            />
+            {(() => {
+              const photoPreview =
+                verificationResult?.userData?.documentPaths?.photo || null;
+              return (
+                <DocumentUpload
+                  label="Profile Photo"
+                  file={formData.documents.photo}
+                  onFileChange={(file) => handleFileUpload("photo", file)}
+                  onFileRemove={() => handleFileUpload("photo", null)}
+                  required={true}
+                  showPreview={true}
+                  disabled={isAdditionalRegistration && !!photoPreview}
+                  previewUrl={
+                    isAdditionalRegistration ? photoPreview : undefined
+                  }
+                />
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -1091,44 +1225,52 @@ export default function RegistrationForm() {
           can select multiple)
         </Label>
         <div className="mt-4 border border-gray-200 rounded-lg p-4 space-y-3 max-h-64 overflow-y-auto">
-          {categories.map((category) => (
-            <div key={category.id} className="flex items-center space-x-3">
-              <Checkbox
-                id={`category-${category.id}`}
-                checked={formData.productCategoryIds.includes(category.id)}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      productCategoryIds: [
-                        ...prev.productCategoryIds,
-                        category.id,
-                      ],
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      productCategoryIds: prev.productCategoryIds.filter(
-                        (id) => id !== category.id,
-                      ),
-                    }));
-                  }
-                }}
-                className="border-green-500"
-              />
-              <Label
-                htmlFor={`category-${category.id}`}
-                className="text-gray-700 cursor-pointer"
-              >
-                {category.name}
-              </Label>
-              {category.description && (
-                <span className="text-sm text-gray-500">
-                  ({category.description})
-                </span>
-              )}
-            </div>
-          ))}
+          {(() => {
+            const categoriesToShow =
+              isAdditionalRegistration &&
+              verificationResult?.availableCategories
+                ? verificationResult.availableCategories
+                : categories;
+
+            return categoriesToShow.map((category) => (
+              <div key={category.id} className="flex items-center space-x-3">
+                <Checkbox
+                  id={`category-${category.id}`}
+                  checked={formData.productCategoryIds.includes(category.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productCategoryIds: [
+                          ...prev.productCategoryIds,
+                          category.id,
+                        ],
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productCategoryIds: prev.productCategoryIds.filter(
+                          (id) => id !== category.id,
+                        ),
+                      }));
+                    }
+                  }}
+                  className="border-green-500"
+                />
+                <Label
+                  htmlFor={`category-${category.id}`}
+                  className="text-gray-700 cursor-pointer"
+                >
+                  {category.name}
+                </Label>
+                {category.description && (
+                  <span className="text-sm text-gray-500">
+                    ({category.description})
+                  </span>
+                )}
+              </div>
+            ));
+          })()}
         </div>
         {formData.productCategoryIds.length > 0 && (
           <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
@@ -1160,39 +1302,46 @@ export default function RegistrationForm() {
           </p>
         </div>
         <div className="mt-4 border border-gray-200 rounded-lg p-4 space-y-3">
-          {products
-            .filter((product) =>
-              formData.productCategoryIds.includes(product.category_id),
-            )
-            .map((product) => (
-              <div key={product.id} className="flex items-center space-x-3">
-                <Checkbox
-                  id={`existing-${product.id}`}
-                  checked={formData.existingProducts.includes(product.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      handleExistingProductToggle(product.id);
-                    } else {
-                      handleExistingProductToggle(product.id);
-                    }
-                  }}
-                  className="border-blue-500"
-                />
-                <div className="flex flex-col">
-                  <Label
-                    htmlFor={`existing-${product.id}`}
-                    className="text-gray-700 font-medium"
-                  >
-                    {product.name}
-                  </Label>
-                  {product.category_name && (
-                    <span className="text-sm text-gray-500">
-                      Category: {product.category_name}
-                    </span>
-                  )}
+          {(() => {
+            const productsToShow =
+              isAdditionalRegistration && verificationResult?.availableProducts
+                ? verificationResult.availableProducts
+                : products;
+
+            return productsToShow
+              .filter((product) =>
+                formData.productCategoryIds.includes(product.category_id),
+              )
+              .map((product) => (
+                <div key={product.id} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`existing-${product.id}`}
+                    checked={formData.existingProducts.includes(product.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        handleExistingProductToggle(product.id);
+                      } else {
+                        handleExistingProductToggle(product.id);
+                      }
+                    }}
+                    className="border-blue-500"
+                  />
+                  <div className="flex flex-col">
+                    <Label
+                      htmlFor={`existing-${product.id}`}
+                      className="text-gray-700 font-medium"
+                    >
+                      {product.name}
+                    </Label>
+                    {product.category_name && (
+                      <span className="text-sm text-gray-500">
+                        Category: {product.category_name}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ));
+          })()}
           {products.filter((product) =>
             formData.productCategoryIds.includes(product.category_id),
           ).length === 0 && (
