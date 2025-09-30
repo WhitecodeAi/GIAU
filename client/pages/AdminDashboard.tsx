@@ -544,13 +544,19 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredRegistrations = registrations.filter(
-    (reg) =>
-      reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.phone.includes(searchTerm) ||
-      reg.aadhar_number?.includes(searchTerm) ||
-      reg.voter_id?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredRegistrations = registrations.filter((reg) => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+
+    return (
+      (reg.name || "").toLowerCase().includes(term) ||
+      (reg.phone || "").toLowerCase().includes(term) ||
+      (reg.aadhar_number || "").toLowerCase().includes(term) ||
+      (reg.voter_id || "").toLowerCase().includes(term) ||
+      // Allow searching by registration id (partial match)
+      reg.id.toString().includes(term)
+    );
+  });
 
   if (!user) {
     console.log("No user found, should redirect");
