@@ -98,6 +98,7 @@ export default function RegistrationForm() {
   } | null>(null);
   const [isAdditionalRegistration, setIsAdditionalRegistration] =
     useState(false);
+  const [baseRegistrationId, setBaseRegistrationId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
