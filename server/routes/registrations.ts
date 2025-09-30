@@ -1521,13 +1521,21 @@ export async function uploadDocument(req: Request, res: Response) {
 export async function exportProductGI3A(req: Request, res: Response) {
   try {
     // Normalize and validate inputs
-    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
-    const productId = req.body.productId != null ? Number(req.body.productId) : null;
-    const productName = req.body.productName ? String(req.body.productName) : null;
+    const registrationId = Number(
+      req.body.registrationId || req.body.registrationId === 0
+        ? req.body.registrationId
+        : NaN,
+    );
+    const productId =
+      req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName
+      ? String(req.body.productName)
+      : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID (number) and product name (string) are required",
+        error:
+          "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -1742,13 +1750,21 @@ export async function exportProductGI3A(req: Request, res: Response) {
 export async function exportProductNOC(req: Request, res: Response) {
   try {
     // Normalize and validate inputs
-    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
-    const productId = req.body.productId != null ? Number(req.body.productId) : null;
-    const productName = req.body.productName ? String(req.body.productName) : null;
+    const registrationId = Number(
+      req.body.registrationId || req.body.registrationId === 0
+        ? req.body.registrationId
+        : NaN,
+    );
+    const productId =
+      req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName
+      ? String(req.body.productName)
+      : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID (number) and product name (string) are required",
+        error:
+          "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -1924,13 +1940,21 @@ export async function exportProductNOC(req: Request, res: Response) {
 export async function exportProductStatement(req: Request, res: Response) {
   try {
     // Normalize and validate inputs
-    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
-    const productId = req.body.productId != null ? Number(req.body.productId) : null;
-    const productName = req.body.productName ? String(req.body.productName) : null;
+    const registrationId = Number(
+      req.body.registrationId || req.body.registrationId === 0
+        ? req.body.registrationId
+        : NaN,
+    );
+    const productId =
+      req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName
+      ? String(req.body.productName)
+      : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID (number) and product name (string) are required",
+        error:
+          "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -2526,7 +2550,7 @@ async function generateProductStatementHtml(
 
   try {
     let rows = await dbQuery(
-  `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
+      `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
        FROM user_production_details
        WHERE registration_id = ? AND ${productId ? "product_id = ?" : "product_name = ?"}
        ORDER BY id DESC LIMIT 1`,
@@ -2536,7 +2560,7 @@ async function generateProductStatementHtml(
     if (!rows || rows.length === 0) {
       // Fallback: any latest production detail for this registration
       rows = await dbQuery(
-      `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
+        `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
          FROM user_production_details
          WHERE registration_id = ?
          ORDER BY id DESC LIMIT 1`,
@@ -2556,7 +2580,8 @@ async function generateProductStatementHtml(
     if (detail && detail.years_of_production) {
       yearsOfExperience = parseInt(String(detail.years_of_production)) || null;
     } else if (registration.years_of_production) {
-      yearsOfExperience = parseInt(String(registration.years_of_production)) || null;
+      yearsOfExperience =
+        parseInt(String(registration.years_of_production)) || null;
     } else if (registration.created_at) {
       yearsOfExperience = Math.max(1, currentYear - registrationYear);
     } else {
@@ -2770,13 +2795,21 @@ async function generateProductStatementHtml(
 export async function exportProductCard(req: Request, res: Response) {
   try {
     // Normalize and validate inputs
-    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
-    const productId = req.body.productId != null ? Number(req.body.productId) : null;
-    const productName = req.body.productName ? String(req.body.productName) : null;
+    const registrationId = Number(
+      req.body.registrationId || req.body.registrationId === 0
+        ? req.body.registrationId
+        : NaN,
+    );
+    const productId =
+      req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName
+      ? String(req.body.productName)
+      : null;
 
     if (!registrationId || (!productId && !productName)) {
       return res.status(400).json({
-        error: "Registration ID (number) and productId (number) or productName (string) are required",
+        error:
+          "Registration ID (number) and productId (number) or productName (string) are required",
       });
     }
 
