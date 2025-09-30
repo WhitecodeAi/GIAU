@@ -1520,11 +1520,14 @@ export async function uploadDocument(req: Request, res: Response) {
 // Product-specific export functions
 export async function exportProductGI3A(req: Request, res: Response) {
   try {
-    const { registrationId, productId, productName } = req.body;
+    // Normalize and validate inputs
+    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
+    const productId = req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName ? String(req.body.productName) : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required",
+        error: "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -1738,11 +1741,14 @@ export async function exportProductGI3A(req: Request, res: Response) {
 
 export async function exportProductNOC(req: Request, res: Response) {
   try {
-    const { registrationId, productId, productName } = req.body;
+    // Normalize and validate inputs
+    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
+    const productId = req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName ? String(req.body.productName) : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required",
+        error: "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -1917,11 +1923,14 @@ export async function exportProductNOC(req: Request, res: Response) {
 
 export async function exportProductStatement(req: Request, res: Response) {
   try {
-    const { registrationId, productId, productName } = req.body;
+    // Normalize and validate inputs
+    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
+    const productId = req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName ? String(req.body.productName) : null;
 
     if (!registrationId || !productName) {
       return res.status(400).json({
-        error: "Registration ID and product name are required",
+        error: "Registration ID (number) and product name (string) are required",
       });
     }
 
@@ -2506,6 +2515,8 @@ async function generateProductStatementHtml(
     ? new Date(registration.created_at).getFullYear()
     : new Date().getFullYear();
   const currentYear = new Date().getFullYear();
+  // Years of experience determined for statement (declared in outer scope so template can use it)
+  let yearsOfExperience: number | null = null;
 
   // Resolve production and turnover dynamically
   let estimatedProduction = "Not specified";
@@ -2535,12 +2546,10 @@ async function generateProductStatementHtml(
     const detail = rows && rows[0];
 
     // Determine years of production: prefer explicit value from production detail, then registration, else compute from registration date
-    let yearsOfExperience: number | null = null;
     if (detail && detail.years_of_production) {
       yearsOfExperience = parseInt(String(detail.years_of_production)) || null;
     } else if (registration.years_of_production) {
-      yearsOfExperience =
-        parseInt(String(registration.years_of_production)) || null;
+      yearsOfExperience = parseInt(String(registration.years_of_production)) || null;
     } else if (registration.created_at) {
       yearsOfExperience = Math.max(1, currentYear - registrationYear);
     } else {
@@ -2753,11 +2762,14 @@ async function generateProductStatementHtml(
 
 export async function exportProductCard(req: Request, res: Response) {
   try {
-    const { registrationId, productId, productName } = req.body;
+    // Normalize and validate inputs
+    const registrationId = Number(req.body.registrationId || req.body.registrationId === 0 ? req.body.registrationId : NaN);
+    const productId = req.body.productId != null ? Number(req.body.productId) : null;
+    const productName = req.body.productName ? String(req.body.productName) : null;
 
     if (!registrationId || (!productId && !productName)) {
       return res.status(400).json({
-        error: "Registration ID and productId or productName is required",
+        error: "Registration ID (number) and productId (number) or productName (string) are required",
       });
     }
 
