@@ -251,7 +251,6 @@ export default function AdminDashboard() {
     setSelectedRegistrations(newSelected);
   };
 
-
   // Removed: Export Cards functionality - now available in registration details
   // const handleExportSelected = async () => {
   //   if (selectedRegistrations.size === 0) {
@@ -661,7 +660,6 @@ export default function AdminDashboard() {
                   <Users size={16} className="mr-2" />
                   Manage Users
                 </Button>
-
 
                 {/* Removed: Export Cards, Form GI 3A, NOC, and Statement buttons */}
                 {/* These functionalities are now available in individual registration details pages */}
