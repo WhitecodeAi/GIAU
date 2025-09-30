@@ -112,20 +112,28 @@ export function DocumentUpload({
       </div>
 
       {/* File Preview */}
-      {file && showPreview ? (
+      { (file || previewUrl) && showPreview ? (
         <div className="mt-3">
           <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
-            {objectUrl && (
+            {previewUrl ? (
               <img
-                src={objectUrl}
+                src={previewUrl}
                 alt={`${label} preview`}
                 className="w-full h-full object-cover"
               />
+            ) : (
+              objectUrl && (
+                <img
+                  src={objectUrl}
+                  alt={`${label} preview`}
+                  className="w-full h-full object-cover"
+                />
+              )
             )}
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div className="text-sm text-green-600">
-              ✓ File uploaded: {file.name}
+              ✓ File uploaded: {file ? file.name : previewUrl}
             </div>
             {!disabled && (
               <Button
@@ -141,7 +149,7 @@ export function DocumentUpload({
             )}
           </div>
         </div>
-      ) : file && !showPreview ? (
+      ) : (file && !showPreview) ? (
         <div className="mt-3">
           <div className="flex items-center justify-between">
             <div className="text-sm text-green-600">
