@@ -512,6 +512,7 @@ export const dashboardAPI = {
         totalUsers: number;
         totalProducts: number;
         totalCategories: number;
+        totalApplications?: number;
       }>("/dashboard/statistics");
 
       return stats;
@@ -521,6 +522,7 @@ export const dashboardAPI = {
         totalUsers: 0,
         totalProducts: 0,
         totalCategories: 0,
+        totalApplications: 0,
       };
     }
   },
