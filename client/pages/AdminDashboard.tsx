@@ -627,7 +627,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {statistics?.totalProducts || 0}
+                {typeof statistics?.totalApplications === 'number' ? statistics.totalApplications : statistics?.totalProducts || 0}
               </div>
             </CardContent>
           </Card>
