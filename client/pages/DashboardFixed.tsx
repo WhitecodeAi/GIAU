@@ -8,6 +8,8 @@ export default function DashboardFixed() {
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     totalApplications: 0,
+    myRegistrations: 0,
+    myApplications: 0,
     totalUsers: 0,
     totalProducts: 0,
     totalCategories: 0,
