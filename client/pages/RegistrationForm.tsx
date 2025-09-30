@@ -92,9 +92,13 @@ export default function RegistrationForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<{
     isRegistered: boolean;
+    registrationId?: number;
     name?: string;
     registrationDate?: string;
     userData?: any;
+    existingRegistrations?: Array<any>;
+    availableCategories?: Array<any>;
+    availableProducts?: Array<any>;
   } | null>(null);
   const [isAdditionalRegistration, setIsAdditionalRegistration] =
     useState(false);
