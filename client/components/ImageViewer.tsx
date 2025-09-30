@@ -215,7 +215,7 @@ export function ImageViewer({
               </Button>
               {onSave && (
                 <Button size="sm" variant="outline" onClick={saveImage}>
-                  <SaveIcon className="w-4 h-4 mr-1" /> Save to profile
+                  <SaveIcon className="w-4 h-4 mr-1" /> Save
                 </Button>
               )}
               <Button size="sm" variant="ghost" onClick={downloadImage}>
