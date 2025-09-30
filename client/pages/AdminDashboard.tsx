@@ -667,7 +667,10 @@ export default function AdminDashboard() {
                     type="text"
                     placeholder="Search by name, phone, Aadhar number, or Voter ID..."
                     value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="pl-10"
                   />
                 </div>
