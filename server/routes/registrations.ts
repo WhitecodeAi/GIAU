@@ -1258,11 +1258,11 @@ export async function verifyRegistration(req: Request, res: Response) {
         voterId: registration.voter_id || undefined,
         panNumber: registration.pan_number || undefined,
         documentPaths: {
-          aadharCard: registration.aadhar_card_path || undefined,
-          panCard: registration.pan_card_path || undefined,
-          proofOfProduction: registration.proof_of_production_path || undefined,
-          signature: registration.signature_path || undefined,
-          photo: registration.photo_path || undefined,
+          aadharCard: registration.aadhar_card_path ? simpleFileStorage.getFileUrl(registration.aadhar_card_path) : undefined,
+          panCard: registration.pan_card_path ? simpleFileStorage.getFileUrl(registration.pan_card_path) : undefined,
+          proofOfProduction: registration.proof_of_production_path ? simpleFileStorage.getFileUrl(registration.proof_of_production_path) : undefined,
+          signature: registration.signature_path ? simpleFileStorage.getFileUrl(registration.signature_path) : undefined,
+          photo: registration.photo_path ? simpleFileStorage.getFileUrl(registration.photo_path) : undefined,
         },
       };
 
