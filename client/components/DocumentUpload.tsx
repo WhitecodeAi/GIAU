@@ -24,6 +24,7 @@ export function DocumentUpload({
   accept = "image/*",
   disabled = false,
   showPreview = true,
+  previewUrl = null,
 }: DocumentUploadProps) {
   const [showCamera, setShowCamera] = useState(false);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
