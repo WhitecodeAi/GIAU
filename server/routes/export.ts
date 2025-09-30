@@ -1435,6 +1435,20 @@ async function generateStatementOfCaseHtml(
       ? "Two Lakh Fifty Thousand Only"
       : "One Lakh Fifty Thousand Only";
 
+  // Resolve area of production for primary product (prefer production detail)
+  let areaOfProduction = registration.area_of_production || "Not specified";
+  try {
+    const rows = await dbQuery(
+      `SELECT area_of_production FROM user_production_details WHERE registration_id = ? AND product_name = ? ORDER BY id DESC LIMIT 1`,
+      [registration.id, primaryProduct],
+    );
+    if (rows && rows.length > 0 && rows[0].area_of_production) {
+      areaOfProduction = rows[0].area_of_production;
+    }
+  } catch (err) {
+    console.error("Error fetching area_of_production for statement export:", err);
+  }
+
   // Get signature image HTML if available
   const signatureHtml = registration.signature_path
     ? `<img src="${simpleFileStorage.getFileUrl(registration.signature_path)}" alt="Signature" class="statement-signature-image" />`
@@ -1456,7 +1470,7 @@ async function generateStatementOfCaseHtml(
         </div>
 
         <div class="statement-paragraph">
-          I am involved in the process production of <span class="highlight">${primaryProduct}</span> since <span class="highlight">${yearsOfExperience}</span> years within the designated <span class="highlight">${giArea}</span> GI Area.
+          I am involved in the process production of <span class="highlight">${primaryProduct}</span> since <span class="highlight">${yearsOfExperience}</span> years in the area of <span class="highlight">${areaOfProduction}</span> within the designated <span class="highlight">${giArea}</span> GI Area.
         </div>
 
         <div class="statement-paragraph">
