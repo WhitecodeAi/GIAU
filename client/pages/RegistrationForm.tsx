@@ -635,18 +635,31 @@ export default function RegistrationForm() {
         return missingFields.length > 0
           ? `Please fill in: ${missingFields.join(", ")}`
           : "";
-      case 2:
+      case 2: {
         const missingDocs = [] as string[];
-        if (!formData.documents.aadharCardFront)
+        const aadharAvailableFromBase = !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.aadharCard
+        );
+        const signatureAvailableFromBase = !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.signature
+        );
+        const photoAvailableFromBase = !!(
+          isAdditionalRegistration && verificationResult?.userData?.documentPaths?.photo
+        );
+
+        if (!formData.documents.aadharCardFront && !aadharAvailableFromBase)
           missingDocs.push("Aadhar Card (Front)");
-        if (!formData.documents.aadharCardBack)
+        if (!formData.documents.aadharCardBack && !aadharAvailableFromBase)
           missingDocs.push("Aadhar Card (Back)");
         // PAN Card and Proof of Production are optional
-        if (!formData.documents.signature) missingDocs.push("Signature");
-        if (!formData.documents.photo) missingDocs.push("Photo");
+        if (!formData.documents.signature && !signatureAvailableFromBase)
+          missingDocs.push("Signature");
+        if (!formData.documents.photo && !photoAvailableFromBase)
+          missingDocs.push("Photo");
         return missingDocs.length > 0
           ? `Please upload: ${missingDocs.join(", ")}`
           : "";
+      }
       case 3:
         return formData.productCategoryIds.length === 0
           ? "Please select at least one product category"
