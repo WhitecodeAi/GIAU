@@ -34,7 +34,38 @@ export default function DashboardFixed() {
         dashboardAPI.getRecentActivity(),
       ]);
 
-      setStats(statsData);
+      // Compute user-specific counts if user is logged in
+      let myRegistrationsCount = 0;
+      let myApplicationsCount = 0;
+      const userDataRaw = localStorage.getItem("user");
+      if (userDataRaw) {
+        try {
+          const userRegsResp: any = await registrationsAPI.getUserRegistrations();
+          let regs: any[] = [];
+          if (Array.isArray(userRegsResp)) regs = userRegsResp;
+          else if (userRegsResp && userRegsResp.registrations) regs = userRegsResp.registrations;
+          myRegistrationsCount = regs.length;
+          myApplicationsCount = regs.filter((r) => {
+            const sel = r.selected_products || r.selectedProducts || r.existing_products || r.existingProducts;
+            if (!sel) return false;
+            if (typeof sel === "string") {
+              const trimmed = sel.trim();
+              return trimmed !== "" && trimmed !== "[]";
+            }
+            if (Array.isArray(sel)) return sel.length > 0;
+            return false;
+          }).length;
+        } catch (err) {
+          // ignore per-user fetch errors
+        }
+      }
+
+      setStats({
+        ...statsData,
+        myRegistrations: myRegistrationsCount,
+        myApplications: myApplicationsCount,
+      } as any);
+
       setRecentActivity(activityData);
     } catch (_error) {
       // Silent fallback: UI will show zeros/empty lists
