@@ -556,22 +556,48 @@ export default function RegistrationForm() {
         photo: formData.documents.photo,
       } as const;
 
-      const result = await registrationsAPI.create(
-        registrationData,
-        documentsToSend,
-      );
+      if (isAdditionalRegistration) {
+        if (!baseRegistrationId) throw new Error("Base registration ID missing");
 
-      toast.success("🎉 Registration Completed Successfully!", {
-        description: `Your GI registration has been submitted and is now being processed. Registration ID: ${result.registrationId}. Redirecting to dashboard...`,
-        duration: 5000,
-        style: {
-          fontSize: "20px",
-          padding: "30px",
-          minHeight: "100px",
-          fontWeight: "bold",
-        },
-      });
-      navigate("/dashboard", { state: { message: "Registration completed!" } });
+        const additionalData = {
+          baseRegistrationId,
+          productCategoryIds: formData.productCategoryIds,
+          existingProducts: formData.existingProducts,
+          selectedProducts: formData.selectedProducts,
+          productionDetails: productionDetails,
+        } as any;
+
+        const resp = await registrationsAPI.createAdditional(additionalData);
+
+        toast.success("🎉 Additional Registration Completed Successfully!", {
+          description: `Additional registration created (ID: ${resp.registrationId}). Redirecting to dashboard...`,
+          duration: 5000,
+          style: {
+            fontSize: "20px",
+            padding: "30px",
+            minHeight: "100px",
+            fontWeight: "bold",
+          },
+        });
+        navigate("/dashboard", { state: { message: "Additional registration completed!" } });
+      } else {
+        const result = await registrationsAPI.create(
+          registrationData,
+          documentsToSend,
+        );
+
+        toast.success("🎉 Registration Completed Successfully!", {
+          description: `Your GI registration has been submitted and is now being processed. Registration ID: ${result.registrationId}. Redirecting to dashboard...`,
+          duration: 5000,
+          style: {
+            fontSize: "20px",
+            padding: "30px",
+            minHeight: "100px",
+            fontWeight: "bold",
+          },
+        });
+        navigate("/dashboard", { state: { message: "Registration completed!" } });
+      }
     } catch (err: any) {
       const errorMessage = err.message || "Something went wrong";
       setError(errorMessage);
