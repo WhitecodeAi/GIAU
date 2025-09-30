@@ -7,6 +7,7 @@ export default function DashboardFixed() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
+    totalApplications: 0,
     totalUsers: 0,
     totalProducts: 0,
     totalCategories: 0,
