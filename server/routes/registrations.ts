@@ -2525,7 +2525,7 @@ async function generateProductStatementHtml(
 
   try {
     let rows = await dbQuery(
-      `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production
+  `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
        FROM user_production_details
        WHERE registration_id = ? AND ${productId ? "product_id = ?" : "product_name = ?"}
        ORDER BY id DESC LIMIT 1`,
@@ -2535,7 +2535,7 @@ async function generateProductStatementHtml(
     if (!rows || rows.length === 0) {
       // Fallback: any latest production detail for this registration
       rows = await dbQuery(
-        `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production
+      `SELECT annual_production, unit, annual_turnover, turnover_unit, years_of_production, area_of_production
          FROM user_production_details
          WHERE registration_id = ?
          ORDER BY id DESC LIMIT 1`,
@@ -2544,6 +2544,12 @@ async function generateProductStatementHtml(
     }
 
     const detail = rows && rows[0];
+
+    // Resolve area of production from detail or registration
+    let areaOfProduction = registration.area_of_production || "Not specified";
+    if (detail && detail.area_of_production) {
+      areaOfProduction = detail.area_of_production;
+    }
 
     // Determine years of production: prefer explicit value from production detail, then registration, else compute from registration date
     if (detail && detail.years_of_production) {
@@ -2724,7 +2730,7 @@ async function generateProductStatementHtml(
         </div>
 
         <div class="statement-paragraph">
-          I am involved in the process production of <span class="highlight">${productName}</span> since <span class="highlight">${yearsOfExperience}</span> years within the designated <span class="highlight">${giArea}</span> GI Area.
+          I am involved in the process production of <span class="highlight">${productName}</span> since <span class="highlight">${yearsOfExperience}</span> years in the area of <span class="highlight">${areaOfProduction}</span> within the designated <span class="highlight">${giArea}</span> GI Area.
         </div>
 
         <div class="statement-paragraph">
