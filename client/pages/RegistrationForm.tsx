@@ -790,6 +790,13 @@ export default function RegistrationForm() {
                             type="button"
                             onClick={() => {
                               setIsAdditionalRegistration(true);
+                              // Save base registration id for createAdditional
+                              setBaseRegistrationId(
+                                verificationResult.registrationId ||
+                                  verificationResult.existingRegistrations?.[0]?.id ||
+                                  null,
+                              );
+
                               // Load existing user data if available
                               if (verificationResult.userData) {
                                 setFormData((prev) => ({
