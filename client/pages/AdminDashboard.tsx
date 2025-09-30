@@ -957,6 +957,11 @@ export default function AdminDashboard() {
                               <p className="text-sm text-gray-600">
                                 Age: {registration.age}, {registration.gender}
                               </p>
+                              {registration.username && (
+                                <p className="text-sm text-gray-500">
+                                  <strong>Data collector:</strong> {registration.username}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <p className="text-sm text-gray-600">
