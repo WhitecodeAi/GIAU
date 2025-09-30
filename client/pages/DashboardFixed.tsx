@@ -102,7 +102,7 @@ export default function DashboardFixed() {
 
       {/* Main Content */}
       <div className="p-6">
-        <div className="grid grid-cols-1 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Stats Cards */}
           <div className="bg-white rounded-lg shadow p-6 max-w-md">
             <div className="flex items-center">
@@ -127,6 +127,40 @@ export default function DashboardFixed() {
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {stats.totalRegistrations}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 max-w-md">
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <svg
+                  className="w-6 h-6 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 16V8a2 2 0 00-1-1.73l-8-4.62a2 2 0 00-2 0l-8 4.62A2 2 0 003 8v8a2 2 0 001 1.73l8 4.62a2 2 0 002 0l8-4.62A2 2 0 0021 16z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 7l10 5-10 5V7z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Applications</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {typeof stats.totalApplications === "number"
+                    ? stats.totalApplications
+                    : stats.totalProducts || 0}
                 </p>
               </div>
             </div>
