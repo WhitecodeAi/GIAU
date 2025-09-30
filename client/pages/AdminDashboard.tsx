@@ -251,13 +251,6 @@ export default function AdminDashboard() {
     setSelectedRegistrations(newSelected);
   };
 
-  const handleSelectAll = () => {
-    if (selectedRegistrations.size === registrations.length) {
-      setSelectedRegistrations(new Set());
-    } else {
-      setSelectedRegistrations(new Set(registrations.map((reg) => reg.id)));
-    }
-  };
 
   // Removed: Export Cards functionality - now available in registration details
   // const handleExportSelected = async () => {
@@ -669,11 +662,6 @@ export default function AdminDashboard() {
                   Manage Users
                 </Button>
 
-                <Button onClick={handleSelectAll} variant="outline" size="sm">
-                  {selectedRegistrations.size === registrations.length
-                    ? "Deselect All"
-                    : "Select All"}
-                </Button>
 
                 {/* Removed: Export Cards, Form GI 3A, NOC, and Statement buttons */}
                 {/* These functionalities are now available in individual registration details pages */}
