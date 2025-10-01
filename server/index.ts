@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -51,6 +50,7 @@ import {
   getUserRegistrations as getUserRegistrationsByUserId,
   getUserById,
   getUsersForDropdown,
+  deleteUser,
 } from "./routes/users";
 
 // Dashboard routes
@@ -186,6 +186,7 @@ export function createServer() {
     authenticateToken,
     getUserRegistrationsByUserId,
   );
+  app.delete("/api/users/:userId", authenticateToken, deleteUser);
 
   // Dashboard routes
   app.get("/api/dashboard/statistics", getDashboardStatistics);

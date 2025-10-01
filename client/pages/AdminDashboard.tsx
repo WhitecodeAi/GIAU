@@ -27,12 +27,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   dashboardAPI,
   registrationsAPI,
   apiRequest,
   productsAPI,
+  usersAPI,
 } from "@/lib/api";
 
 interface Registration {
@@ -104,6 +115,35 @@ export default function AdminDashboard() {
   // const [isExportingNOC, setIsExportingNOC] = useState(false);
   // const [isExportingStatement, setIsExportingStatement] = useState(false);
   const navigate = useNavigate();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+
+  const handleDeleteUser = async (userId?: number | null) => {
+    // Open confirmation modal
+    if (!userId) return;
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await usersAPI.deleteUser(userToDelete);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      // Refresh data
+      fetchRegistrations();
+      fetchStatistics();
+      fetchUsers();
+      alert("User deleted successfully");
+    } catch (err: any) {
+      const msg = (err && err.message) || String(err);
+      alert("Failed to delete user: " + msg);
+    }
+  };
+
+  // NOTE: handleDeleteUser replaced by modal-based confirmation above
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -1011,6 +1051,15 @@ export default function AdminDashboard() {
                           <Eye size={14} className="mr-1" />
                           View
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() =>
+                            handleDeleteUser((registration as any).user_id)
+                          }
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1057,6 +1106,26 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete user and all related data
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the user and all their registrations
+              and files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="ml-2">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

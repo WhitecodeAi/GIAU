@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
-import { dbQuery } from "../config/database";
+import { dbQuery, pool } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
+import fs from "fs";
+import path from "path";
 
 interface UserWithStats {
   id: number;
@@ -276,6 +277,87 @@ export async function getUserById(req: AuthRequest, res: Response) {
   } catch (error) {
     console.error("Error fetching user details:", error);
     res.status(500).json({ error: "Failed to fetch user details" });
+  }
+}
+
+// Delete a user and all related registrations and files (admin only)
+export async function deleteUser(req: AuthRequest, res: Response) {
+  const userId = parseInt(req.params.userId);
+  if (!userId)
+    return res.status(400).json({ error: "Valid user ID is required" });
+
+  // Require admin role
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+
+  let connection: any = null;
+  try {
+    // Fetch registrations for this user
+    const registrations = await dbQuery(
+      "SELECT id FROM user_registrations WHERE user_id = ?",
+      [userId],
+    );
+
+    const registrationIds = registrations.map((r: any) => r.id);
+
+    // Start transaction
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    if (registrationIds.length > 0) {
+      const placeholders = registrationIds.map(() => "?").join(",");
+
+      // Delete dependent data
+      await connection.execute(
+        `DELETE FROM user_production_details WHERE registration_id IN (${placeholders})`,
+        registrationIds,
+      );
+      await connection.execute(
+        `DELETE FROM user_selected_products WHERE registration_id IN (${placeholders})`,
+        registrationIds,
+      );
+      await connection.execute(
+        `DELETE FROM user_existing_products WHERE registration_id IN (${placeholders})`,
+        registrationIds,
+      );
+      await connection.execute(
+        `DELETE FROM user_registration_categories WHERE registration_id IN (${placeholders})`,
+        registrationIds,
+      );
+    }
+
+    // Delete registrations and user
+    await connection.execute(
+      "DELETE FROM user_registrations WHERE user_id = ?",
+      [userId],
+    );
+    await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
+
+    await connection.commit();
+    connection.release();
+    connection = null;
+
+    // Remove files from disk for each registration
+    for (const regId of registrationIds) {
+      try {
+        const dir = path.join("/var/www/GI", `registration_${regId}`);
+        await fs.promises.rm(dir, { recursive: true, force: true });
+      } catch (err) {
+        console.warn(`Failed to remove files for registration ${regId}:`, err);
+      }
+    }
+
+    res.json({ message: "User and related data deleted" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    if (connection) {
+      try {
+        await connection.rollback();
+        connection.release();
+      } catch (_) {}
+    }
+    res.status(500).json({ error: "Failed to delete user" });
   }
 }
 
