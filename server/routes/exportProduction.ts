@@ -12,7 +12,10 @@ export async function exportProductionByUser(req: any, res: any) {
 
     // If registrationId provided, resolve userId from it
     if (!userId && registrationId) {
-      const regRes = await dbQuery("SELECT user_id FROM user_registrations WHERE id = ?", [registrationId]);
+      const regRes = await dbQuery(
+        "SELECT user_id FROM user_registrations WHERE id = ?",
+        [registrationId],
+      );
       if (!regRes || regRes.length === 0) {
         return res.status(404).json({ error: "Registration not found" });
       }
@@ -20,11 +23,16 @@ export async function exportProductionByUser(req: any, res: any) {
     }
 
     if (!userId) {
-      return res.status(400).json({ error: "User ID or registration ID is required" });
+      return res
+        .status(400)
+        .json({ error: "User ID or registration ID is required" });
     }
 
     // Fetch user info and registrations
-    const userResult = await dbQuery("SELECT id, username FROM users WHERE id = ?", [userId]);
+    const userResult = await dbQuery(
+      "SELECT id, username FROM users WHERE id = ?",
+      [userId],
+    );
     if (!userResult || userResult.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -50,11 +58,13 @@ export async function exportProductionByUser(req: any, res: any) {
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
     `,
-      [userId]
+      [userId],
     );
 
     if (!registrations || registrations.length === 0) {
-      return res.status(404).json({ error: "No registrations found for this user" });
+      return res
+        .status(404)
+        .json({ error: "No registrations found for this user" });
     }
 
     const folderName = `${user.username || "user"}_production_export_${new Date().toISOString().split("T")[0]}`;

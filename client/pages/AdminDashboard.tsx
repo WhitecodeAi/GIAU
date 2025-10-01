@@ -593,17 +593,22 @@ export default function AdminDashboard() {
     }
     try {
       setExportingUserId(userId);
-      const response = await fetch("/api/registrations/export-production-by-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
+      const response = await fetch(
+        "/api/registrations/export-production-by-user",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        },
+      );
 
       if (response.ok) {
         const contentDisposition = response.headers.get("Content-Disposition");
         let filename = `production_export_${userId}.zip`;
         if (contentDisposition) {
-          const m = contentDisposition.match(/filename\*?=(?:UTF-8''|)\"?([^\";]+)\"?/);
+          const m = contentDisposition.match(
+            /filename\*?=(?:UTF-8''|)\"?([^\";]+)\"?/,
+          );
           if (m) {
             try {
               filename = decodeURIComponent(m[1]);
@@ -633,7 +638,11 @@ export default function AdminDashboard() {
             const contentType = clone.headers.get("Content-Type") || "";
             if (contentType.includes("application/json")) {
               const errorData = await clone.json();
-              if (errorData && typeof errorData === "object" && "error" in errorData) {
+              if (
+                errorData &&
+                typeof errorData === "object" &&
+                "error" in errorData
+              ) {
                 errorMessage = (errorData as any).error || errorMessage;
               }
             } else {
@@ -1114,11 +1123,15 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleExportProductionForUser(registration.id)}
+                          onClick={() =>
+                            handleExportProductionForUser(registration.id)
+                          }
                           disabled={exportingUserId === registration.id}
                         >
                           <Download size={14} className="mr-1" />
-                          {exportingUserId === registration.id ? "Exporting..." : "Export"}
+                          {exportingUserId === registration.id
+                            ? "Exporting..."
+                            : "Export"}
                         </Button>
 
                         <Button
