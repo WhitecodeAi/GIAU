@@ -33,6 +33,7 @@ import {
   registrationsAPI,
   apiRequest,
   productsAPI,
+  usersAPI,
 } from "@/lib/api";
 
 interface Registration {
@@ -104,6 +105,26 @@ export default function AdminDashboard() {
   // const [isExportingNOC, setIsExportingNOC] = useState(false);
   // const [isExportingStatement, setIsExportingStatement] = useState(false);
   const navigate = useNavigate();
+
+  const handleDeleteUser = async (userId?: number | null) => {
+    if (!userId) return;
+    const ok = window.confirm(
+      "Are you sure you want to delete this user and all related data? This action cannot be undone.",
+    );
+    if (!ok) return;
+
+    try {
+      await usersAPI.deleteUser(userId);
+      alert("User deleted successfully");
+      // Refresh data
+      fetchRegistrations();
+      fetchStatistics();
+      fetchUsers();
+    } catch (err: any) {
+      const msg = (err && err.message) || String(err);
+      alert("Failed to delete user: " + msg);
+    }
+  };
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -1010,6 +1031,13 @@ export default function AdminDashboard() {
                         >
                           <Eye size={14} className="mr-1" />
                           View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteUser((registration as any).user_id)}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </div>

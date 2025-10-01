@@ -503,6 +503,13 @@ export const registrationsAPI = {
   },
 };
 
+// Users API
+export const usersAPI = {
+  deleteUser: async (userId: number) => {
+    return apiRequest<{ message: string }>(`/users/${userId}`, { method: "DELETE" });
+  },
+};
+
 // Dashboard API
 export const dashboardAPI = {
   getStatistics: async () => {
