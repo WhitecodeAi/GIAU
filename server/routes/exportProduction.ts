@@ -78,18 +78,27 @@ export async function exportProductionByUser(req: any, res: any) {
 
     const storageBase = "/var/www/GI"; // same base as simpleFileStorage
 
-    // Prepare CSV lines header
-    const csvLines: string[] = [
-      [
-        "Reg ID",
-        "Reg Date",
-        "Name",
-        "Phone",
-        "Email",
-        "Products",
-        "Files",
-      ].join(","),
-    ];
+    // Prepare CSV lines header with proper escaping helper
+    const csvLines: string[] = [];
+
+    const escapeCsv = (val: any) => {
+      if (val == null) return "";
+      const s = String(val);
+      if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    csvLines.push([
+      "Reg ID",
+      "Reg Date",
+      "Name",
+      "Phone",
+      "Email",
+      "Products",
+      "Files",
+    ].join(","));
 
     for (const reg of registrations as any[]) {
       const regDirName = `registration_${reg.id}`;
