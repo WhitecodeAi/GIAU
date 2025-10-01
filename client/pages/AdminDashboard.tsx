@@ -1089,12 +1089,25 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() =>
+                            handleExportProductionForUser((registration as any).user_id)
+                          }
+                          disabled={exportingUserId === (registration as any).user_id}
+                        >
+                          <Download size={14} className="mr-1" />
+                          {exportingUserId === (registration as any).user_id ? "Exporting..." : "Export"}
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
                             navigate(`/registration-details/${registration.id}`)
                           }
                         >
                           <Eye size={14} className="mr-1" />
                           View
                         </Button>
+
                         <Button
                           size="sm"
                           variant="destructive"
