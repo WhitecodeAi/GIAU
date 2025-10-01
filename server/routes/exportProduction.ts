@@ -8,16 +8,23 @@ import { dbQuery } from "../config/database";
 // Exports all production-related files and a CSV summary for a given user as a zip streamed to the client.
 export async function exportProductionByUser(req: any, res: any) {
   try {
-    const { userId } = req.body;
+    let { userId, registrationId } = req.body;
+
+    // If registrationId provided, resolve userId from it
+    if (!userId && registrationId) {
+      const regRes = await dbQuery("SELECT user_id FROM user_registrations WHERE id = ?", [registrationId]);
+      if (!regRes || regRes.length === 0) {
+        return res.status(404).json({ error: "Registration not found" });
+      }
+      userId = regRes[0].user_id;
+    }
+
     if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
+      return res.status(400).json({ error: "User ID or registration ID is required" });
     }
 
     // Fetch user info and registrations
-    const userResult = await dbQuery(
-      "SELECT id, username FROM users WHERE id = ?",
-      [userId],
-    );
+    const userResult = await dbQuery("SELECT id, username FROM users WHERE id = ?", [userId]);
     if (!userResult || userResult.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -43,13 +50,11 @@ export async function exportProductionByUser(req: any, res: any) {
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
     `,
-      [userId],
+      [userId]
     );
 
     if (!registrations || registrations.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No registrations found for this user" });
+      return res.status(404).json({ error: "No registrations found for this user" });
     }
 
     const folderName = `${user.username || "user"}_production_export_${new Date().toISOString().split("T")[0]}`;
