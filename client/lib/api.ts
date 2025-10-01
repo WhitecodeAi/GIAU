@@ -506,7 +506,9 @@ export const registrationsAPI = {
 // Users API
 export const usersAPI = {
   deleteUser: async (userId: number) => {
-    return apiRequest<{ message: string }>(`/users/${userId}`, { method: "DELETE" });
+    return apiRequest<{ message: string }>(`/users/${userId}`, {
+      method: "DELETE",
+    });
   },
 };
 

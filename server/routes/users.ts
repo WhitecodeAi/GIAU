@@ -283,7 +283,8 @@ export async function getUserById(req: AuthRequest, res: Response) {
 // Delete a user and all related registrations and files (admin only)
 export async function deleteUser(req: AuthRequest, res: Response) {
   const userId = parseInt(req.params.userId);
-  if (!userId) return res.status(400).json({ error: "Valid user ID is required" });
+  if (!userId)
+    return res.status(400).json({ error: "Valid user ID is required" });
 
   // Require admin role
   if (!req.user || req.user.role !== "admin") {
@@ -327,7 +328,10 @@ export async function deleteUser(req: AuthRequest, res: Response) {
     }
 
     // Delete registrations and user
-    await connection.execute("DELETE FROM user_registrations WHERE user_id = ?", [userId]);
+    await connection.execute(
+      "DELETE FROM user_registrations WHERE user_id = ?",
+      [userId],
+    );
     await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
 
     await connection.commit();

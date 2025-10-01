@@ -1054,7 +1054,9 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDeleteUser((registration as any).user_id)}
+                          onClick={() =>
+                            handleDeleteUser((registration as any).user_id)
+                          }
                         >
                           Delete
                         </Button>
@@ -1108,18 +1110,22 @@ export default function AdminDashboard() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete user and all related data</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete user and all related data
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user and all their registrations and files. This action cannot be undone.
+              This will permanently delete the user and all their registrations
+              and files. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="ml-2">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} className="ml-2">
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
     </div>
   );
 }
