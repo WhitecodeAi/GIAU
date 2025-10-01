@@ -159,6 +159,7 @@ export function createServer() {
   app.post("/api/registrations/export-statement", exportStatementOfCase); // Admin route for Statement of Case export
   app.post("/api/users/export", exportUsersWithDateRange); // Admin route for user export
   app.post("/api/registrations/export-by-user", exportRegistrationsByUser); // Admin route for user-specific export
+  app.post("/api/registrations/export-production-by-user", exportProductionByUser); // Admin route for production export (tar.gz)
   app.post("/api/users/export-by-products", exportUsersByProducts); // Admin route for product-wise export
 
   // Product-specific export routes
