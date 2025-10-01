@@ -46,7 +46,9 @@ export async function exportProductionByUser(req: any, res: any) {
     );
 
     if (!registrations || registrations.length === 0) {
-      return res.status(404).json({ error: "No registrations found for this user" });
+      return res
+        .status(404)
+        .json({ error: "No registrations found for this user" });
     }
 
     const folderName = `${user.username || "user"}_production_export_${new Date().toISOString().split("T")[0]}`;
@@ -65,7 +67,8 @@ export async function exportProductionByUser(req: any, res: any) {
     archive.on("error", (err) => {
       console.error("Archive error:", err);
       try {
-        if (!res.headersSent) res.status(500).json({ error: "Failed to create archive" });
+        if (!res.headersSent)
+          res.status(500).json({ error: "Failed to create archive" });
       } catch (e) {}
     });
 
@@ -85,7 +88,17 @@ export async function exportProductionByUser(req: any, res: any) {
     };
 
     const csvLines: string[] = [];
-    csvLines.push(["Reg ID", "Reg Date", "Name", "Phone", "Email", "Products", "Files"].join(","));
+    csvLines.push(
+      [
+        "Reg ID",
+        "Reg Date",
+        "Name",
+        "Phone",
+        "Email",
+        "Products",
+        "Files",
+      ].join(","),
+    );
 
     for (const reg of registrations as any[]) {
       const regDirName = `registration_${reg.id}`;
@@ -158,7 +171,13 @@ export async function exportProductionByUser(req: any, res: any) {
   } catch (error) {
     console.error("Export production error:", error);
     try {
-      if (!res.headersSent) res.status(500).json({ error: "Failed to export production data", detail: (error as any).message || String(error) });
+      if (!res.headersSent)
+        res
+          .status(500)
+          .json({
+            error: "Failed to export production data",
+            detail: (error as any).message || String(error),
+          });
     } catch (e) {}
   }
 }
