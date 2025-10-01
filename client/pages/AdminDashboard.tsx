@@ -604,12 +604,23 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const contentDisposition = response.headers.get("Content-Disposition");
-        let filename = `production_export_${userId}.tar.gz`;
+        let filename = `production_export_${userId}.zip`;
         if (contentDisposition) {
-          const m = contentDisposition.match(/filename=\"(.+)\"/);
-          if (m) filename = m[1];
+          const m = contentDisposition.match(
+            /filename\*?=(?:UTF-8''|)\"?([^\";]+)\"?/,
+          );
+          if (m) {
+            try {
+              filename = decodeURIComponent(m[1]);
+            } catch (e) {
+              filename = m[1];
+            }
+          }
         }
-        const blob = await response.blob();
+
+        // Use arrayBuffer to avoid potential double-read issues and create blob afterwards
+        const buffer = await response.arrayBuffer();
+        const blob = new Blob([buffer], { type: "application/zip" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.style.display = "none";
@@ -620,8 +631,29 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        const text = await response.text();
-        throw new Error(text || `HTTP ${response.status}`);
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          if (!response.bodyUsed) {
+            const clone = response.clone();
+            const contentType = clone.headers.get("Content-Type") || "";
+            if (contentType.includes("application/json")) {
+              const errorData = await clone.json();
+              if (
+                errorData &&
+                typeof errorData === "object" &&
+                "error" in errorData
+              ) {
+                errorMessage = (errorData as any).error || errorMessage;
+              }
+            } else {
+              const text = await clone.text();
+              if (text) errorMessage = text;
+            }
+          }
+        } catch (parseErr) {
+          console.error("Failed to read error response", parseErr);
+        }
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
       console.error("Export production error:", err);
@@ -1092,16 +1124,12 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() =>
-                            handleExportProductionForUser(
-                              (registration as any).user_id,
-                            )
+                            handleExportProductionForUser(registration.id)
                           }
-                          disabled={
-                            exportingUserId === (registration as any).user_id
-                          }
+                          disabled={exportingUserId === registration.id}
                         >
                           <Download size={14} className="mr-1" />
-                          {exportingUserId === (registration as any).user_id
+                          {exportingUserId === registration.id
                             ? "Exporting..."
                             : "Export"}
                         </Button>
