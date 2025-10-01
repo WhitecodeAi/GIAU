@@ -60,11 +60,16 @@ export async function exportProductionByUser(req: any, res: any) {
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     const archive = archiver("zip", { zlib: { level: 9 } });
+
+    archive.on("warning", (err) => {
+      // Non-fatal warnings (e.g., stat failures)
+      console.warn("Archive warning:", err);
+    });
+
     archive.on("error", (err) => {
       console.error("Archive error:", err);
       try {
-        if (!res.headersSent)
-          res.status(500).json({ error: "Failed to create archive" });
+        if (!res.headersSent) res.status(500).json({ error: "Failed to create archive" });
       } catch (e) {}
     });
 
