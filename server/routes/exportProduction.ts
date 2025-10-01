@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { spawn } from "child_process";
+import archiver from "archiver";
 import { dbQuery } from "../config/database";
 
-// Exports all production-related files and a CSV summary for a given user as a tar.gz streamed to the client.
+// Exports all production-related files and a CSV summary for a given user as a zip streamed to the client.
 export async function exportProductionByUser(req: any, res: any) {
   try {
     const { userId } = req.body;
@@ -13,9 +13,7 @@ export async function exportProductionByUser(req: any, res: any) {
     }
 
     // Fetch user info and registrations
-    const userResult = await dbQuery("SELECT id, username FROM users WHERE id = ?", [
-      userId,
-    ]);
+    const userResult = await dbQuery("SELECT id, username FROM users WHERE id = ?", [userId]);
     if (!userResult || userResult.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -41,28 +39,35 @@ export async function exportProductionByUser(req: any, res: any) {
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
     `,
-      [userId],
+      [userId]
     );
 
     if (!registrations || registrations.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No registrations found for this user" });
+      return res.status(404).json({ error: "No registrations found for this user" });
     }
 
-    // Prepare temp directory
-    const timestamp = Date.now();
-    const folderName = `${user.username || "user"}_production_export_${new Date()
-      .toISOString()
-      .split("T")[0]}`;
-    const tmpBase = fs.mkdtempSync(path.join(os.tmpdir(), "export-"));
-    const exportRoot = path.join(tmpBase, folderName);
-    fs.mkdirSync(exportRoot, { recursive: true });
+    const folderName = `${user.username || "user"}_production_export_${new Date().toISOString().split("T")[0]}`;
+
+    // Stream zip to response
+    res.setHeader("Content-Type", "application/zip");
+    const filename = `${folderName}.zip`;
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    archive.on("error", (err) => {
+      console.error("Archive error:", err);
+      try {
+        if (!res.headersSent) res.status(500).json({ error: "Failed to create archive" });
+      } catch (e) {}
+    });
+
+    // Pipe archive data to the response
+    archive.pipe(res);
 
     const storageBase = "/var/www/GI"; // same base as simpleFileStorage
 
-    // Create a CSV summary
-    const csvLines = [
+    // Prepare CSV lines header
+    const csvLines: string[] = [
       [
         "Reg ID",
         "Reg Date",
@@ -76,8 +81,6 @@ export async function exportProductionByUser(req: any, res: any) {
 
     for (const reg of registrations as any[]) {
       const regDirName = `registration_${reg.id}`;
-      const regDir = path.join(exportRoot, regDirName);
-      fs.mkdirSync(regDir, { recursive: true });
 
       const fileFields = [
         "photo_path",
@@ -92,68 +95,43 @@ export async function exportProductionByUser(req: any, res: any) {
       for (const field of fileFields) {
         const rel = reg[field];
         if (!rel) continue;
-        // normalize
         const cleaned = String(rel).replace(/\\/g, "/");
         const abs = path.join(storageBase, cleaned);
         try {
           if (fs.existsSync(abs)) {
-            const dest = path.join(regDir, path.basename(cleaned));
-            fs.copyFileSync(abs, dest);
-            includedFiles.push(path.join(regDirName, path.basename(cleaned)));
+            const arcName = path.posix.join(regDirName, path.basename(cleaned));
+            archive.file(abs, { name: arcName });
+            includedFiles.push(arcName);
           }
         } catch (err) {
-          // ignore missing files
           console.warn("Failed to include file", abs, err);
         }
       }
 
-      // Add an informational text file about the registration
       const info = `Registration ID: ${reg.id}\nName: ${reg.name}\nPhone: ${reg.phone}\nEmail: ${reg.email || ""}\nProducts: ${reg.product_names || ""}\nRegistered: ${reg.created_at}\n`;
-      fs.writeFileSync(path.join(regDir, "registration_info.txt"), info, "utf-8");
+      archive.append(Buffer.from(info, "utf-8"), { name: path.posix.join(regDirName, "registration_info.txt") });
 
       csvLines.push([
         reg.id,
         new Date(reg.created_at).toLocaleDateString("en-GB"),
-        `"${String(reg.name).replace(/"/g, '""')}"`,
-        reg.phone || "",
-        reg.email || "",
-        `"${String(reg.product_names || "").replace(/"/g, '""')}")`,
-        `"${includedFiles.join(";")}")`,
+        `"${String(reg.name).replace(/"/g, '""')}",`,
+        `${reg.phone || ""},`,
+        `${reg.email || ""},`,
+        `"${String(reg.product_names || "").replace(/"/g, '""')}"`,
+        `"${includedFiles.join(";")}"`,
       ].join(","));
     }
 
-    // Write CSV
-    const csvPath = path.join(exportRoot, "registrations_summary.csv");
-    fs.writeFileSync(csvPath, csvLines.join("\n"), "utf-8");
+    // Append CSV summary at root of zip
+    const csvContent = csvLines.join("\n");
+    archive.append(Buffer.from(csvContent, "utf-8"), { name: "registrations_summary.csv" });
 
-    // Stream tar.gz using system tar if available
-    // tar -czf - -C <tmpBase> <folderName>
-    res.setHeader("Content-Type", "application/gzip");
-    const filename = `${folderName}.tar.gz`;
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-
-    const tarArgs = ["-czf", "-", "-C", tmpBase, folderName];
-    const tar = spawn("tar", tarArgs, { stdio: ["ignore", "pipe", "pipe"] });
-
-    tar.stdout.pipe(res);
-
-    tar.on("error", (err) => {
-      console.error("tar process error:", err);
-      res.status(500).json({ error: "Failed to create archive" });
-      // cleanup
-      try {
-        fs.rmSync(tmpBase, { recursive: true, force: true });
-      } catch (e) {}
-    });
-
-    tar.on("close", (code) => {
-      // cleanup
-      try {
-        fs.rmSync(tmpBase, { recursive: true, force: true });
-      } catch (e) {}
-    });
+    // Finalize archive
+    await archive.finalize();
   } catch (error) {
     console.error("Export production error:", error);
-    res.status(500).json({ error: "Failed to export production data" });
+    try {
+      if (!res.headersSent) res.status(500).json({ error: "Failed to export production data" });
+    } catch (e) {}
   }
 }
