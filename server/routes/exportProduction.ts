@@ -1,6 +1,6 @@
-import fs from "fs";
 import path from "path";
 import os from "os";
+import fs from "fs";
 import archiver from "archiver";
 import { dbQuery } from "../config/database";
 
@@ -59,6 +59,11 @@ export async function exportProductionByUser(req: any, res: any) {
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     const archive = archiver("zip", { zlib: { level: 9 } });
+
+    archive.on("warning", (err) => {
+      console.warn("Archive warning:", err);
+    });
+
     archive.on("error", (err) => {
       console.error("Archive error:", err);
       try {
@@ -72,8 +77,18 @@ export async function exportProductionByUser(req: any, res: any) {
 
     const storageBase = "/var/www/GI"; // same base as simpleFileStorage
 
-    // Prepare CSV lines header
-    const csvLines: string[] = [
+    // CSV helper
+    const escapeCsv = (val: any) => {
+      if (val == null) return "";
+      const s = String(val);
+      if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const csvLines: string[] = [];
+    csvLines.push(
       [
         "Reg ID",
         "Reg Date",
@@ -83,7 +98,7 @@ export async function exportProductionByUser(req: any, res: any) {
         "Products",
         "Files",
       ].join(","),
-    ];
+    );
 
     for (const reg of registrations as any[]) {
       const regDirName = `registration_${reg.id}`;
@@ -121,13 +136,13 @@ export async function exportProductionByUser(req: any, res: any) {
 
       csvLines.push(
         [
-          reg.id,
-          new Date(reg.created_at).toLocaleDateString("en-GB"),
-          `"${String(reg.name).replace(/"/g, '""')}",`,
-          `${reg.phone || ""},`,
-          `${reg.email || ""},`,
-          `"${String(reg.product_names || "").replace(/"/g, '""')}"`,
-          `"${includedFiles.join(";")}"`,
+          escapeCsv(reg.id),
+          escapeCsv(new Date(reg.created_at).toLocaleDateString("en-GB")),
+          escapeCsv(reg.name),
+          escapeCsv(reg.phone || ""),
+          escapeCsv(reg.email || ""),
+          escapeCsv(reg.product_names || ""),
+          escapeCsv(includedFiles.join(";")),
         ].join(","),
       );
     }
@@ -138,13 +153,31 @@ export async function exportProductionByUser(req: any, res: any) {
       name: "registrations_summary.csv",
     });
 
+    // Ensure response ends when archive finishes
+    archive.on("close", () => {
+      console.log("Archive finalized, bytes: ", archive.pointer());
+      try {
+        if (!res.writableEnded) res.end();
+      } catch (e) {}
+    });
+
     // Finalize archive
-    await archive.finalize();
+    await new Promise<void>((resolve, reject) => {
+      archive.finalize((err: any) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   } catch (error) {
     console.error("Export production error:", error);
     try {
       if (!res.headersSent)
-        res.status(500).json({ error: "Failed to export production data" });
+        res
+          .status(500)
+          .json({
+            error: "Failed to export production data",
+            detail: (error as any).message || String(error),
+          });
     } catch (e) {}
   }
 }
