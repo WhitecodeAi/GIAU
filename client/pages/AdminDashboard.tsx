@@ -27,6 +27,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   dashboardAPI,
@@ -106,25 +116,34 @@ export default function AdminDashboard() {
   // const [isExportingStatement, setIsExportingStatement] = useState(false);
   const navigate = useNavigate();
 
-  const handleDeleteUser = async (userId?: number | null) => {
-    if (!userId) return;
-    const ok = window.confirm(
-      "Are you sure you want to delete this user and all related data? This action cannot be undone.",
-    );
-    if (!ok) return;
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
+  const handleDeleteUser = async (userId?: number | null) => {
+    // Open confirmation modal
+    if (!userId) return;
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
     try {
-      await usersAPI.deleteUser(userId);
-      alert("User deleted successfully");
+      await usersAPI.deleteUser(userToDelete);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
       // Refresh data
       fetchRegistrations();
       fetchStatistics();
       fetchUsers();
+      alert("User deleted successfully");
     } catch (err: any) {
       const msg = (err && err.message) || String(err);
       alert("Failed to delete user: " + msg);
     }
   };
+
+  // NOTE: handleDeleteUser replaced by modal-based confirmation above
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -1085,6 +1104,22 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user and all related data</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the user and all their registrations and files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="ml-2">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
