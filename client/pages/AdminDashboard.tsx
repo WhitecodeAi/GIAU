@@ -1114,19 +1114,11 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            handleExportProductionForUser(
-                              (registration as any).user_id,
-                            )
-                          }
-                          disabled={
-                            exportingUserId === (registration as any).user_id
-                          }
+                          onClick={() => handleExportProductionForUser(registration.id)}
+                          disabled={exportingUserId === registration.id}
                         >
                           <Download size={14} className="mr-1" />
-                          {exportingUserId === (registration as any).user_id
-                            ? "Exporting..."
-                            : "Export"}
+                          {exportingUserId === registration.id ? "Exporting..." : "Export"}
                         </Button>
 
                         <Button
