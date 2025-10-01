@@ -584,6 +584,50 @@ export default function AdminDashboard() {
     }
   };
 
+  const [exportingUserId, setExportingUserId] = useState<number | null>(null);
+
+  const handleExportProductionForUser = async (userId?: number | null) => {
+    if (!userId) {
+      alert("User ID is required for export");
+      return;
+    }
+    try {
+      setExportingUserId(userId);
+      const response = await fetch("/api/registrations/export-production-by-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = `production_export_${userId}.tar.gz`;
+        if (contentDisposition) {
+          const m = contentDisposition.match(/filename=\"(.+)\"/);
+          if (m) filename = m[1];
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const text = await response.text();
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+    } catch (err: any) {
+      console.error("Export production error:", err);
+      alert(err?.message || "Failed to export production data");
+    } finally {
+      setExportingUserId(null);
+    }
+  };
+
   const filteredRegistrations = registrations.filter((reg) => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return true;
