@@ -139,7 +139,7 @@ export async function exportProductionByUser(req: any, res: any) {
           reg.id,
           new Date(reg.created_at).toLocaleDateString("en-GB"),
           `escapeCsv(reg.name),`,
-          `${reg.phone || ""},`,
+          escapeCsv(reg.phone || ""),
           `${reg.email || ""},`,
           `"${String(reg.product_names || "").replace(/"/g, '""')}"`,
           `"${includedFiles.join(";")}"`,
