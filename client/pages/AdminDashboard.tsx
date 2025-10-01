@@ -598,7 +598,7 @@ export default function AdminDashboard() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({ registrationId: userId }),
         },
       );
 
@@ -634,10 +634,13 @@ export default function AdminDashboard() {
         let errorMessage = `HTTP ${response.status}`;
         try {
           if (!response.bodyUsed) {
-            const clone = response.clone();
-            const contentType = clone.headers.get("Content-Type") || "";
+            const errResp =
+              typeof response.clone === "function"
+                ? response.clone()
+                : response;
+            const contentType = errResp.headers.get("Content-Type") || "";
             if (contentType.includes("application/json")) {
-              const errorData = await clone.json();
+              const errorData = await errResp.json();
               if (
                 errorData &&
                 typeof errorData === "object" &&
@@ -646,12 +649,12 @@ export default function AdminDashboard() {
                 errorMessage = (errorData as any).error || errorMessage;
               }
             } else {
-              const text = await clone.text();
+              const text = await errResp.text();
               if (text) errorMessage = text;
             }
           }
-        } catch (parseErr) {
-          console.error("Failed to read error response", parseErr);
+        } catch (parseError) {
+          console.error("Failed to read error response", parseError);
         }
         throw new Error(errorMessage);
       }
