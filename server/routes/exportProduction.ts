@@ -13,7 +13,10 @@ export async function exportProductionByUser(req: any, res: any) {
     }
 
     // Fetch user info and registrations
-    const userResult = await dbQuery("SELECT id, username FROM users WHERE id = ?", [userId]);
+    const userResult = await dbQuery(
+      "SELECT id, username FROM users WHERE id = ?",
+      [userId],
+    );
     if (!userResult || userResult.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -39,11 +42,13 @@ export async function exportProductionByUser(req: any, res: any) {
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
     `,
-      [userId]
+      [userId],
     );
 
     if (!registrations || registrations.length === 0) {
-      return res.status(404).json({ error: "No registrations found for this user" });
+      return res
+        .status(404)
+        .json({ error: "No registrations found for this user" });
     }
 
     const folderName = `${user.username || "user"}_production_export_${new Date().toISOString().split("T")[0]}`;
@@ -57,7 +62,8 @@ export async function exportProductionByUser(req: any, res: any) {
     archive.on("error", (err) => {
       console.error("Archive error:", err);
       try {
-        if (!res.headersSent) res.status(500).json({ error: "Failed to create archive" });
+        if (!res.headersSent)
+          res.status(500).json({ error: "Failed to create archive" });
       } catch (e) {}
     });
 
@@ -109,29 +115,36 @@ export async function exportProductionByUser(req: any, res: any) {
       }
 
       const info = `Registration ID: ${reg.id}\nName: ${reg.name}\nPhone: ${reg.phone}\nEmail: ${reg.email || ""}\nProducts: ${reg.product_names || ""}\nRegistered: ${reg.created_at}\n`;
-      archive.append(Buffer.from(info, "utf-8"), { name: path.posix.join(regDirName, "registration_info.txt") });
+      archive.append(Buffer.from(info, "utf-8"), {
+        name: path.posix.join(regDirName, "registration_info.txt"),
+      });
 
-      csvLines.push([
-        reg.id,
-        new Date(reg.created_at).toLocaleDateString("en-GB"),
-        `"${String(reg.name).replace(/"/g, '""')}",`,
-        `${reg.phone || ""},`,
-        `${reg.email || ""},`,
-        `"${String(reg.product_names || "").replace(/"/g, '""')}"`,
-        `"${includedFiles.join(";")}"`,
-      ].join(","));
+      csvLines.push(
+        [
+          reg.id,
+          new Date(reg.created_at).toLocaleDateString("en-GB"),
+          `"${String(reg.name).replace(/"/g, '""')}",`,
+          `${reg.phone || ""},`,
+          `${reg.email || ""},`,
+          `"${String(reg.product_names || "").replace(/"/g, '""')}"`,
+          `"${includedFiles.join(";")}"`,
+        ].join(","),
+      );
     }
 
     // Append CSV summary at root of zip
     const csvContent = csvLines.join("\n");
-    archive.append(Buffer.from(csvContent, "utf-8"), { name: "registrations_summary.csv" });
+    archive.append(Buffer.from(csvContent, "utf-8"), {
+      name: "registrations_summary.csv",
+    });
 
     // Finalize archive
     await archive.finalize();
   } catch (error) {
     console.error("Export production error:", error);
     try {
-      if (!res.headersSent) res.status(500).json({ error: "Failed to export production data" });
+      if (!res.headersSent)
+        res.status(500).json({ error: "Failed to export production data" });
     } catch (e) {}
   }
 }

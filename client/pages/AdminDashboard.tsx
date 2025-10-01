@@ -593,11 +593,14 @@ export default function AdminDashboard() {
     }
     try {
       setExportingUserId(userId);
-      const response = await fetch("/api/registrations/export-production-by-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
+      const response = await fetch(
+        "/api/registrations/export-production-by-user",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        },
+      );
 
       if (response.ok) {
         const contentDisposition = response.headers.get("Content-Disposition");
@@ -1089,12 +1092,18 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() =>
-                            handleExportProductionForUser((registration as any).user_id)
+                            handleExportProductionForUser(
+                              (registration as any).user_id,
+                            )
                           }
-                          disabled={exportingUserId === (registration as any).user_id}
+                          disabled={
+                            exportingUserId === (registration as any).user_id
+                          }
                         >
                           <Download size={14} className="mr-1" />
-                          {exportingUserId === (registration as any).user_id ? "Exporting..." : "Export"}
+                          {exportingUserId === (registration as any).user_id
+                            ? "Exporting..."
+                            : "Export"}
                         </Button>
 
                         <Button
