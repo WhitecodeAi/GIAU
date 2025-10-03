@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { dbQuery, dbRun } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
-import type { Request, Response } from "express";
 import { simpleFileStorage } from "../utils/simpleFileStorage";
 import { compressedFileStorage } from "../utils/compressedFileStorage";
 import multer from "multer";
@@ -1606,67 +1605,75 @@ export async function exportProductGI3A(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 20mm;
+          margin: 15mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.6;
-          font-size: 12pt;
+          line-height: 1.4;
+          font-size: 11pt;
           color: #000;
+        }
+
+        /* Single page optimization */
+        .single-page-container {
+          max-height: calc(100vh - 30mm);
+          overflow: hidden;
         }
 
         .form-page {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          height: auto;
+          max-height: 100vh;
+          overflow: hidden;
         }
 
         .form-header {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
           border-bottom: 2px solid #000;
-          padding-bottom: 15px;
+          padding-bottom: 10px;
         }
 
         .form-title {
-          font-size: 14pt;
+          font-size: 12pt;
           font-weight: bold;
-          margin: 5px 0;
-          line-height: 1.4;
+          margin: 3px 0;
+          line-height: 1.2;
         }
 
         .form-subtitle {
-          font-size: 12pt;
-          margin: 3px 0;
+          font-size: 10pt;
+          margin: 2px 0;
           font-style: italic;
         }
 
         .form-number {
-          font-size: 16pt;
+          font-size: 14pt;
           font-weight: bold;
-          margin: 10px 0;
+          margin: 8px 0;
           text-decoration: underline;
         }
 
         .application-title {
-          font-size: 13pt;
+          font-size: 11pt;
           font-weight: bold;
-          margin: 10px 0;
+          margin: 8px 0;
         }
 
         .rule-reference {
-          font-size: 11pt;
-          margin: 5px 0;
+          font-size: 9pt;
+          margin: 3px 0;
           font-style: italic;
         }
 
         .form-field {
-          margin: 15px 0;
-          line-height: 1.8;
+          margin: 8px 0;
+          line-height: 1.5;
         }
 
         .field-number {
@@ -1687,24 +1694,25 @@ export async function exportProductGI3A(req: Request, res: Response) {
         }
 
         .declaration-section {
-          margin-top: 30px;
+          margin-top: 15px;
           page-break-inside: avoid;
         }
 
         .declaration-title {
           font-weight: bold;
-          margin-bottom: 15px;
+          margin-bottom: 8px;
           text-decoration: underline;
         }
 
         .declaration-item {
-          margin: 10px 0;
+          margin: 6px 0;
           padding-left: 20px;
           text-indent: -20px;
+          font-size: 10pt;
         }
 
         .signature-section {
-          margin-top: 40px;
+          margin-top: 20px;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
@@ -1835,49 +1843,56 @@ export async function exportProductNOC(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 25mm;
+          margin: 20mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.8;
-          font-size: 14pt;
+          line-height: 1.5;
+          font-size: 12pt;
           color: #000;
+        }
+
+        /* Single page optimization */
+        .single-page-container {
+          max-height: calc(100vh - 40mm);
+          overflow: hidden;
         }
 
         .noc-page {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          height: auto;
+          max-height: 100vh;
           position: relative;
         }
 
         .noc-header {
           text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 25px;
           border-bottom: 3px solid #000;
-          padding-bottom: 20px;
+          padding-bottom: 15px;
         }
 
         .noc-title {
-          font-size: 20pt;
+          font-size: 16pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
-          letter-spacing: 2px;
+          letter-spacing: 1px;
         }
 
         .noc-content {
           text-align: justify;
-          line-height: 2.2;
-          margin-bottom: 40px;
+          line-height: 1.6;
+          margin-bottom: 25px;
         }
 
         .noc-paragraph {
-          margin-bottom: 25px;
+          margin-bottom: 15px;
           text-indent: 30px;
         }
 
@@ -1887,7 +1902,7 @@ export async function exportProductNOC(req: Request, res: Response) {
         }
 
         .signature-section {
-          margin-top: 60px;
+          margin-top: 30px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -1896,7 +1911,7 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .date-place {
           flex: 1;
-          line-height: 2.5;
+          line-height: 1.8;
         }
 
         .signature-area {
@@ -1907,9 +1922,9 @@ export async function exportProductNOC(req: Request, res: Response) {
 
         .signature-line {
           border-bottom: 2px solid #000;
-          width: 250px;
-          height: 80px;
-          margin: 30px auto;
+          width: 200px;
+          height: 60px;
+          margin: 20px auto;
           display: block;
         }
 
@@ -2031,49 +2046,56 @@ export async function exportProductStatement(req: Request, res: Response) {
       <style>
         @page {
           size: A4;
-          margin: 25mm;
+          margin: 20mm;
         }
 
         body {
           font-family: 'Times New Roman', serif;
           margin: 0;
           padding: 0;
-          line-height: 1.8;
-          font-size: 14pt;
+          line-height: 1.5;
+          font-size: 12pt;
           color: #000;
+        }
+
+        /* Single page optimization */
+        .single-page-container {
+          max-height: calc(100vh - 40mm);
+          overflow: hidden;
         }
 
         .statement-page {
           width: 100%;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          height: auto;
+          max-height: 100vh;
           position: relative;
         }
 
         .statement-header {
           text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 25px;
           border-bottom: 3px solid #000;
-          padding-bottom: 20px;
+          padding-bottom: 15px;
         }
 
         .statement-title {
-          font-size: 18pt;
+          font-size: 16pt;
           font-weight: bold;
           margin: 0;
           text-decoration: underline;
-          letter-spacing: 2px;
+          letter-spacing: 1px;
         }
 
         .statement-content {
           text-align: justify;
-          line-height: 2.0;
-          margin-bottom: 40px;
+          line-height: 1.6;
+          margin-bottom: 25px;
         }
 
         .statement-paragraph {
-          margin-bottom: 20px;
+          margin-bottom: 12px;
           text-indent: 30px;
         }
 

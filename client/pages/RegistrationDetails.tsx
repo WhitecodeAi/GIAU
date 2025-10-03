@@ -340,7 +340,7 @@ export default function RegistrationDetails() {
   const handleExportProduct = async (
     productId: number,
     productName: string,
-    exportType: "gi3a" | "noc" | "statement" | "card",
+    exportType: "gi3a" | "noc" | "statement" | "card" | "compact",
   ) => {
     const exportKey = `${productId}-${exportType}`;
 
