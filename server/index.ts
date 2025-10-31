@@ -51,7 +51,15 @@ import {
   getUserById,
   getUsersForDropdown,
   deleteUser,
+  restoreUser,
 } from "./routes/users";
+
+// Logs routes
+import {
+  getActivityLogs,
+  getUserActivityLogsById,
+  getActivityStatistics,
+} from "./routes/logs";
 
 // Dashboard routes
 import {
@@ -192,10 +200,16 @@ export function createServer() {
     getUserRegistrationsByUserId,
   );
   app.delete("/api/users/:userId", authenticateToken, deleteUser);
+  app.patch("/api/users/:userId/restore", authenticateToken, restoreUser);
 
   // Dashboard routes
   app.get("/api/dashboard/statistics", getDashboardStatistics);
   app.get("/api/dashboard/activity", getDashboardActivity);
+
+  // Logs routes
+  app.get("/api/logs/activity", authenticateToken, getActivityLogs);
+  app.get("/api/logs/user/:userId", authenticateToken, getUserActivityLogsById);
+  app.get("/api/logs/statistics", authenticateToken, getActivityStatistics);
 
   // Migration routes (admin)
   app.post("/api/migrate/categories", migrateCategories);

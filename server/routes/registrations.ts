@@ -5,6 +5,7 @@ import { simpleFileStorage } from "../utils/simpleFileStorage";
 import { compressedFileStorage } from "../utils/compressedFileStorage";
 import multer from "multer";
 import { VerificationRequest, VerificationResponse } from "../../shared/api";
+import { ActivityLogger } from "../utils/logger";
 
 export async function createRegistration(req: AuthRequest, res: Response) {
   try {
@@ -504,6 +505,14 @@ export async function createRegistration(req: AuthRequest, res: Response) {
     for (const [key, path] of Object.entries(documentPaths)) {
       documentUrls[key] = simpleFileStorage.getFileUrl(path);
     }
+
+    // Log the registration creation
+    await ActivityLogger.registrationCreated(
+      userId,
+      req.user?.username || 'unknown',
+      registrationId.toString(),
+      req
+    );
 
     res.status(201).json({
       message: "Registration created successfully",

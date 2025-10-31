@@ -136,10 +136,10 @@ export default function AdminDashboard() {
       fetchRegistrations();
       fetchStatistics();
       fetchUsers();
-      alert("User deleted successfully");
+      alert("User soft deleted successfully");
     } catch (err: any) {
       const msg = (err && err.message) || String(err);
-      alert("Failed to delete user: " + msg);
+      alert("Failed to soft delete user: " + msg);
     }
   };
 
@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
                             handleDeleteUser((registration as any).user_id)
                           }
                         >
-                          Delete
+                          Soft Delete
                         </Button>
                       </div>
                     </div>
@@ -1208,17 +1208,18 @@ export default function AdminDashboard() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete user and all related data
+              Soft Delete User
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user and all their registrations
-              and files. This action cannot be undone.
+              This will hide the user and all their registrations from the system.
+              The data will be preserved and can be restored later if needed.
+              Files will remain on the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="ml-2">
-              Delete
+              Soft Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { dbQuery, dbRun } from "../config/database";
 import { generateToken } from "../middleware/auth";
+import { ActivityLogger } from "../utils/logger";
 
 export async function login(req: Request, res: Response) {
   try {
@@ -23,6 +24,8 @@ export async function login(req: Request, res: Response) {
 
 
     if (rows.length === 0) {
+      // Log failed login attempt
+      await ActivityLogger.loginFailed(username, "User not found", req);
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -31,6 +34,8 @@ export async function login(req: Request, res: Response) {
     // Verify password
     const isValidPassword = password === user.password;
     if (!isValidPassword) {
+      // Log failed login attempt
+      await ActivityLogger.loginFailed(username, "Invalid password", req);
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -40,6 +45,9 @@ export async function login(req: Request, res: Response) {
       username: user.username,
       role: user.role || "user",
     });
+
+    // Log successful login
+    await ActivityLogger.login(user.id, user.username, req);
 
     res.json({
       message: "Login successful",

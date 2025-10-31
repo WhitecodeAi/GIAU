@@ -48,6 +48,16 @@ Run the automated setup script:
 npm run setup:db
 ```
 
+### 4. Enable Soft Delete (Recommended)
+
+Add soft delete functionality for safer data management:
+
+```bash
+node scripts/add-soft-delete.cjs
+```
+
+This adds `deleted_at` columns and indexes for soft delete functionality. See [SOFT_DELETE_GUIDE.md](./SOFT_DELETE_GUIDE.md) for details.
+
 This script will:
 
 - Create the `gi_registration` database

@@ -2,6 +2,7 @@ import { dbQuery, pool } from "../config/database";
 import { AuthRequest } from "../middleware/auth";
 import fs from "fs";
 import path from "path";
+import { ActivityLogger } from "../utils/logger";
 
 interface UserWithStats {
   id: number;
@@ -48,9 +49,14 @@ export async function getAllUsers(req: AuthRequest, res: Response) {
     let whereClause = "";
     let params: any[] = [];
 
+    // Base where clause to exclude soft-deleted users
+    let baseWhereClause = "WHERE u.deleted_at IS NULL";
+    
     if (searchTerm) {
-      whereClause = "WHERE u.username LIKE ? OR u.email LIKE ?";
+      whereClause = "WHERE u.deleted_at IS NULL AND (u.username LIKE ? OR u.email LIKE ?)";
       params = [`%${searchTerm}%`, `%${searchTerm}%`];
+    } else {
+      whereClause = baseWhereClause;
     }
 
     // Get total count
@@ -61,7 +67,7 @@ export async function getAllUsers(req: AuthRequest, res: Response) {
     `;
     const [{ total }] = await dbQuery(countQuery, params);
 
-    // Get users with registration statistics
+    // Get users with registration statistics (excluding soft-deleted registrations)
     const usersQuery = `
       SELECT 
         u.id,
@@ -73,7 +79,7 @@ export async function getAllUsers(req: AuthRequest, res: Response) {
         COUNT(ur.id) as total_registrations,
         MAX(ur.created_at) as latest_registration_date
       FROM users u
-      LEFT JOIN user_registrations ur ON u.id = ur.user_id
+      LEFT JOIN user_registrations ur ON u.id = ur.user_id AND ur.deleted_at IS NULL
       ${whereClause}
       GROUP BY u.id, u.username, u.email, u.role, u.created_at, u.last_login
       ORDER BY u.created_at DESC
@@ -122,22 +128,22 @@ export async function getUserRegistrations(req: AuthRequest, res: Response) {
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
 
-    // First verify user exists
+    // First verify user exists and is not soft-deleted
     const userExists = await dbQuery(
-      "SELECT id, username FROM users WHERE id = ?",
+      "SELECT id, username FROM users WHERE id = ? AND deleted_at IS NULL",
       [userId],
     );
     if (userExists.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Get total count of registrations for this user
+    // Get total count of registrations for this user (excluding soft-deleted)
     const [{ total }] = await dbQuery(
-      "SELECT COUNT(*) as total FROM user_registrations WHERE user_id = ?",
+      "SELECT COUNT(*) as total FROM user_registrations WHERE user_id = ? AND deleted_at IS NULL",
       [userId],
     );
 
-    // Get registrations with category information
+    // Get registrations with category information (excluding soft-deleted)
     const registrationsQuery = `
       SELECT 
         ur.*,
@@ -145,7 +151,7 @@ export async function getUserRegistrations(req: AuthRequest, res: Response) {
       FROM user_registrations ur
       LEFT JOIN user_registration_categories urc ON ur.id = urc.registration_id
       LEFT JOIN product_categories pc ON urc.category_id = pc.id
-      WHERE ur.user_id = ?
+      WHERE ur.user_id = ? AND ur.deleted_at IS NULL
       GROUP BY ur.id
       ORDER BY ur.created_at DESC
       LIMIT ? OFFSET ?
@@ -253,8 +259,8 @@ export async function getUserById(req: AuthRequest, res: Response) {
         COUNT(ur.id) as total_registrations,
         MAX(ur.created_at) as latest_registration_date
        FROM users u
-       LEFT JOIN user_registrations ur ON u.id = ur.user_id
-       WHERE u.id = ?
+       LEFT JOIN user_registrations ur ON u.id = ur.user_id AND ur.deleted_at IS NULL
+       WHERE u.id = ? AND u.deleted_at IS NULL
        GROUP BY u.id`,
       [userId],
     );
@@ -280,7 +286,7 @@ export async function getUserById(req: AuthRequest, res: Response) {
   }
 }
 
-// Delete a user and all related registrations and files (admin only)
+// Soft delete a user and all related registrations (admin only)
 export async function deleteUser(req: AuthRequest, res: Response) {
   const userId = parseInt(req.params.userId);
   if (!userId)
@@ -293,71 +299,130 @@ export async function deleteUser(req: AuthRequest, res: Response) {
 
   let connection: any = null;
   try {
-    // Fetch registrations for this user
-    const registrations = await dbQuery(
-      "SELECT id FROM user_registrations WHERE user_id = ?",
+    // Check if user exists and is not already deleted
+    const user = await dbQuery(
+      "SELECT id, email FROM users WHERE id = ? AND deleted_at IS NULL",
       [userId],
     );
 
-    const registrationIds = registrations.map((r: any) => r.id);
+    if (user.length === 0) {
+      return res.status(404).json({ error: "User not found or already deleted" });
+    }
 
     // Start transaction
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    if (registrationIds.length > 0) {
-      const placeholders = registrationIds.map(() => "?").join(",");
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-      // Delete dependent data
-      await connection.execute(
-        `DELETE FROM user_production_details WHERE registration_id IN (${placeholders})`,
-        registrationIds,
-      );
-      await connection.execute(
-        `DELETE FROM user_selected_products WHERE registration_id IN (${placeholders})`,
-        registrationIds,
-      );
-      await connection.execute(
-        `DELETE FROM user_existing_products WHERE registration_id IN (${placeholders})`,
-        registrationIds,
-      );
-      await connection.execute(
-        `DELETE FROM user_registration_categories WHERE registration_id IN (${placeholders})`,
-        registrationIds,
-      );
-    }
-
-    // Delete registrations and user
+    // Soft delete all user registrations
     await connection.execute(
-      "DELETE FROM user_registrations WHERE user_id = ?",
-      [userId],
+      "UPDATE user_registrations SET deleted_at = ? WHERE user_id = ? AND deleted_at IS NULL",
+      [now, userId],
     );
-    await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
+
+    // Soft delete the user
+    await connection.execute(
+      "UPDATE users SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL",
+      [now, userId],
+    );
 
     await connection.commit();
     connection.release();
     connection = null;
 
-    // Remove files from disk for each registration
-    for (const regId of registrationIds) {
-      try {
-        const dir = path.join("/var/www/GI", `registration_${regId}`);
-        await fs.promises.rm(dir, { recursive: true, force: true });
-      } catch (err) {
-        console.warn(`Failed to remove files for registration ${regId}:`, err);
-      }
-    }
+    // Note: Files are kept on disk for potential recovery
+    // They can be cleaned up later by a separate maintenance process
 
-    res.json({ message: "User and related data deleted" });
+    // Log the soft delete activity
+    await ActivityLogger.userSoftDeleted(
+      req.user!.id,
+      req.user!.username,
+      userId,
+      user[0].email,
+      req
+    );
+
+    res.json({ 
+      message: "User and related data soft deleted successfully",
+      deletedAt: now
+    });
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error soft deleting user:", error);
     if (connection) {
       try {
         await connection.rollback();
         connection.release();
       } catch (_) {}
     }
-    res.status(500).json({ error: "Failed to delete user" });
+    res.status(500).json({ error: "Failed to soft delete user" });
+  }
+}
+
+// Restore a soft-deleted user and all related registrations (admin only)
+export async function restoreUser(req: AuthRequest, res: Response) {
+  const userId = parseInt(req.params.userId);
+  if (!userId)
+    return res.status(400).json({ error: "Valid user ID is required" });
+
+  // Require admin role
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+
+  let connection: any = null;
+  try {
+    // Check if user exists and is soft-deleted
+    const user = await dbQuery(
+      "SELECT id, email FROM users WHERE id = ? AND deleted_at IS NOT NULL",
+      [userId],
+    );
+
+    if (user.length === 0) {
+      return res.status(404).json({ error: "Soft-deleted user not found" });
+    }
+
+    // Start transaction
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Restore all user registrations
+    await connection.execute(
+      "UPDATE user_registrations SET deleted_at = NULL WHERE user_id = ? AND deleted_at IS NOT NULL",
+      [userId],
+    );
+
+    // Restore the user
+    await connection.execute(
+      "UPDATE users SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL",
+      [userId],
+    );
+
+    await connection.commit();
+    connection.release();
+    connection = null;
+
+    // Log the restore activity
+    await ActivityLogger.userRestored(
+      req.user!.id,
+      req.user!.username,
+      userId,
+      user[0].email,
+      req
+    );
+
+    res.json({ 
+      message: "User and related data restored successfully"
+    });
+  } catch (error) {
+    console.error("Error restoring user:", error);
+    if (connection) {
+      try {
+        await connection.rollback();
+        connection.release();
+      } catch (_) {}
+    }
+    res.status(500).json({ error: "Failed to restore user" });
   }
 }
 
@@ -365,7 +430,7 @@ export async function deleteUser(req: AuthRequest, res: Response) {
 export async function getUserCount(req: Request, res: Response) {
   try {
     const [{ total }] = await dbQuery(
-      "SELECT COUNT(*) as total FROM users",
+      "SELECT COUNT(*) as total FROM users WHERE deleted_at IS NULL",
       [],
     );
 
@@ -391,8 +456,8 @@ export async function getUsersForDropdown(req: Request, res: Response) {
         u.email,
         COUNT(ur.id) as registration_count
        FROM users u
-       LEFT JOIN user_registrations ur ON u.id = ur.user_id
-       WHERE u.role != 'admin'
+       LEFT JOIN user_registrations ur ON u.id = ur.user_id AND ur.deleted_at IS NULL
+       WHERE u.role != 'admin' AND u.deleted_at IS NULL
        GROUP BY u.id, u.username, u.email
        HAVING registration_count > 0
        ORDER BY registration_count DESC, u.username ASC`,

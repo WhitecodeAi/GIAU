@@ -506,8 +506,13 @@ export const registrationsAPI = {
 // Users API
 export const usersAPI = {
   deleteUser: async (userId: number) => {
-    return apiRequest<{ message: string }>(`/users/${userId}`, {
+    return apiRequest<{ message: string; deletedAt: string }>(`/users/${userId}`, {
       method: "DELETE",
+    });
+  },
+  restoreUser: async (userId: number) => {
+    return apiRequest<{ message: string }>(`/users/${userId}/restore`, {
+      method: "PATCH",
     });
   },
 };
