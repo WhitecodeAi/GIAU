@@ -22,6 +22,8 @@ interface RegistrationData {
   category_names: string;
   product_names?: string;
   product_ids?: string;
+  email?: string;
+  area_of_production?: string;
 }
 
 export async function exportUsersWithDateRange(req: Request, res: Response) {
@@ -168,6 +170,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
       "User name",
       "Reg. ID No",
       "Name of AU Applicant",
+      "Address",
       "Age",
       "Gender",
       "email id",
@@ -204,6 +207,7 @@ export async function exportUsersWithDateRange(req: Request, res: Response) {
         reg.username || "",
         reg.id,
         `"${reg.name}"`,
+        `"${reg.address || ""}"`,
         reg.age,
         reg.gender,
         reg.email || "",
@@ -464,6 +468,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
       "User name",
       "Reg. ID No",
       "Name of AU Applicant",
+      "Address",
       "Age",
       "Gender",
       "email id",
@@ -501,6 +506,7 @@ export async function exportRegistrationsByUser(req: Request, res: Response) {
         user.username || "",
         reg.id,
         `"${reg.name}"`,
+        `"${reg.address || ""}"`,
         reg.age,
         reg.gender,
         reg.email || "",
@@ -722,6 +728,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
       "User name",
       "Reg. ID No",
       "Name of AU Applicant",
+      "Address",
       "Age",
       "Gender",
       "email id",
@@ -753,6 +760,7 @@ export async function exportUsersByProducts(req: Request, res: Response) {
         reg.username || "",
         reg.id,
         `"${reg.name}"`,
+        `"${reg.address || ""}"`,
         reg.age,
         reg.gender,
         reg.email || "",

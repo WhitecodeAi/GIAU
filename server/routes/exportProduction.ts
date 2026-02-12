@@ -25,7 +25,7 @@ async function generateProductDocument(
 
       let htmlContent = "";
       const mockRes = {
-        setHeader: () => {},
+        setHeader: () => { },
         status: () => mockRes,
         json: () => mockRes,
         send: (content: string) => {
@@ -127,13 +127,14 @@ export async function exportProductionByUser(req: any, res: any) {
       try {
         if (!res.headersSent)
           res.status(500).json({ error: "Failed to create archive" });
-      } catch (e) {}
+      } catch (e) { }
     });
 
     // Pipe archive data to the response
     archive.pipe(res);
 
-    const storageBase = "/var/www/GI"; // same base as simpleFileStorage
+    const storageBase =
+      process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads"); // same base as simpleFileStorage
 
     // CSV helper
     const escapeCsv = (val: any) => {
@@ -149,8 +150,9 @@ export async function exportProductionByUser(req: any, res: any) {
     csvLines.push(
       [
         "Reg ID",
-        "Reg Date", 
+        "Reg Date",
         "Name",
+        "Address",
         "Phone",
         "Email",
         "Products",
@@ -194,64 +196,64 @@ export async function exportProductionByUser(req: any, res: any) {
 
       const productFiles: string[] = [];
 
-        // Add basic registration files for each product
-        for (const field of fileFields) {
-          const rel = reg[field.key];
-          if (!rel) continue;
-          
-          const cleaned = String(rel).replace(/\\/g, "/");
-          const abs = path.join(storageBase, cleaned);
-          
-          try {
-            if (fs.existsSync(abs)) {
-              const fileExt = path.extname(cleaned);
-              const fileName = `${field.name}_reg${reg.id}${fileExt}`;
-              const arcName = path.posix.join(productName, fileName);
-              
-              archive.file(abs, { name: arcName });
-              productFiles.push(fileName);
-              registrationFiles.push(`${productName}/${fileName}`);
-            }
-          } catch (err) {
-            console.warn("Failed to include file", abs, err);
+      // Add basic registration files for each product
+      for (const field of fileFields) {
+        const rel = reg[field.key];
+        if (!rel) continue;
+
+        const cleaned = String(rel).replace(/\\/g, "/");
+        const abs = path.join(storageBase, cleaned);
+
+        try {
+          if (fs.existsSync(abs)) {
+            const fileExt = path.extname(cleaned);
+            const fileName = `${field.name}_reg${reg.id}${fileExt}`;
+            const arcName = path.posix.join(productName, fileName);
+
+            archive.file(abs, { name: arcName });
+            productFiles.push(fileName);
+            registrationFiles.push(`${productName}/${fileName}`);
           }
+        } catch (err) {
+          console.warn("Failed to include file", abs, err);
         }
+      }
 
-        // Generate and add production documents (GI3A, NOC, Statement, Card)
-        const documentTypes = [
-          { type: "gi3a" as const, name: "Form_GI_3A" },
-          { type: "noc" as const, name: "NOC_Certificate" },
-          { type: "statement" as const, name: "Statement_of_Case" },
-          { type: "card" as const, name: "Export_Card" },
-        ];
+      // Generate and add production documents (GI3A, NOC, Statement, Card)
+      const documentTypes = [
+        { type: "gi3a" as const, name: "Form_GI_3A" },
+        { type: "noc" as const, name: "NOC_Certificate" },
+        { type: "statement" as const, name: "Statement_of_Case" },
+        { type: "card" as const, name: "Export_Card" },
+      ];
 
-        for (const docType of documentTypes) {
-          try {
-            const htmlContent = await generateProductDocument(
-              reg.id,
-              parseInt(product.id) || 0,
-              product.name,
-              docType.type
-            );
+      for (const docType of documentTypes) {
+        try {
+          const htmlContent = await generateProductDocument(
+            reg.id,
+            parseInt(product.id) || 0,
+            product.name,
+            docType.type
+          );
 
-            if (htmlContent) {
-              const fileName = `${docType.name}_reg${reg.id}_${productName}.html`;
-              const arcName = path.posix.join(productName, fileName);
-              
-              archive.append(Buffer.from(htmlContent, "utf-8"), {
-                name: arcName,
-              });
-              
-              productFiles.push(fileName);
-              registrationFiles.push(`${productName}/${fileName}`);
-            }
-          } catch (err) {
-            console.warn(`Failed to generate ${docType.name} for product ${productName}:`, err);
+          if (htmlContent) {
+            const fileName = `${docType.name}_reg${reg.id}_${productName}.html`;
+            const arcName = path.posix.join(productName, fileName);
+
+            archive.append(Buffer.from(htmlContent, "utf-8"), {
+              name: arcName,
+            });
+
+            productFiles.push(fileName);
+            registrationFiles.push(`${productName}/${fileName}`);
           }
+        } catch (err) {
+          console.warn(`Failed to generate ${docType.name} for product ${productName}:`, err);
         }
+      }
 
-        // Add registration info for each product
-        const info = `Registration ID: ${reg.id}
+      // Add registration info for each product
+      const info = `Registration ID: ${reg.id}
 Name: ${reg.name}
 Phone: ${reg.phone}
 Email: ${reg.email || ""}
@@ -270,22 +272,23 @@ ${productFiles.join("\n")}
 Total files: ${productFiles.length}
 Generated: ${new Date().toLocaleString()}
 `;
-        
-        archive.append(Buffer.from(info, "utf-8"), {
-          name: path.posix.join(productName, `registration_${reg.id}_info.txt`),
-        });
 
-        productStructure[productName].push({
-          registration: reg,
-          files: productFiles,
-        });
-      }
+      archive.append(Buffer.from(info, "utf-8"), {
+        name: path.posix.join(productName, `registration_${reg.id}_info.txt`),
+      });
+
+      productStructure[productName].push({
+        registration: reg,
+        files: productFiles,
+      });
+    }
 
     csvLines.push(
       [
         escapeCsv(reg.id),
         escapeCsv(new Date(reg.created_at).toLocaleDateString("en-GB")),
         escapeCsv(reg.name),
+        escapeCsv(reg.address || ""),
         escapeCsv(reg.phone || ""),
         escapeCsv(reg.email || ""),
         escapeCsv(reg.product_names || ""),
@@ -298,17 +301,17 @@ Generated: ${new Date().toLocaleString()}
     productSummaryLines.push("Product Summary");
     productSummaryLines.push("================");
     productSummaryLines.push("");
-    
+
     for (const [productName, entries] of Object.entries(productStructure)) {
       productSummaryLines.push(`Product: ${productName.replace(/_/g, " ")}`);
       productSummaryLines.push(`Total Registrations: ${entries.length}`);
       productSummaryLines.push("Registrations:");
-      
+
       entries.forEach((entry: any) => {
         productSummaryLines.push(`  - ${entry.registration.name} (ID: ${entry.registration.id})`);
         productSummaryLines.push(`    Files: ${entry.files.join(", ")}`);
       });
-      
+
       productSummaryLines.push("");
     }
 
@@ -359,7 +362,7 @@ IMPORTANT NOTES:
 
 For questions, contact the administrator.
 `;
-    
+
     archive.append(Buffer.from(readmeContent, "utf-8"), {
       name: "README.txt",
     });
@@ -369,7 +372,7 @@ For questions, contact the administrator.
       console.log("Archive finalized, bytes: ", archive.pointer());
       try {
         if (!res.writableEnded) res.end();
-      } catch (e) {}
+      } catch (e) { }
     });
 
     // Finalize archive
@@ -389,6 +392,6 @@ For questions, contact the administrator.
             error: "Failed to export production data",
             detail: (error as any).message || String(error),
           });
-    } catch (e) {}
+    } catch (e) { }
   }
 }

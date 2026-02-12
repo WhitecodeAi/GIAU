@@ -33,7 +33,7 @@ export default function Index() {
           Indian GI Registration App
         </h1>
         <p className="mt-4 text-slate-600 max-w-md">
-          Geographical Indication Authentication Unit
+          Geographical Indication Authorised User
         </p>
         <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
       </div>

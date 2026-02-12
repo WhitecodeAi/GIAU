@@ -67,7 +67,7 @@ export default function Login() {
                 INDIAN GI REGISTRATION APP
               </h1>
               <p className="text-gray-600">
-                Geographical Indication Authentication Unit
+                Geographical Indication Authorised User
               </p>
             </div>
 

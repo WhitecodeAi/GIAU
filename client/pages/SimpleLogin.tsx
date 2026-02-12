@@ -67,7 +67,7 @@ export default function SimpleLogin() {
                 fontFamily: "Arial, sans-serif",
               }}
             >
-              Geographical Indication Authentication Unit
+              Geographical Indication Authorised User
             </p>
           </div>
 

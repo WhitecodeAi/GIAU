@@ -55,18 +55,18 @@ export default function LoginFixed() {
           <div className="card-container">
             {/* Logo Section */}
             <div className="text-center mb-8">
-                <div className="mb-8">
-                  <img
-                    src="https://cdn.builder.io/api/v1/image/assets%2F6d290b314071499797627b72ba9eee0c%2F6214c05e13a84aaa8d3c108e9e1ffeb0?format=webp&width=800"
-                    alt="Indian GI Logo"
-                    className="mx-auto w-32 h-32 object-contain"
-                  />
+              <div className="mb-8">
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2F6d290b314071499797627b72ba9eee0c%2F6214c05e13a84aaa8d3c108e9e1ffeb0?format=webp&width=800"
+                  alt="Indian GI Logo"
+                  className="mx-auto w-32 h-32 object-contain"
+                />
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
                 INDIAN GI REGISTRATION APP
               </h1>
               <p className="text-gray-600">
-                Geographical Indication Authentication Unit
+                Geographical Indication Authorised User
               </p>
             </div>
 
