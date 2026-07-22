@@ -1027,8 +1027,8 @@ export async function exportFormGI3A(req: Request, res: Response) {
 async function generateFormGI3AHtml(
   registration: RegistrationData,
 ): Promise<string> {
-  // Format registration date
-  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+  // Format registration date to use current date
+  const registrationDate = new Date().toLocaleDateString(
     "en-GB",
   );
 

@@ -2344,7 +2344,8 @@ async function generateProductFormGI3AHtml(
   registration: any,
   productName: string,
 ): Promise<string> {
-  const registrationDate = new Date(registration.created_at).toLocaleDateString(
+  // Format registration date to use current date
+  const registrationDate = new Date().toLocaleDateString(
     "en-GB",
   );
 
