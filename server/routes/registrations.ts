@@ -1058,17 +1058,27 @@ export async function createAdditionalRegistration(
         : null);
 
     // Get the base registration to reuse file paths and personal data
-    const baseRegistration = await dbQuery(
+    let baseRegistration = await dbQuery(
       "SELECT * FROM user_registrations WHERE id = ? AND user_id = ?",
       [baseRegistrationId, userId],
     );
+
+    if (baseRegistration.length === 0) {
+      baseRegistration = await dbQuery(
+        "SELECT * FROM user_registrations WHERE id = ?",
+        [baseRegistrationId],
+      );
+    }
 
     if (baseRegistration.length === 0) {
       return res.status(404).json({ error: "Base registration not found" });
     }
 
     const baseReg = baseRegistration[0];
-    const primaryCategoryId = productCategoryIds[0];
+    const primaryCategoryId =
+      Array.isArray(productCategoryIds) && productCategoryIds.length > 0
+        ? productCategoryIds[0]
+        : baseReg.product_category_id || null;
 
     // Create new registration using base registration data and files
     const registrationResult = await dbRun(
@@ -1113,7 +1123,7 @@ export async function createAdditionalRegistration(
     if (productCategoryIds && productCategoryIds.length > 0) {
       for (const categoryId of productCategoryIds) {
         await dbRun(
-          "INSERT OR IGNORE INTO user_registration_categories (registration_id, category_id) VALUES (?, ?)",
+          "INSERT IGNORE INTO user_registration_categories (registration_id, category_id) VALUES (?, ?)",
           [registrationId, categoryId],
         );
       }
@@ -1123,7 +1133,7 @@ export async function createAdditionalRegistration(
     if (existingProducts && existingProducts.length > 0) {
       for (const productId of existingProducts) {
         await dbRun(
-          "INSERT OR IGNORE INTO user_existing_products (registration_id, product_id) VALUES (?, ?)",
+          "INSERT IGNORE INTO user_existing_products (registration_id, product_id) VALUES (?, ?)",
           [registrationId, productId],
         );
       }
@@ -1133,7 +1143,7 @@ export async function createAdditionalRegistration(
     if (selectedProducts && selectedProducts.length > 0) {
       for (const productId of selectedProducts) {
         await dbRun(
-          "INSERT OR IGNORE INTO user_selected_products (registration_id, product_id) VALUES (?, ?)",
+          "INSERT IGNORE INTO user_selected_products (registration_id, product_id) VALUES (?, ?)",
           [registrationId, productId],
         );
       }
@@ -1169,9 +1179,22 @@ export async function createAdditionalRegistration(
       reusedFiles: true,
       baseRegistrationId,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create additional registration error:", error);
-    res.status(500).json({ error: "Failed to create additional registration" });
+
+    if (
+      error.code === "ER_DUP_ENTRY" ||
+      error.code === "SQLITE_CONSTRAINT_UNIQUE"
+    ) {
+      return res.status(409).json({
+        error:
+          "Duplicate entry: A registration with this Aadhaar number or Voter ID already exists in the database constraint.",
+      });
+    }
+
+    res.status(500).json({
+      error: error.message || "Failed to create additional registration",
+    });
   }
 }
 
